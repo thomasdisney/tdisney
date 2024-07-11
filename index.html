@@ -3,94 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tdisney.com</title>
+    <title>Interactive Semi Truck</title>
     <style>
         body {
             background-color: black;
             color: green;
             font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
-            margin: 0;
-            overflow: hidden;
         }
-        #content {
+        #screen {
             width: 80%;
             max-width: 800px;
-            text-align: center;
-        }
-        #animation-container {
-            width: 100%;
-            overflow: auto;
-            white-space: pre;
-            font-size: calc(10px + 1.5vw); /* Responsive font size */
-            line-height: 1.2; /* Adjust line height */
-        }
-        #animation {
-            white-space: pre;
             text-align: left;
-        }
-        .ascii-button {
-            margin-top: 20px;
-            cursor: pointer;
-            color: green;
-            background-color: black;
-            border: none;
-            font-size: calc(10px + 1.5vw); /* Responsive font size */
             white-space: pre;
         }
-        a {
-            color: green;
-            margin-top: 20px;
-            text-decoration: none;
-            font-size: calc(10px + 1.5vw); /* Responsive font size */
+        #dock1, #dock2 {
+            display: inline-block;
+        }
+        #truck {
+            display: inline-block;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div id="content">
-        <div id="animation-container">
-            <div id="animation">
-                <div id="frame1">      _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   </div>
-                <div id="frame2" style="display: none;">           _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   </div>
-                <div id="frame3" style="display: none;">                _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   </div>
-            </div>
-        </div>
-        <button class="ascii-button" id="moveBtn"> _________ \n|         |\n|  move   |\n|_________|\n</button>
-        <a href="https://x.com/t0mdisney">@t0mdisney on X</a>
+    <div id="screen">
+        <div id="dock1">Dock 1</div>
+        <div id="truck" onclick="moveTruck()">[====]\n|    |\n[----]</div>
+        <div id="dock2">Dock 2</div>
     </div>
-
     <script>
-        const frames = [
-            document.getElementById('frame1'),
-            document.getElementById('frame2'),
-            document.getElementById('frame3')
-        ];
+        let truck = document.getElementById('truck');
+        let dock1 = document.getElementById('dock1');
+        let dock2 = document.getElementById('dock2');
+        let screen = document.getElementById('screen');
+        let atDock1 = true;
 
-        const moveBtn = document.getElementById('moveBtn');
-        let frameIndex = 0;
-        let animationInterval;
-
-        function updateAnimation() {
-            frames.forEach((frame, index) => {
-                frame.style.display = (index === frameIndex) ? 'block' : 'none';
-            });
-            frameIndex = (frameIndex + 1) % frames.length;
-        }
-
-        moveBtn.addEventListener('click', () => {
-            if (animationInterval) {
-                clearInterval(animationInterval);
-                animationInterval = null;
-                moveBtn.innerText = " _________ \n|         |\n|  move   |\n|_________|\n";
+        function moveTruck() {
+            if (atDock1) {
+                truck.style.transform = 'translateX(300px)';
+                atDock1 = false;
+                setTimeout(() => { screen.innerHTML = "Dock 1\n\n\n\n[====]\n|    |\n[----]\n\n\n\nDock 2"; }, 1000);
             } else {
-                animationInterval = setInterval(updateAnimation, 500);
-                moveBtn.innerText = " _________ \n|         |\n|  stop   |\n|_________|\n";
+                truck.style.transform = 'translateX(0)';
+                atDock1 = true;
+                setTimeout(() => { screen.innerHTML = "Dock 1\n[====]\n|    |\n[----]\nDock 2"; }, 1000);
             }
-        });
+        }
     </script>
 </body>
 </html>
