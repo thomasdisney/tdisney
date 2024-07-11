@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tdisney.com</title>
+    <style>
+        body {
+            background-color: black;
+            color: green;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #animation {
+            white-space: pre;
+            text-align: left;
+            font-size: 14px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: green;
+            color: black;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        a {
+            color: green;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="animation">
+        <!-- ASCII Animation will go here -->
+    </div>
+    <button id="moveBtn">move</button>
+    <a href="https://x.com/t0mdisney">@t0mdisney on X</a>
+
+    <script>
+        const truckFrames = [
+            "      _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   ",
+            "           _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   ",
+            "                _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   "
+        ];
+
+        const dock = [
+            " ||  ||\n ||  ||",
+            " ||  ||\n ||  ||",
+            " ||  ||\n ||  ||"
+        ];
+
+        const animationDiv = document.getElementById('animation');
+        const moveBtn = document.getElementById('moveBtn');
+
+        let frame = 0;
+        let animationInterval;
+
+        function updateAnimation() {
+            animationDiv.innerText = truckFrames[frame] + "\n" + dock[frame];
+            frame = (frame + 1) % truckFrames.length;
+        }
+
+        moveBtn.addEventListener('click', () => {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+                moveBtn.innerText = 'move';
+            } else {
+                animationInterval = setInterval(updateAnimation, 500);
+                moveBtn.innerText = 'stop';
+            }
+        });
+    </script>
+</body>
+</html>
