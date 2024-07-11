@@ -15,35 +15,37 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden;
         }
         #content {
             width: 80%;
+            max-width: 800px;
             text-align: center;
         }
         #animation-container {
             width: 100%;
             overflow: auto;
             white-space: pre;
-            font-size: 20px;
         }
         #animation {
             white-space: pre;
             text-align: left;
+            font-size: calc(10px + 1.5vw); /* Responsive font size */
+            line-height: 1.2; /* Adjust line height */
         }
         .ascii-button {
             margin-top: 20px;
             cursor: pointer;
-            font-size: 20px;
             color: green;
             background-color: black;
             border: none;
+            font-size: calc(10px + 1.5vw); /* Responsive font size */
+            white-space: pre;
         }
         a {
             color: green;
             margin-top: 20px;
             text-decoration: none;
-            font-size: 20px;
+            font-size: calc(10px + 1.5vw); /* Responsive font size */
         }
     </style>
 </head>
