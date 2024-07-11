@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,41 +8,55 @@
         body {
             background-color: black;
             color: green;
-            font-family: monospace;
+            font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
+        }
+        #content {
+            width: 80%;
+            text-align: center;
+        }
+        #animation-container {
+            width: 100%;
+            overflow: auto;
+            white-space: pre;
+            font-size: 20px;
         }
         #animation {
             white-space: pre;
             text-align: left;
-            font-size: 14px;
         }
-        button {
+        .ascii-button {
             margin-top: 20px;
-            padding: 10px 20px;
-            background-color: green;
-            color: black;
-            border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 20px;
+            color: green;
+            background-color: black;
+            border: none;
         }
         a {
             color: green;
             margin-top: 20px;
             text-decoration: none;
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
-    <div id="animation">
-        <!-- ASCII Animation will go here -->
+    <div id="content">
+        <div id="animation-container">
+            <div id="animation">
+                <!-- ASCII Animation will go here -->
+            </div>
+        </div>
+        <button class="ascii-button" id="moveBtn"> _________ \n|         |\n|  move   |\n|_________|\n</button>
+        <a href="https://x.com/t0mdisney">@t0mdisney on X</a>
     </div>
-    <button id="moveBtn">move</button>
-    <a href="https://x.com/t0mdisney">@t0mdisney on X</a>
 
     <script>
         const truckFrames = [
@@ -73,10 +86,10 @@
             if (animationInterval) {
                 clearInterval(animationInterval);
                 animationInterval = null;
-                moveBtn.innerText = 'move';
+                moveBtn.innerText = " _________ \n|         |\n|  move   |\n|_________|\n";
             } else {
                 animationInterval = setInterval(updateAnimation, 500);
-                moveBtn.innerText = 'stop';
+                moveBtn.innerText = " _________ \n|         |\n|  stop   |\n|_________|\n";
             }
         });
     </script>
