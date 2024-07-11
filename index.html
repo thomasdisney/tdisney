@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tdisney.com</title>
+    <title>Interactive Semi Truck Animation</title>
     <style>
         body {
             background-color: black;
@@ -25,17 +25,34 @@
             white-space: pre;
             position: relative;
         }
+        .art {
+            display: inline-block;
+            vertical-align: top;
+        }
         #truck {
             position: absolute;
             top: 50%;
             left: 10%;
             transform: translateY(-50%);
             cursor: pointer;
-            transition: transform 5s ease-in-out;
+            transition: transform 5s linear;
         }
-        #dock1, #dock2 {
-            display: inline-block;
-            vertical-align: top;
+        #warehouse, #factory, #shipBtn {
+            position: absolute;
+        }
+        #warehouse {
+            top: 10%;
+            left: 5%;
+        }
+        #factory {
+            bottom: 10%;
+            right: 5%;
+        }
+        #shipBtn {
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
         }
         @media (max-width: 768px) {
             #screen {
@@ -47,51 +64,76 @@
                 font-size: 14px;
             }
         }
+        #followLink {
+            position: absolute;
+            bottom: 5%;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
     <div id="screen">
-        <div id="dock1"> 
-         _______________________
-        |                     |
-        |                     |
-        |                     |
-        |    WAREHOUSE 1      |
-        |_____________________|
+        <div id="warehouse" class="art"> 
+           _________ 
+          |         |
+          |         |
+          |         |
+          | WAREHOUSE|
+          |_________|
         </div>
-        <div id="truck" onclick="moveTruck()"> 
-           _____            _____
-          /     \__________/     \
-         |                        |
-         |   O  O  O  O  O  O     |
-         |     ___________________|
-         |_____/                 \
-         |                        |
-         |________________________|
+        <div id="truck" class="art"> 
+           _______
+         /|_||_\`.__
+        (   _    _ _\
+        =`-(_)--(_)-'
         </div>
-        <div id="dock2"> 
-         _______________________
-        |                     |
-        |                     |
-        |                     |
-        |    WAREHOUSE 2      |
-        |_____________________|
+        <div id="factory" class="art">
+           __________
+          |          |
+          | FACTORY  |
+          |          |
+          |          |
+          |__________|
+        </div>
+        <div id="shipBtn" class="art" onclick="toggleAnimation()"> 
+          ________
+         |  SHIP  |
+         |________|
+        </div>
+        <div id="followLink">
+            <a href="https://x.com/T0MDISNEY" target="_blank" style="color: green; text-decoration: none;">Follow Disney on X</a>
         </div>
     </div>
     <script>
         let truck = document.getElementById('truck');
-        let atDock1 = true;
+        let animationRunning = false;
+        let animation;
 
         function moveTruck() {
-            if (atDock1) {
-                truck.style.transform = 'translateX(700px) translateY(-50%) rotate(180deg)';
-                atDock1 = false;
+            if (animationRunning) {
+                truck.style.transform = 'translateX(800px) translateY(-50%)';
+                setTimeout(() => {
+                    truck.style.transform = 'translateX(800px) translateY(50%)';
+                    setTimeout(() => {
+                        truck.style.transform = 'translateX(0) translateY(50%)';
+                        setTimeout(() => {
+                            truck.style.transform = 'translateX(0) translateY(-50%)';
+                        }, 5000);
+                    }, 5000);
+                }, 5000);
+            }
+        }
+
+        function toggleAnimation() {
+            if (animationRunning) {
+                clearInterval(animation);
+                animationRunning = false;
             } else {
-                truck.style.transform = 'translateX(0) translateY(-50%) rotate(0deg)';
-                atDock1 = true;
+                animationRunning = true;
+                animation = setInterval(moveTruck, 20000); // Total animation duration
+                moveTruck();
             }
         }
     </script>
 </body>
 </html>
-
