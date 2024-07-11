@@ -1,146 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Semi Truck Animation</title>
-    <style>
-        body {
-            background-color: black;
-            color: green;
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #screen {
-            width: 100%;
-            max-width: 1000px;
-            text-align: left;
-            white-space: pre;
-            position: relative;
-        }
-        .art {
-            display: inline-block;
-            vertical-align: top;
-        }
-        #truck {
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            transition: transform 5s linear;
-        }
-        #warehouse, #factory, #shipBtn {
-            position: absolute;
-        }
-        #warehouse {
-            top: 10%;
-            left: 5%;
-        }
-        #factory {
-            bottom: 10%;
-            right: 5%;
-        }
-        #shipBtn {
-            bottom: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            cursor: pointer;
-        }
-        @media (max-width: 768px) {
-            #screen {
-                font-size: 8px;
-            }
-        }
-        @media (min-width: 769px) {
-            #screen {
-                font-size: 14px;
-            }
-        }
-        #followLink {
-            position: absolute;
-            bottom: 5%;
-            font-size: 12px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Truck Animation</title>
+<style>
+  body {
+    background-color: black;
+    color: green;
+    font-family: monospace;
+  }
+  #truck {
+    position: relative;
+    width: 100px;
+    transition: transform 2s;
+  }
+  #container {
+    width: 100%;
+    overflow: hidden;
+  }
+</style>
 </head>
 <body>
-    <div id="screen">
-        <div id="warehouse" class="art"> 
-           _________ 
-          |         |
-          |         |
-          |         |
-          | WAREHOUSE|
-          |_________|
-        </div>
-        <div id="truck" class="art"> 
-          ___________ 
-         |           |_________
-         |           |         |
-         |           |         |
-         |           |         |
-         |___________|         |
-         |  _______  |_________|
-        _|_|_______|_|_________|____
-       |  O O O O O O O O O O O O O |
-       `--(o)-------------------(o)--'
-        </div>
-        <div id="factory" class="art">
-           __________
-          |          |
-          | FACTORY  |
-          |          |
-          |          |
-          |__________|
-        </div>
-        <div id="shipBtn" class="art" onclick="toggleAnimation()"> 
-          ________
-         |  SHIP  |
-         |________|
-        </div>
-        <div id="followLink">
-            <a href="https://x.com/T0MDISNEY" target="_blank" style="color: green; text-decoration: none;">Follow Disney on X</a>
-        </div>
-    </div>
-    <script>
-        let truck = document.getElementById('truck');
-        let animationRunning = false;
-        let animation;
+<div id="container">
+  <img id="truck" src="path_to_your_truck_image.png" alt="Truck">
+</div>
+<script>
+  const truck = document.getElementById('truck');
+  let toggle = false;
 
-        function moveTruck() {
-            if (animationRunning) {
-                truck.style.transform = 'translateX(700px) translateY(-50%)';
-                setTimeout(() => {
-                    truck.style.transform = 'translateX(700px) translateY(50%)';
-                    setTimeout(() => {
-                        truck.style.transform = 'translateX(0) translateY(50%)';
-                        setTimeout(() => {
-                            truck.style.transform = 'translateX(0) translateY(-50%)';
-                        }, 5000);
-                    }, 5000);
-                }, 5000);
-            }
-        }
-
-        function toggleAnimation() {
-            if (animationRunning) {
-                clearInterval(animation);
-                animationRunning = false;
-            } else {
-                animationRunning = true;
-                animation = setInterval(moveTruck, 20000); // Total animation duration
-                moveTruck();
-            }
-        }
-    </script>
+  truck.addEventListener('click', function() {
+    if (toggle) {
+      truck.style.transform = 'translateX(0)';
+    } else {
+      truck.style.transform = 'translateX(90%)';
+    }
+    toggle = !toggle;
+  });
+</script>
 </body>
 </html>
-
