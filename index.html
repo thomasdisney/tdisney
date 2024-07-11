@@ -15,6 +15,7 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
         }
         #content {
             width: 80%;
@@ -25,12 +26,12 @@
             width: 100%;
             overflow: auto;
             white-space: pre;
+            font-size: calc(10px + 1.5vw); /* Responsive font size */
+            line-height: 1.2; /* Adjust line height */
         }
         #animation {
             white-space: pre;
             text-align: left;
-            font-size: calc(10px + 1.5vw); /* Responsive font size */
-            line-height: 1.2; /* Adjust line height */
         }
         .ascii-button {
             margin-top: 20px;
@@ -53,7 +54,9 @@
     <div id="content">
         <div id="animation-container">
             <div id="animation">
-                <!-- ASCII Animation will go here -->
+                <div id="frame1">      _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   </div>
+                <div id="frame2" style="display: none;">           _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   </div>
+                <div id="frame3" style="display: none;">                _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   </div>
             </div>
         </div>
         <button class="ascii-button" id="moveBtn"> _________ \n|         |\n|  move   |\n|_________|\n</button>
@@ -61,27 +64,21 @@
     </div>
 
     <script>
-        const truckFrames = [
-            "      _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   ",
-            "           _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   ",
-            "                _______\n ____|___ |  |\n|  __  __||  |\n|_/  |_| |_|  |\n   (o)     (o)   "
+        const frames = [
+            document.getElementById('frame1'),
+            document.getElementById('frame2'),
+            document.getElementById('frame3')
         ];
 
-        const dock = [
-            " ||  ||\n ||  ||",
-            " ||  ||\n ||  ||",
-            " ||  ||\n ||  ||"
-        ];
-
-        const animationDiv = document.getElementById('animation');
         const moveBtn = document.getElementById('moveBtn');
-
-        let frame = 0;
+        let frameIndex = 0;
         let animationInterval;
 
         function updateAnimation() {
-            animationDiv.innerText = truckFrames[frame] + "\n" + dock[frame];
-            frame = (frame + 1) % truckFrames.length;
+            frames.forEach((frame, index) => {
+                frame.style.display = (index === frameIndex) ? 'block' : 'none';
+            });
+            frameIndex = (frameIndex + 1) % frames.length;
         }
 
         moveBtn.addEventListener('click', () => {
