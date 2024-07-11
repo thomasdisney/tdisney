@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Semi Truck</title>
+    <title>tdisney.com</title>
     <style>
         body {
             background-color: black;
@@ -28,9 +28,10 @@
         #truck {
             position: absolute;
             top: 50%;
+            left: 10%;
             transform: translateY(-50%);
             cursor: pointer;
-            transition: transform 2s;
+            transition: transform 5s ease-in-out;
         }
         #dock1, #dock2 {
             display: inline-block;
@@ -38,12 +39,12 @@
         }
         @media (max-width: 768px) {
             #screen {
-                font-size: 10px;
+                font-size: 8px;
             }
         }
         @media (min-width: 769px) {
             #screen {
-                font-size: 16px;
+                font-size: 14px;
             }
         }
     </style>
@@ -51,28 +52,30 @@
 <body>
     <div id="screen">
         <div id="dock1"> 
-           _________ 
-          |         |
-          |         |
-          |         |
-          |         |
-          |_________|
+         _______________________
+        |                     |
+        |                     |
+        |                     |
+        |    WAREHOUSE 1      |
+        |_____________________|
         </div>
         <div id="truck" onclick="moveTruck()"> 
-          _____________________________ 
-         |                             |
-         |                             |
-         |_________ _______ _________  |
-         |          |  |   |   |       |
-         |__________|__|___|___|_______|
+           _____            _____
+          /     \__________/     \
+         |                        |
+         |   O  O  O  O  O  O     |
+         |     ___________________|
+         |_____/                 \
+         |                        |
+         |________________________|
         </div>
         <div id="dock2"> 
-           _________ 
-          |         |
-          |         |
-          |         |
-          |         |
-          |_________|
+         _______________________
+        |                     |
+        |                     |
+        |                     |
+        |    WAREHOUSE 2      |
+        |_____________________|
         </div>
     </div>
     <script>
@@ -81,13 +84,14 @@
 
         function moveTruck() {
             if (atDock1) {
-                truck.style.transform = 'translateX(500px) translateY(-50%)';
+                truck.style.transform = 'translateX(700px) translateY(-50%) rotate(180deg)';
                 atDock1 = false;
             } else {
-                truck.style.transform = 'translateX(0) translateY(-50%)';
+                truck.style.transform = 'translateX(0) translateY(-50%) rotate(0deg)';
                 atDock1 = true;
             }
         }
     </script>
 </body>
 </html>
+
