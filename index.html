@@ -2,40 +2,54 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Truck Animation</title>
+<title>tdisney</title>
 <style>
   body {
     background-color: black;
     color: green;
     font-family: monospace;
+    white-space: pre; /* Keeps ASCII art formatting */
+    overflow-x: hidden; /* Prevents horizontal scroll */
+  }
+  #warehouse, #factory {
+    color: yellow; /* Highlighting the buildings */
   }
   #truck {
-    position: relative;
-    width: 100px;
-    transition: transform 2s;
+    position: absolute;
+    white-space: pre;
+    left: 0;
+    transition: transform 10s linear;
   }
-  #container {
+  #scene {
+    position: relative;
+    height: 200px;
     width: 100%;
-    overflow: hidden;
   }
 </style>
 </head>
 <body>
-<div id="container">
-  <img id="truck" src="path_to_your_truck_image.png" alt="Truck">
+<div id="scene">
+  <div id="warehouse">WAREHOUSE</div>
+  <div id="truck">
+                    _________________________________________________<br>
+            /|     |                                                 |<br>
+            ||     |                                                 |<br>
+       .----|-----,|                                                 |<br>
+       ||  ||   ==||                                                 |<br>
+  .-----'--'|   ==||                                                 |<br>
+  |)-      ~|     ||_________________________________________________|<br>
+  | ___     |     |____...==..._  >\______________________________|<br>
+ [_/.-.\"--"-------- //.-.  .-.\\/   |/            \\ .-.  .-. //<br>
+   ( o )`==="""""""""`( o )( o )     o              `( o )( o )`<br>
+    '-'                '-'  '-'                       '-'  '-'
+  </div>
+  <div id="factory" style="position: absolute; right: 0;">FACTORY</div>
 </div>
 <script>
-  const truck = document.getElementById('truck');
-  let toggle = false;
-
-  truck.addEventListener('click', function() {
-    if (toggle) {
-      truck.style.transform = 'translateX(0)';
-    } else {
-      truck.style.transform = 'translateX(90%)';
-    }
-    toggle = !toggle;
-  });
+  window.onload = function() {
+    const truck = document.getElementById('truck');
+    truck.style.transform = 'translateX(' + (window.innerWidth - 100) + 'px)';
+  };
 </script>
 </body>
 </html>
