@@ -9,7 +9,6 @@
             background-color: black;
             color: green;
             font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
             margin: 0;
             padding: 0;
             display: flex;
@@ -17,44 +16,76 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
         #screen {
-            width: 80%;
-            max-width: 800px;
+            width: 100%;
+            max-width: 1000px;
             text-align: left;
             white-space: pre;
+            position: relative;
+        }
+        #truck {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: transform 2s;
         }
         #dock1, #dock2 {
             display: inline-block;
+            vertical-align: top;
         }
-        #truck {
-            display: inline-block;
-            cursor: pointer;
+        @media (max-width: 768px) {
+            #screen {
+                font-size: 10px;
+            }
+        }
+        @media (min-width: 769px) {
+            #screen {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div id="screen">
-        <div id="dock1">Dock 1</div>
-        <div id="truck" onclick="moveTruck()">[====]\n|    |\n[----]</div>
-        <div id="dock2">Dock 2</div>
+        <div id="dock1"> 
+           _________ 
+          |         |
+          |         |
+          |         |
+          |         |
+          |_________|
+        </div>
+        <div id="truck" onclick="moveTruck()"> 
+          _____________________________ 
+         |                             |
+         |                             |
+         |_________ _______ _________  |
+         |          |  |   |   |       |
+         |__________|__|___|___|_______|
+        </div>
+        <div id="dock2"> 
+           _________ 
+          |         |
+          |         |
+          |         |
+          |         |
+          |_________|
+        </div>
     </div>
     <script>
         let truck = document.getElementById('truck');
-        let dock1 = document.getElementById('dock1');
-        let dock2 = document.getElementById('dock2');
-        let screen = document.getElementById('screen');
         let atDock1 = true;
 
         function moveTruck() {
             if (atDock1) {
-                truck.style.transform = 'translateX(300px)';
+                truck.style.transform = 'translateX(500px) translateY(-50%)';
                 atDock1 = false;
-                setTimeout(() => { screen.innerHTML = "Dock 1\n\n\n\n[====]\n|    |\n[----]\n\n\n\nDock 2"; }, 1000);
             } else {
-                truck.style.transform = 'translateX(0)';
+                truck.style.transform = 'translateX(0) translateY(-50%)';
                 atDock1 = true;
-                setTimeout(() => { screen.innerHTML = "Dock 1\n[====]\n|    |\n[----]\nDock 2"; }, 1000);
             }
         }
     </script>
