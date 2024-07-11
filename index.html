@@ -2,42 +2,48 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Truck Animation</title>
+<title>tdisney</title>
 <style>
   body {
     background-color: black;
     color: green;
     font-family: monospace;
-    white-space: pre-wrap; /* Adjusts whitespace settings for better formatting */
+    white-space: pre; /* Keeps ASCII art formatting */
     overflow-x: hidden; /* Prevents horizontal scroll */
     line-height: 0.8; /* Reduces vertical spacing */
   }
+  #warehouse, #factory {
+    font-size: 12px; /* Larger text for visibility */
+  }
   #truck {
     position: absolute;
+    white-space: pre;
     left: 0;
     transition: transform 10s linear;
   }
   #scene {
     position: relative;
-    height: 200px;
+    height: 120px; /* Adjusted height to fit larger dock doors */
     width: 100%;
   }
   button {
     background-color: green;
     color: black;
     font-family: monospace;
-    padding: 5px 10px;
+    padding: 8px 15px;
     border: none;
     cursor: pointer;
+    margin-top: 20px;
   }
 </style>
 </head>
 <body>
 <div id="scene">
   <div id="warehouse" style="position: absolute; left: 0;">
-_____<br>
-|   |<br>
-|___|<br>
+   ___________<br>
+  |           |<br>
+  | DOCK DOOR |<br>
+  |___________|<br>
   </div>
   <div id="truck">
                     __________________________________________________________<br>
@@ -52,9 +58,10 @@ _____<br>
    ( o )`==="""""""""`( o )( o )     o                     `( o )( o )`<br>
   </div>
   <div id="factory" style="position: absolute; right: 0;">
-_____<br>
-|   |<br>
-|___|<br>
+   ___________<br>
+  |           |<br>
+  | DOCK DOOR |<br>
+  |___________|<br>
   </div>
 </div>
 <button id="shipButton">Ship</button>
