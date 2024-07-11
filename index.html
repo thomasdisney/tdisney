@@ -1,86 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>tdisney</title>
-<style>
-  body {
-    background-color: black;
-    color: green;
-    font-family: monospace;
-    white-space: pre; /* Keeps ASCII art formatting */
-    overflow-x: hidden; /* Prevents horizontal scroll */
-    line-height: 0.8; /* Reduces vertical spacing */
-  }
-  #warehouse, #factory {
-    font-size: 12px; /* Larger text for visibility */
-  }
-  #truck {
-    position: absolute;
-    white-space: pre;
-    left: 0;
-    transition: transform 10s linear;
-  }
-  #scene {
-    position: relative;
-    height: 120px; /* Adjusted height to fit larger dock doors */
-    width: 100%;
-  }
-  button {
-    background-color: green;
-    color: black;
-    font-family: monospace;
-    padding: 8px 15px;
-    border: none;
-    cursor: pointer;
-    margin-top: 20px;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tdisney</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="scene">
-  <div id="warehouse" style="position: absolute; left: 0;">
-   ___________<br>
-  |           |<br>
-  | DOCK DOOR |<br>
-  |___________|<br>
-  </div>
-  <div id="truck">
-                    __________________________________________________________<br>
-            /|     |                                                          |<br>
-            ||     |                                                          |<br>
-       .----|-----,|                                                          |<br>
-       ||  ||   ==||                                                          |<br>
-  .-----'--'|   ==||                                                          |<br>
-  |)-      ~|     ||__________________________________________________________|<br>
-  | ___     |     |____...==..._  >\_________________________________________|<br>
- [_/.-.\"--"-------- //.-.  .-.\\/   |/                   \\ .-.  .-. //<br>
-   ( o )`==="""""""""`( o )( o )     o                     `( o )( o )`<br>
-  </div>
-  <div id="factory" style="position: absolute; right: 0;">
-   ___________<br>
-  |           |<br>
-  | DOCK DOOR |<br>
-  |___________|<br>
-  </div>
-</div>
-<button id="shipButton">Ship</button>
-<script>
-  const truck = document.getElementById('truck');
-  const button = document.getElementById('shipButton');
-  let atFactory = false;
-
-  button.onclick = function() {
-    if (!atFactory) {
-      truck.style.transform = 'translateX(' + (window.innerWidth - truck.offsetWidth - 100) + 'px)';
-      atFactory = true;
-      button.textContent = 'Return';
-    } else {
-      truck.style.transform = 'translateX(0px)';
-      atFactory = false;
-      button.textContent = 'Ship';
-    }
-  };
-</script>
+    <div class="container">
+        <div class="big-square left"></div>
+        <div class="moving-square"></div>
+        <div class="big-square right"></div>
+    </div>
 </body>
 </html>
