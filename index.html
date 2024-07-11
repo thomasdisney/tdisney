@@ -49,7 +49,7 @@
             right: 5%;
         }
         #shipBtn {
-            bottom: 10%;
+            bottom: 20%;
             left: 50%;
             transform: translateX(-50%);
             cursor: pointer;
@@ -82,10 +82,16 @@
           |_________|
         </div>
         <div id="truck" class="art"> 
-           _______
-         /|_||_\`.__
-        (   _    _ _\
-        =`-(_)--(_)-'
+          ___________ 
+         |           |_________
+         |           |         |
+         |           |         |
+         |           |         |
+         |___________|         |
+         |  _______  |_________|
+        _|_|_______|_|_________|____
+       |  O O O O O O O O O O O O O |
+       `--(o)-------------------(o)--'
         </div>
         <div id="factory" class="art">
            __________
@@ -111,9 +117,9 @@
 
         function moveTruck() {
             if (animationRunning) {
-                truck.style.transform = 'translateX(800px) translateY(-50%)';
+                truck.style.transform = 'translateX(700px) translateY(-50%)';
                 setTimeout(() => {
-                    truck.style.transform = 'translateX(800px) translateY(50%)';
+                    truck.style.transform = 'translateX(700px) translateY(50%)';
                     setTimeout(() => {
                         truck.style.transform = 'translateX(0) translateY(50%)';
                         setTimeout(() => {
@@ -137,3 +143,4 @@
     </script>
 </body>
 </html>
+
