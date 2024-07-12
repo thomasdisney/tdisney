@@ -3,14 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tdisney</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Code Console Style Website</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <div class="big-square left"></div>
-        <div class="moving-square"></div>
-        <div class="big-square right"></div>
+    <div class="console">
+        <p class="console-line" id="typed-text"></p>
     </div>
+
+    <script>
+        const text = "tdisney.com";
+        let index = 0;
+
+        function type() {
+            if (index < text.length) {
+                document.getElementById('typed-text').innerHTML += text.charAt(index);
+                index++;
+                setTimeout(type, 100);
+            }
+        }
+
+        type();
+    </script>
 </body>
 </html>
