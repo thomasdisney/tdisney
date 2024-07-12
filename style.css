@@ -1,7 +1,8 @@
 body {
-    background-color: black;
-    color: #00FF00;
-    font-family: 'Courier New', Courier, monospace;
+    background-color: #000000;  /* Pure black background */
+    color: #00FF00;  /* Bright green text */
+    font-family: 'Courier New', Courier, monospace;  /* Monospaced font */
+    font-size: 1.5em;  /* Increased font size */
     margin: 0;
     height: 100vh;
     display: flex;
@@ -10,15 +11,15 @@ body {
 }
 
 .console {
-    background-color: #000;
-    color: #00FF00;
+    background-color: #000;  /* Console background color */
+    color: #00FF00;  /* Console text color */
     width: 80%;
     height: 80%;
-    border: 2px solid #00FF00;
+    border: 2px solid #00FF00;  /* Bright green border */
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
-    box-shadow: 0 0 10px #00FF00;
+    box-shadow: 0 0 10px #00FF00;  /* Green shadow effect */
 }
 
 .console-line {
