@@ -12,12 +12,13 @@
     </div>
 
     <script>
-        const text = "welcome to tdisney.com";
+        const text = "Welcome to tdisney.com\nMore coming soon";
         let index = 0;
 
         function type() {
             if (index < text.length) {
-                document.getElementById('typed-text').innerHTML += text.charAt(index);
+                const currentChar = text.charAt(index);
+                document.getElementById('typed-text').innerHTML += (currentChar === '\n' ? '<br>' : currentChar);
                 index++;
                 setTimeout(type, 100);
             }
