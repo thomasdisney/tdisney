@@ -3,28 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tdisney.com</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>SLIP ROBOTICS Warehouse Simulator</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="console">
-        <p class="console-line" id="typed-text"></p>
-    </div>
+    <header>
+        <h1>SLIP ROBOTICS</h1>
+    </header>
 
-    <script>
-        const text = "welcome to tdisney.com\nmore to come soon";
-        let index = 0;
+    <main>
+        <section id="config-panel">
+            <h2>Warehouse Configuration</h2>
+            <form id="warehouse-form">
+                <label for="num-bots">Number of SlipBots:</label>
+                <input type="number" id="num-bots" name="num-bots" min="1" max="100" required>
 
-        function type() {
-            if (index < text.length) {
-                const currentChar = text.charAt(index);
-                document.getElementById('typed-text').innerHTML += (currentChar === '\n' ? '<br>' : currentChar);
-                index++;
-                setTimeout(type, 100);
-            }
-        }
+                <label for="num-trailers">Number of Trailers:</label>
+                <input type="number" id="num-trailers" name="num-trailers" min="1" max="20" required>
 
-        type();
-    </script>
+                <label for="num-locations">Number of Locations:</label>
+                <input type="number" id="num-locations" name="num-locations" min="1" max="10" required>
+
+                <label for="num-doors">Number of Doors per Location:</label>
+                <input type="number" id="num-doors" name="num-doors" min="1" max="20" required>
+
+                <button type="submit">Generate Simulation</button>
+            </form>
+        </section>
+
+        <section id="simulation">
+            <h2>Warehouse Simulation</h2>
+            <div id="warehouse-layout">
+                <!-- The warehouse layout will be generated here by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
