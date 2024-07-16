@@ -1,121 +1,57 @@
-:root {
-    --primary-color: #2c3e50;
-    --secondary-color: #34495e;
-    --accent-color: #3498db;
-    --background-color: #ecf0f1;
-    --text-color: #2c3e50;
-}
-
 body {
-    font-family: 'Arial', sans-serif;
-    line-height: 1.6;
-    color: var(--text-color);
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: var(--background-color);
-}
-
-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-h1 {
-    color: var(--primary-color);
-}
-
-#config-panel {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-form {
-    display: grid;
-    gap: 15px;
-}
-
-label {
-    font-weight: bold;
-}
-
-input[type="number"] {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-button {
-    background-color: var(--accent-color);
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #2980b9;
-}
-
-#simulation {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-#warehouse-layout {
-    border: 2px solid var(--primary-color);
-    height: 600px;
-    display: flex;
-    margin-top: 20px;
-    position: relative;
-    overflow: hidden;
-}
-
-.doors-section {
-    width: 20%;
-    border-right: 2px solid var(--primary-color);
-    display: flex;
-    flex-direction: column;
-}
-
-.door {
-    background-color: var(--secondary-color);
-    border: 1px solid #ccc;
-    margin: 2px 0;
-}
-
-.trailer, .bot {
-    position: absolute;
-    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 12px;
-    cursor: move;
-    user-select: none;
-    transition: background-color 0.3s ease;
+    height: 100vh;
+}
+
+#warehouse-layout {
+    width: 800px;
+    height: 600px;
+    background-color: white;
+    border: 2px solid #ccc;
+    display: flex;
+}
+
+#doors-section {
+    width: 15%;
+    border-right: 2px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.door {
+    height: 18%;
+    background-color: #e0e0e0;
+    margin: 5px;
+}
+
+#trailers-section {
+    width: 85%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 .trailer {
-    background-color: rgba(52, 152, 219, 0.7);
-    border: 2px solid #2980b9;
+    height: 30%;
+    border: 2px dashed #ccc;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
 }
 
-.bot {
-    background-color: rgba(46, 204, 113, 0.7);
-    border: 2px solid #27ae60;
+.slipbot {
+    width: 30%;
+    height: 80%;
+    background-color: #a0a0a0;
+    cursor: move;
 }
 
-.bot.empty {
-    background-color: rgba(231, 76, 60, 0.7);
-    border: 2px solid #c0392b;
+.slipbot.empty {
+    background-color: #c0c0c0;
 }
