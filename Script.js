@@ -15,63 +15,82 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function generateWarehouseLayout(bots, trailers, locations, doors) {
         warehouseLayout.innerHTML = ''; // Clear previous layout
-        warehouseLayout.style.display = 'flex';
 
         // Create doors section
         const doorsSection = document.createElement('div');
         doorsSection.className = 'doors-section';
-        doorsSection.style.width = '20%';
-        doorsSection.style.borderRight = '2px solid #000';
 
         // Create doors
         for (let i = 0; i < doors; i++) {
             const door = document.createElement('div');
             door.className = 'door';
             door.style.height = `${100 / doors}%`;
-            door.style.backgroundColor = '#f0f0f0';
-            door.style.border = '1px solid #ccc';
-            door.style.margin = '2px 0';
             doorsSection.appendChild(door);
         }
 
         warehouseLayout.appendChild(doorsSection);
 
-        // Create trailers section
-        const trailersSection = document.createElement('div');
-        trailersSection.className = 'trailers-section';
-        trailersSection.style.width = '80%';
-        trailersSection.style.display = 'flex';
-        trailersSection.style.flexDirection = 'column';
-
         // Create trailers
         for (let i = 0; i < trailers; i++) {
             const trailer = document.createElement('div');
             trailer.className = 'trailer';
-            trailer.style.height = `${100 / trailers}%`;
-            trailer.style.display = 'flex';
-            trailer.style.justifyContent = 'space-around';
-            trailer.style.alignItems = 'center';
-            trailer.style.border = '1px dashed #000';
-            trailer.style.margin = '2px 0';
-
-            // Add Slipbots to trailers
-            for (let j = 0; j < 3; j++) {
-                const bot = document.createElement('div');
-                bot.className = 'bot';
-                bot.style.width = '30%';
-                bot.style.height = '80%';
-                bot.style.backgroundColor = i < trailers - 1 ? '#a0a0a0' : '#c0c0c0';
-                bot.style.display = 'flex';
-                bot.style.justifyContent = 'center';
-                bot.style.alignItems = 'center';
-                bot.style.fontSize = '12px';
-                bot.textContent = i < trailers - 1 ? 'Loaded Slipbot' : 'Empty Slipbot';
-                trailer.appendChild(bot);
-            }
-
-            trailersSection.appendChild(trailer);
+            trailer.textContent = `Trailer ${i + 1}`;
+            trailer.style.width = '120px';
+            trailer.style.height = '60px';
+            trailer.style.left = `${Math.random() * (warehouseLayout.offsetWidth - 140) + 140}px`;
+            trailer.style.top = `${Math.random() * (warehouseLayout.offsetHeight - 80)}px`;
+            warehouseLayout.appendChild(trailer);
+            makeDraggable(trailer);
         }
 
-        warehouseLayout.appendChild(trailersSection);
+        // Create bots
+        for (let i = 0; i < bots; i++) {
+            const bot = document.createElement('div');
+            bot.className = 'bot';
+            bot.textContent = `Bot ${i + 1}`;
+            bot.style.width = '60px';
+            bot.style.height = '60px';
+            bot.style.left = `${Math.random() * (warehouseLayout.offsetWidth - 80) + 140}px`;
+            bot.style.top = `${Math.random() * (warehouseLayout.offsetHeight - 80)}px`;
+            if (i >= bots - 3) {
+                bot.classList.add('empty');
+                bot.textContent += ' (Empty)';
+            }
+            warehouseLayout.appendChild(bot);
+            makeDraggable(bot);
+        }
     }
+
+    function makeDraggable(element) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        element.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            element.style.top = (element.offsetTop - pos2) + "px";
+            element.style.left = (element.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+
+    // Initial generation
+    generateWarehouseLayout(9, 3, 1, 5);
 });
