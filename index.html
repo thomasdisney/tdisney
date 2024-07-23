@@ -3,14 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bot simulator</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Thomas Disney - Personal Site</title>
+    <style>
+        body {
+            background-color: black;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 10px;
+        }
+        a {
+            color: #00ff00;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .article {
+            margin-bottom: 30px;
+        }
+        .article img, .article video {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-    <div id="warehouse-layout">
-        <div id="doors-section"></div>
-        <div id="trailers-section"></div>
+    <div class="container">
+        <header>
+            <h1>Thomas Disney</h1>
+            <p>Personal Site | Resume | Hub for Interests and Articles</p>
+            <a href="https://twitter.com/your_twitter_handle" target="_blank">Follow me on X</a>
+        </header>
+
+        <main>
+            <section id="about">
+                <h2>About Me</h2>
+                <p><!-- Add your brief introduction here --></p>
+            </section>
+
+            <section id="articles">
+                <h2>Articles</h2>
+                
+                <!-- Article 1 -->
+                <div class="article">
+                    <h3>Article Title 1</h3>
+                    <p>Article content goes here...</p>
+                    <img src="path_to_gif1.gif" alt="Description of GIF 1">
+                </div>
+
+                <!-- Article 2 -->
+                <div class="article">
+                    <h3>Article Title 2</h3>
+                    <p>Article content goes here...</p>
+                    <img src="path_to_gif2.gif" alt="Description of GIF 2">
+                </div>
+
+                <!-- Article 3 -->
+                <div class="article">
+                    <h3>Article Title 3</h3>
+                    <p>Article content goes here...</p>
+                    <img src="path_to_gif3.gif" alt="Description of GIF 3">
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Thomas Disney. All rights reserved.</p>
+        </footer>
     </div>
-    <script src="script.js"></script>
 </body>
 </html>
