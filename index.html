@@ -32,7 +32,6 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            justify-content: space-between;
         }
         h1, h2 {
             border-bottom: 1px solid #00c600;
@@ -55,8 +54,12 @@
             background-color: black;
         }
         /* Text glow effect */
-        body {
-            text-shadow: 0 0 5px #00c600, 0 0 10px #00c600;
+        body, h1, h2, p, a, footer {
+            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
+        }
+        .to-mars {
+            display: block;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -80,9 +83,6 @@
     </div>
     <footer>
         <p>&copy;tdisney.com | 2024 Thomas Disney. all rights reserved.</p>
-    </footer>
-</body>
-</html>
         <span class="to-mars">TO MARS!</span>
     </footer>
 </body>
