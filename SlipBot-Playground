@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tdisney.com</title>
+    <meta property="og:title" content="Thomas Disney">
+    <meta property="og:description" content="material flow enthusiast working on creating the physical internet with autonomy">
+    <meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
+    <meta property="og:url" content="https://thomasdisney.github.io">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: #00c600;
+            font-family: 'IBM Plex Mono', monospace;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            flex: 1 0 auto;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            border-bottom: 1px solid #00c600;
+            padding-bottom: 10px;
+        }
+        a {
+            color: #00ff00;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .article {
+            margin-bottom: 20px;
+        }
+        footer {
+            flex-shrink: 0;
+            text-align: center;
+            padding: 10px;
+            background-color: black;
+        }
+        /* Text glow effect */
+        body, h1, h2, p, a, footer {
+            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
+        }
+        .to-mars {
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Thomas Disney</h1>
+        </header>
+        <main>
+            <section id="about">
+                <p>material flow enthusiast working on creating the physical internet with autonomy.</p>
+                <a href="https://twitter.com/t0mdisney" target="_blank">follow me on X</a>
+            </section>
+            <section id="articles">
+                <h2>articles</h2>
+                <div class="article">
+                    <h3><a href="https://x.com/T0MDISNEY/status/1823783993017504050" target="_blank">Material Flow Incentives w/ Trailer-Loading Robots</a></h3>
+                </div>
+            </section>
+        </main>
+    </div>
+    <footer>
+        <p>&copy;tdisney.com | 2024 Thomas Disney. all rights reserved.</p>
+        <span class="to-mars">TO MARS!</span>
+    </footer>
+</body>
+</html>
