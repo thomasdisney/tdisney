@@ -123,13 +123,16 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     let isDragging = true; 
     let isRotating = false;
     let rotateDeg = 0;
+    let rotationCenterX, rotationCenterY;
 
     img.addEventListener('click', function(e) {
         if (isDragging || isRotating) {
             isDragging = false;
             isRotating = false;
+            document.body.style.cursor = 'default'; // Reset cursor when stopping drag or rotate
         } else {
             isDragging = true;
+            document.body.style.cursor = 'none'; // Hide cursor when starting to drag
         }
         e.preventDefault();
     });
@@ -138,7 +141,12 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         if (!isDragging) {
             isRotating = !isRotating;
             if (isRotating) {
-                updateRotationCenter();
+                // Capture the current center of the image as the rotation center
+                rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
+                rotationCenterY = img.offsetTop + img.offsetHeight / 2;
+                document.body.style.cursor = 'none'; // Hide cursor when starting to rotate
+            } else {
+                document.body.style.cursor = 'default'; // Show cursor when stopping rotation
             }
         }
         e.preventDefault();
@@ -147,11 +155,6 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     document.addEventListener('mousemove', drag);
 
-    function updateRotationCenter() {
-        rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
-        rotationCenterY = img.offsetTop + img.offsetHeight / 2;
-    }
-
     function drag(e) {
         if (isDragging) {
             e.preventDefault();
@@ -159,7 +162,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
         } else if (isRotating) {
             e.preventDefault();
-            updateRotationCenter();
+            // Use the fixed rotation center captured at double-click time
             let deltaX = e.clientX - rotationCenterX;
             let deltaY = e.clientY - rotationCenterY;
             let newAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
