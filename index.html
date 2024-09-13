@@ -121,7 +121,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.top = `${e.clientY}px`;
     document.body.appendChild(img);
 
-    let isDragging = true; // Start with dragging enabled
+    let isDragging = true; 
     let isRotating = false;
     let currentX = e.clientX;
     let currentY = e.clientY;
@@ -130,37 +130,30 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     let xOffset = 0;
     let yOffset = 0;
     let rotateDeg = 0;
-    let rotationCenterX = 0;
-    let rotationCenterY = 0;
 
-    // Event listeners for dragging and rotating
+    // Event listener for toggling states
     img.addEventListener('click', function(e) {
-        if (isDragging) {
-            // First click after creation stops dragging
+        if (isDragging || isRotating) {
             isDragging = false;
-            e.preventDefault();
-        } else if (!isRotating) {
-            // Single click toggles rotation mode when not dragging
-            isRotating = !isRotating;
-            if (isRotating) {
-                rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
-                rotationCenterY = img.offsetTop + img.offsetHeight / 2;
-            }
-            e.preventDefault();
+            isRotating = false;
+        } else {
+            isDragging = true;
         }
+        e.preventDefault();
     });
 
+    // Double click to toggle rotation
     img.addEventListener('dblclick', function(e) {
         if (!isDragging) {
-            // Double click toggles rotation mode
             isRotating = !isRotating;
             if (isRotating) {
+                // Reset rotation center to current image center when rotation starts
                 rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
                 rotationCenterY = img.offsetTop + img.offsetHeight / 2;
             }
-            e.preventDefault();
-            e.stopPropagation();
         }
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     document.addEventListener('mousemove', drag);
@@ -174,6 +167,9 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             setTranslateRotate(currentX, currentY, rotateDeg, img);
         } else if (isRotating) {
             e.preventDefault();
+            // Always update the rotation center to the current image position
+            rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
+            rotationCenterY = img.offsetTop + img.offsetHeight / 2;
             let deltaX = e.clientX - rotationCenterX;
             let deltaY = e.clientY - rotationCenterY;
             let newAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
@@ -189,7 +185,6 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
                 xOffset = currentX;
                 yOffset = currentY;
             }
-            // No change to isDragging or isRotating here, as they're toggled by click events
         }
     }
 
