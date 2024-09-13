@@ -123,10 +123,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     let isDragging = true; 
     let isRotating = false;
-    let currentX = e.clientX;
-    let currentY = e.clientY;
-    let initialX = e.clientX;
-    let initialY = e.clientY;
+    let initialX, initialY; // These will be set when dragging starts
     let xOffset = 0;
     let yOffset = 0;
     let rotateDeg = 0;
@@ -138,6 +135,9 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             isRotating = false;
         } else {
             isDragging = true;
+            // Reset initial offsets when starting to drag
+            initialX = e.clientX - img.offsetLeft;
+            initialY = e.clientY - img.offsetTop;
         }
         e.preventDefault();
     });
@@ -162,19 +162,20 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     function drag(e) {
         if (isDragging) {
             e.preventDefault();
-            currentX = e.clientX - initialX + xOffset;
-            currentY = e.clientY - initialY + yOffset;
+            // Calculate the position based on the initial click relative to the image
+            let currentX = e.clientX - initialX;
+            let currentY = e.clientY - initialY;
             setTranslateRotate(currentX, currentY, rotateDeg, img);
         } else if (isRotating) {
             e.preventDefault();
-            // Always update the rotation center to the current image position
+            // Update rotation center to the current image position
             rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
             rotationCenterY = img.offsetTop + img.offsetHeight / 2;
             let deltaX = e.clientX - rotationCenterX;
             let deltaY = e.clientY - rotationCenterY;
             let newAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
             rotateDeg = newAngle;
-            setTranslateRotate(xOffset, yOffset, rotateDeg, img);
+            setTranslateRotate(img.offsetLeft, img.offsetTop, rotateDeg, img);
         }
     }
 
@@ -182,8 +183,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         if (isDragging || isRotating) {
             e.preventDefault();
             if (isDragging) {
-                xOffset = currentX;
-                yOffset = currentY;
+                // Update offsets to current position for next drag
+                xOffset = img.offsetLeft;
+                yOffset = img.offsetTop;
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
             }
         }
     }
