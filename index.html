@@ -129,38 +129,29 @@ document.getElementById('addBotBtn').addEventListener('click', function() {
     let rotateDeg = 0;
     let clickCount = 0;
     let lastClickTime = 0;
+    let rotationStartAngle = 0;
 
-    // Double click for rotation only
-    img.addEventListener('click', function(e) {
-        const currentTime = new Date().getTime();
-        const timeSinceLastClick = currentTime - lastClickTime;
-        
-        if (timeSinceLastClick < 300) {  // 300ms threshold for double-click
-            clickCount++;
-            if (clickCount >= 2) {
-                isRotating = true;
-                isDragging = false;
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-        } else {
-            clickCount = 1;
-        }
-        lastClickTime = currentTime;
+    // Event listeners for dragging
+    img.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    // Double click for rotation
+    img.addEventListener('dblclick', function(e) {
+        isRotating = true;
+        isDragging = false;
+        rotationStartAngle = rotateDeg;
+        e.preventDefault();
+        e.stopPropagation();
     });
 
-    // Single click for movement
-    document.addEventListener('click', function(e) {
-        if (e.target === img && !isRotating) {
+    function dragStart(e) {
+        if (!isRotating) {
             isDragging = true;
-            isRotating = false;
             initialX = e.clientX - xOffset;
             initialY = e.clientY - yOffset;
-            document.addEventListener("mousemove", drag);
-            document.addEventListener("mouseup", dragEnd);
         }
-    });
+    }
 
     function drag(e) {
         if (isDragging) {
@@ -174,7 +165,8 @@ document.getElementById('addBotBtn').addEventListener('click', function() {
             let centerY = img.offsetTop + img.offsetHeight / 2;
             let deltaX = e.clientX - centerX;
             let deltaY = e.clientY - centerY;
-            rotateDeg = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+            let newAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+            rotateDeg = rotationStartAngle + (newAngle - rotationStartAngle);
             setTranslateRotate(xOffset, yOffset, rotateDeg, img);
         }
     }
@@ -188,8 +180,6 @@ document.getElementById('addBotBtn').addEventListener('click', function() {
             }
             isDragging = false;
             isRotating = false;
-            document.removeEventListener("mousemove", drag);
-            document.removeEventListener("mouseup", dragEnd);
         }
     }
 
