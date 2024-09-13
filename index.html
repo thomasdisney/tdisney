@@ -68,7 +68,7 @@
             user-select: none;
         }
         .rotate {
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
         }
         #addBotBtn {
             background-color: #000;
@@ -88,17 +88,17 @@
 <body>
     <header>
         <h1>Thomas Disney</h1>
+        <button id="addBotBtn">Add SlipBot</button>
     </header>
     <div class="container">
         <main>
-            <button id="addBotBtn">Add Bot</button>
             <section id="about">
                 <p>material flow enthusiast working on creating the physical internet with autonomy.</p>
                 <a href="https://twitter.com/t0mdisney" target="_blank">follow me on X</a>
             </section>
             <section id="articles">
                 <h2>articles</h2>
-                <div class="article">
+                <div class="articles">
                     <h3><a href="https://x.com/T0MDISNEY/status/1823783993017504050" target="_blank">Material Flow Incentives w/ Trailer-Loading Robots</a></h3>
                 </div>
             </section>
@@ -108,80 +108,94 @@
         <p>&copy; tdisney.com | 2024 Thomas Disney. All rights reserved.</p>
         <span class="to-mars">TO MARS!</span>
     </footer>
+</script>
+document.getElementById('addBotBtn').addEventListener('click', function() {
+    const img = document.createElement('img');
+    img.src = 'Slipbot.png';
+    img.classList.add('draggable', 'rotate');
+    img.style.width = '100px';
+    img.style.height = 'auto';
+    document.body.appendChild(img);
 
-    <script>
-    document.getElementById('addBotBtn').addEventListener('click', function() {
-        const img = document.createElement('img');
-        img.src = 'Slipbot.png';
-        img.classList.add('draggable', 'rotate');
-        img.style.width = '100px'; // Adjust size as needed
-        img.style.height = 'auto';
-        document.body.appendChild(img);
+    let isDragging = false;
+    let isRotating = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+    let rotateDeg = 0;
+    let clickCount = 0;
+    let lastClickTime = 0;
 
-        let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
-        let rotateDeg = 0;
-
-        img.addEventListener("mousedown", dragStart);
-        img.addEventListener("touchstart", dragStart);
-
-        function dragStart(e) {
-            if (e.type === "touchstart") {
-                initialX = e.touches[0].clientX - xOffset;
-                initialY = e.touches[0].clientY - yOffset;
-            } else {
-                initialX = e.clientX - xOffset;
-                initialY = e.clientY - yOffset;
-            }
-            isDragging = true;
-            document.addEventListener("mousemove", drag);
-            document.addEventListener("touchmove", drag);
-            document.addEventListener("mouseup", dragEnd);
-            document.addEventListener("touchend", dragEnd);
-        }
-
-        function drag(e) {
-            if (isDragging) {
+    // Double click for rotation only
+    img.addEventListener('click', function(e) {
+        const currentTime = new Date().getTime();
+        const timeSinceLastClick = currentTime - lastClickTime;
+        
+        if (timeSinceLastClick < 300) {  // 300ms threshold for double-click
+            clickCount++;
+            if (clickCount >= 2) {
+                isRotating = true;
+                isDragging = false;
                 e.preventDefault();
-                let currentX, currentY;
-                if (e.type === "touchmove") {
-                    currentX = e.touches[0].clientX - initialX;
-                    currentY = e.touches[0].clientY - initialY;
-                } else {
-                    currentX = e.clientX - initialX;
-                    currentY = e.clientY - initialY;
-                }
-                
-                // Calculate rotation
-                let centerX = img.offsetLeft + img.offsetWidth / 2;
-                let centerY = img.offsetTop + img.offsetHeight / 2;
-                let deltaX = e.clientX - centerX;
-                let deltaY = e.clientY - centerY;
-                rotateDeg = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
-                
-                setTranslateRotate(currentX, currentY, rotateDeg, img);
+                e.stopPropagation();
+                return false;
             }
+        } else {
+            clickCount = 1;
         }
+        lastClickTime = currentTime;
+    });
 
-        function dragEnd() {
-            isDragging = false;
-            xOffset = currentX;
-            yOffset = currentY;
-            document.removeEventListener("mousemove", drag);
-            document.removeEventListener("touchmove", drag);
-            document.removeEventListener("mouseup", dragEnd);
-            document.removeEventListener("touchend", dragEnd);
-        }
-
-        function setTranslateRotate(xPos, yPos, deg, el) {
-            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) rotate(${deg}deg)`;
+    // Single click for movement
+    document.addEventListener('click', function(e) {
+        if (e.target === img && !isRotating) {
+            isDragging = true;
+            isRotating = false;
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+            document.addEventListener("mousemove", drag);
+            document.addEventListener("mouseup", dragEnd);
         }
     });
-    </script>
+
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            setTranslateRotate(currentX, currentY, rotateDeg, img);
+        } else if (isRotating) {
+            e.preventDefault();
+            let centerX = img.offsetLeft + img.offsetWidth / 2;
+            let centerY = img.offsetTop + img.offsetHeight / 2;
+            let deltaX = e.clientX - centerX;
+            let deltaY = e.clientY - centerY;
+            rotateDeg = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+            setTranslateRotate(xOffset, yOffset, rotateDeg, img);
+        }
+    }
+
+    function dragEnd(e) {
+        if (isDragging || isRotating) {
+            e.preventDefault();
+            if (isDragging) {
+                xOffset = currentX;
+                yOffset = currentY;
+            }
+            isDragging = false;
+            isRotating = false;
+            document.removeEventListener("mousemove", drag);
+            document.removeEventListener("mouseup", dragEnd);
+        }
+    }
+
+    function setTranslateRotate(xPos, yPos, deg, el) {
+        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) rotate(${deg}deg)`;
+    }
+});
+        </script>
 </body>
 </html>
