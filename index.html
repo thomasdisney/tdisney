@@ -87,101 +87,14 @@
 </head>
 <body>
     <header>
-        <h1>Thomas Disney</h1>
+        <h1>Thomas Disney</h1>   <button id="addBotBtn">Add Bot</button>
     </header>
     <div class="container">
         <main>
-            <button id="addBotBtn">Add Bot</button>
             <section id="about">
                 <p>material flow enthusiast working on creating the physical internet with autonomy.</p>
                 <a href="https://twitter.com/t0mdisney" target="_blank">follow me on X</a>
             </section>
             <section id="articles">
                 <h2>articles</h2>
-                <div class="article">
-                    <h3><a href="https://x.com/T0MDISNEY/status/1823783993017504050" target="_blank">Material Flow Incentives w/ Trailer-Loading Robots</a></h3>
-                </div>
-            </section>
-        </main>
-    </div>
-    <footer>
-        <p>&copy; tdisney.com | 2024 Thomas Disney. All rights reserved.</p>
-        <span class="to-mars">TO MARS!</span>
-    </footer>
-
-    <script>
-    document.getElementById('addBotBtn').addEventListener('click', function() {
-        const img = document.createElement('img');
-        img.src = 'Slipbot.png';
-        img.classList.add('draggable', 'rotate');
-        img.style.width = '100px'; // Adjust size as needed
-        img.style.height = 'auto';
-        document.body.appendChild(img);
-
-        let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
-        let rotateDeg = 0;
-
-        img.addEventListener("mousedown", dragStart);
-        img.addEventListener("touchstart", dragStart);
-
-        function dragStart(e) {
-            if (e.type === "touchstart") {
-                initialX = e.touches[0].clientX - xOffset;
-                initialY = e.touches[0].clientY - yOffset;
-            } else {
-                initialX = e.clientX - xOffset;
-                initialY = e.clientY - yOffset;
-            }
-            isDragging = true;
-            document.addEventListener("mousemove", drag);
-            document.addEventListener("touchmove", drag);
-            document.addEventListener("mouseup", dragEnd);
-            document.addEventListener("touchend", dragEnd);
-        }
-
-        function drag(e) {
-            if (isDragging) {
-                e.preventDefault();
-                let currentX, currentY;
-                if (e.type === "touchmove") {
-                    currentX = e.touches[0].clientX - initialX;
-                    currentY = e.touches[0].clientY - initialY;
-                } else {
-                    currentX = e.clientX - initialX;
-                    currentY = e.clientY - initialY;
-                }
-                
-                // Calculate rotation
-                let centerX = img.offsetLeft + img.offsetWidth / 2;
-                let centerY = img.offsetTop + img.offsetHeight / 2;
-                let deltaX = e.clientX - centerX;
-                let deltaY = e.clientY - centerY;
-                rotateDeg = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
-                
-                setTranslateRotate(currentX, currentY, rotateDeg, img);
-            }
-        }
-
-        function dragEnd() {
-            isDragging = false;
-            xOffset = currentX;
-            yOffset = currentY;
-            document.removeEventListener("mousemove", drag);
-            document.removeEventListener("touchmove", drag);
-            document.removeEventListener("mouseup", dragEnd);
-            document.removeEventListener("touchend", dragEnd);
-        }
-
-        function setTranslateRotate(xPos, yPos, deg, el) {
-            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) rotate(${deg}deg)`;
-        }
-    });
-    </script>
-</body>
-</html>
+                <div class=
