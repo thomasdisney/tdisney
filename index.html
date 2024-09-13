@@ -123,7 +123,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     let isDragging = true; 
     let isRotating = false;
-    let initialX, initialY; // These will be set when dragging starts
+    let initialX, initialY;
     let xOffset = 0;
     let yOffset = 0;
     let rotateDeg = 0;
@@ -147,9 +147,8 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         if (!isDragging) {
             isRotating = !isRotating;
             if (isRotating) {
-                // Reset rotation center to current image center when rotation starts
-                rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
-                rotationCenterY = img.offsetTop + img.offsetHeight / 2;
+                // Set rotation center to current image center
+                updateRotationCenter();
             }
         }
         e.preventDefault();
@@ -158,6 +157,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', dragEnd);
+
+    function updateRotationCenter() {
+        rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
+        rotationCenterY = img.offsetTop + img.offsetHeight / 2;
+    }
 
     function drag(e) {
         if (isDragging) {
@@ -168,9 +172,8 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             setTranslateRotate(currentX, currentY, rotateDeg, img);
         } else if (isRotating) {
             e.preventDefault();
-            // Update rotation center to the current image position
-            rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
-            rotationCenterY = img.offsetTop + img.offsetHeight / 2;
+            // Always update the rotation center before calculating new rotation
+            updateRotationCenter();
             let deltaX = e.clientX - rotationCenterX;
             let deltaY = e.clientY - rotationCenterY;
             let newAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
