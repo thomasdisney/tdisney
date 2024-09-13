@@ -110,7 +110,6 @@
   </body>
 <script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
-    // Create the image at the cursor's location
     const img = document.createElement('img');
     img.src = 'Slipbot.png';
     img.classList.add('draggable', 'rotate');
@@ -123,31 +122,22 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     let isDragging = true; 
     let isRotating = false;
-    let initialX, initialY;
-    let xOffset = 0;
-    let yOffset = 0;
     let rotateDeg = 0;
 
-    // Event listener for toggling states
     img.addEventListener('click', function(e) {
         if (isDragging || isRotating) {
             isDragging = false;
             isRotating = false;
         } else {
             isDragging = true;
-            // Reset initial offsets when starting to drag
-            initialX = e.clientX - img.offsetLeft;
-            initialY = e.clientY - img.offsetTop;
         }
         e.preventDefault();
     });
 
-    // Double click to toggle rotation
     img.addEventListener('dblclick', function(e) {
         if (!isDragging) {
             isRotating = !isRotating;
             if (isRotating) {
-                // Set rotation center to current image center
                 updateRotationCenter();
             }
         }
@@ -156,7 +146,6 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     });
 
     document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', dragEnd);
 
     function updateRotationCenter() {
         rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
@@ -166,32 +155,16 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     function drag(e) {
         if (isDragging) {
             e.preventDefault();
-            // Calculate the position based on the initial click relative to the image
-            let currentX = e.clientX - initialX;
-            let currentY = e.clientY - initialY;
-            setTranslateRotate(currentX, currentY, rotateDeg, img);
+            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
+            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
         } else if (isRotating) {
             e.preventDefault();
-            // Always update the rotation center before calculating new rotation
             updateRotationCenter();
             let deltaX = e.clientX - rotationCenterX;
             let deltaY = e.clientY - rotationCenterY;
             let newAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
             rotateDeg = newAngle;
             setTranslateRotate(img.offsetLeft, img.offsetTop, rotateDeg, img);
-        }
-    }
-
-    function dragEnd(e) {
-        if (isDragging || isRotating) {
-            e.preventDefault();
-            if (isDragging) {
-                // Update offsets to current position for next drag
-                xOffset = img.offsetLeft;
-                yOffset = img.offsetTop;
-                initialX = e.clientX - xOffset;
-                initialY = e.clientY - yOffset;
-            }
         }
     }
 
