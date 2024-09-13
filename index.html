@@ -131,55 +131,55 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     let yOffset = 0;
     let rotateDeg = 0;
 
-    // Event listener for toggling states
-    img.addEventListener('click', function(e) {
-        if (isDragging || isRotating) {
-            isDragging = false;
-            isRotating = false;
-        } else {
-            isDragging = true;
+    // Global click listener to check which image is clicked
+    document.addEventListener('click', function(globalClickEvent) {
+        if (globalClickEvent.target === img) {
+            if (isDragging || isRotating) {
+                isDragging = false;
+                isRotating = false;
+            } else {
+                isDragging = true;
+            }
+            globalClickEvent.preventDefault();
         }
-        e.preventDefault();
     });
 
-    // Double click to toggle rotation
-    img.addEventListener('dblclick', function(e) {
-        if (!isDragging) {
+    // Global double click listener
+    document.addEventListener('dblclick', function(globalDblClickEvent) {
+        if (globalDblClickEvent.target === img && !isDragging) {
             isRotating = !isRotating;
             if (isRotating) {
-                // Reset rotation center to current image center when rotation starts
                 rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
                 rotationCenterY = img.offsetTop + img.offsetHeight / 2;
             }
+            globalDblClickEvent.preventDefault();
+            globalDblClickEvent.stopPropagation();
         }
-        e.preventDefault();
-        e.stopPropagation();
     });
 
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', dragEnd);
 
     function drag(e) {
-        if (isDragging) {
+        if (document.activeElement === img && (isDragging || isRotating)) { // Check if this image is focused
             e.preventDefault();
-            currentX = e.clientX - initialX + xOffset;
-            currentY = e.clientY - initialY + yOffset;
+            if (isDragging) {
+                currentX = e.clientX - initialX + xOffset;
+                currentY = e.clientY - initialY + yOffset;
+            } else if (isRotating) {
+                rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
+                rotationCenterY = img.offsetTop + img.offsetHeight / 2;
+                let deltaX = e.clientX - rotationCenterX;
+                let deltaY = e.clientY - rotationCenterY;
+                let newAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+                rotateDeg = newAngle;
+            }
             setTranslateRotate(currentX, currentY, rotateDeg, img);
-        } else if (isRotating) {
-            e.preventDefault();
-            // Always update the rotation center to the current image position
-            rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
-            rotationCenterY = img.offsetTop + img.offsetHeight / 2;
-            let deltaX = e.clientX - rotationCenterX;
-            let deltaY = e.clientY - rotationCenterY;
-            let newAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
-            rotateDeg = newAngle;
-            setTranslateRotate(xOffset, yOffset, rotateDeg, img);
         }
     }
 
     function dragEnd(e) {
-        if (isDragging || isRotating) {
+        if (document.activeElement === img && (isDragging || isRotating)) {
             e.preventDefault();
             if (isDragging) {
                 xOffset = currentX;
