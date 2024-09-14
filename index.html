@@ -118,6 +118,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.position = 'absolute';
     img.style.left = `${e.clientX}px`;
     img.style.top = `${e.clientY}px`;
+    img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
     let isDragging = true; 
@@ -139,6 +140,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             let centerX = img.offsetLeft + img.offsetWidth / 2;
             let centerY = img.offsetTop + img.offsetHeight / 2;
             rotateDeg += 45; 
+            if (rotateDeg >= 360) rotateDeg -= 360; 
             setTranslateRotate(centerX, centerY, rotateDeg, img);
         }
         e.preventDefault();
@@ -156,10 +158,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     }
 
     function setTranslateRotate(centerX, centerY, deg, el) {
-        let x = centerX - (el.offsetWidth / 2);
-        let y = centerY - (el.offsetHeight / 2);
-        el.style.transformOrigin = 'center center';
-        el.style.transform = `translate(${x}px, ${y}px) rotate(${deg}deg)`;
+        el.style.transform = `rotate(${deg}deg)`; 
     }
 });
 </script>
