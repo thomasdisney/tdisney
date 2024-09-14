@@ -121,12 +121,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = True; 
+    let isDragging = true; 
     let rotateDeg = 0;
-    let cursor: none;
 
     img.addEventListener('click', function(e) {
-        isDragging = !isDragging; // Toggle dragging on single click
+        isDragging = !isDragging; 
         if (isDragging) {
             img.classList.add('dragging');
         } else {
@@ -139,6 +138,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         let centerX = img.offsetLeft + img.offsetWidth / 2;
         let centerY = img.offsetTop + img.offsetHeight / 2;
         rotateDeg += 45; 
+        if (rotateDeg >= 360) rotateDeg -= 360; 
         setTranslateRotate(centerX, centerY, rotateDeg, img);
         e.preventDefault();
         e.stopPropagation();
@@ -158,5 +158,17 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         el.style.transform = `rotate(${deg}deg)`; 
     }
 });
+
+// Add CSS dynamically with JavaScript
+const style = document.createElement('style');
+style.textContent = `
+    .dragging {
+        cursor: none !important;
+    }
+    .draggable {
+        cursor: move;
+    }
+`;
+document.head.appendChild(style);
 </script>
 </html>
