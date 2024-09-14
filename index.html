@@ -83,11 +83,6 @@
             background-color: #00c600;
             color: #000;
         }
-        
-document.head.insertAdjacentHTML('beforeend', `<style>
-    .dragging {
-        cursor: none !important;
-    }
     </style>
 </head>
 <body>
@@ -126,8 +121,9 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = false; 
+    let isDragging = True; 
     let rotateDeg = 0;
+    let cursor: none;
 
     img.addEventListener('click', function(e) {
         isDragging = !isDragging; // Toggle dragging on single click
@@ -143,7 +139,6 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         let centerX = img.offsetLeft + img.offsetWidth / 2;
         let centerY = img.offsetTop + img.offsetHeight / 2;
         rotateDeg += 45; 
-        if (rotateDeg >= 360) rotateDeg -= 360; 
         setTranslateRotate(centerX, centerY, rotateDeg, img);
         e.preventDefault();
         e.stopPropagation();
