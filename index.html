@@ -121,14 +121,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     document.body.appendChild(img);
 
     let isDragging = true; 
-    let isRotating = false;
     let rotateDeg = 0;
-    let rotationCenterX, rotationCenterY;
 
     img.addEventListener('click', function(e) {
-        if (isDragging || isRotating) {
+        if (isDragging) {
             isDragging = false;
-            isRotating = false;
             document.body.style.cursor = 'default'; 
         } else {
             isDragging = true;
@@ -139,12 +136,8 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     img.addEventListener('dblclick', function(e) {
         if (!isDragging) {
-            isRotating = !isRotating;
-            if (isRotating) {
-                rotationCenterX = img.offsetLeft + img.offsetWidth / 2;
-                rotationCenterY = img.offsetTop + img.offsetHeight / 2;
-            }
-            document.body.style.cursor = 'default';
+            rotateDeg += 45;
+            setTranslateRotate(img.offsetLeft, img.offsetTop, rotateDeg, img);
         }
         e.preventDefault();
         e.stopPropagation();
@@ -157,13 +150,6 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             e.preventDefault();
             img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
             img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
-        } else if (isRotating) {
-            e.preventDefault();
-            let deltaX = e.clientX - rotationCenterX;
-            let deltaY = e.clientY - rotationCenterY;
-            let newAngle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
-            rotateDeg = newAngle;
-            setTranslateRotate(img.offsetLeft, img.offsetTop, rotateDeg, img);
         }
     }
 
