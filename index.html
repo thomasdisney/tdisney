@@ -83,6 +83,12 @@
             background-color: #00c600;
             color: #000;
         }
+        
+document.head.insertAdjacentHTML('beforeend', `<style>
+    .dragging {
+        cursor: none !important;
+    }
+</style>`);
     </style>
 </head>
 <body>
@@ -124,27 +130,24 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     let isDragging = false; 
     let rotateDeg = 0;
 
-    img.addEventListener('mousedown', function(e) {
-        isDragging = true;
-        img.classList.add('dragging');
+    img.addEventListener('click', function(e) {
+        isDragging = !isDragging; // Toggle dragging on single click
+        if (isDragging) {
+            img.classList.add('dragging');
+        } else {
+            img.classList.remove('dragging');
+        }
         e.preventDefault();
     });
 
-    document.addEventListener('mouseup', function() {
-        isDragging = false;
-        img.classList.remove('dragging');
-    });
-
     img.addEventListener('dblclick', function(e) {
-        if (isDragging) {
-            let centerX = img.offsetLeft + img.offsetWidth / 2;
-            let centerY = img.offsetTop + img.offsetHeight / 2;
-            rotateDeg += 45; 
-            if (rotateDeg >= 360) rotateDeg -= 360; 
-            setTranslateRotate(centerX, centerY, rotateDeg, img);
-            e.preventDefault();
-            e.stopPropagation();
-        }
+        let centerX = img.offsetLeft + img.offsetWidth / 2;
+        let centerY = img.offsetTop + img.offsetHeight / 2;
+        rotateDeg += 45; 
+        if (rotateDeg >= 360) rotateDeg -= 360; 
+        setTranslateRotate(centerX, centerY, rotateDeg, img);
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     document.addEventListener('mousemove', drag);
@@ -158,15 +161,8 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     }
 
     function setTranslateRotate(centerX, centerY, deg, el) {
-        el.style.transform = `translate(-50%, -50%) rotate(${deg}deg) translate(50%, 50%)`;
+        el.style.transform = `rotate(${deg}deg)`; 
     }
 });
-
-// CSS for cursor
-document.head.insertAdjacentHTML('beforeend', `<style>
-    .dragging {
-        cursor: none !important;
-    }
-</style>`);
 </script>
 </html>
