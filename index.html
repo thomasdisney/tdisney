@@ -136,8 +136,10 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     img.addEventListener('dblclick', function(e) {
         if (!isDragging) {
-            rotateDeg += 45;
-            setTranslateRotate(img.offsetLeft, img.offsetTop, rotateDeg, img);
+            let centerX = img.offsetLeft + img.offsetWidth / 2;
+            let centerY = img.offsetTop + img.offsetHeight / 2;
+            rotateDeg += 45; 
+            setTranslateRotate(centerX, centerY, rotateDeg, img);
         }
         e.preventDefault();
         e.stopPropagation();
@@ -153,8 +155,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         }
     }
 
-    function setTranslateRotate(xPos, yPos, deg, el) {
-        el.style.transform = `translate(${xPos}px, ${yPos}px) rotate(${deg}deg)`;
+    function setTranslateRotate(centerX, centerY, deg, el) {
+        let x = centerX - (el.offsetWidth / 2);
+        let y = centerY - (el.offsetHeight / 2);
+        el.style.transformOrigin = 'center center';
+        el.style.transform = `translate(${x}px, ${y}px) rotate(${deg}deg)`;
     }
 });
 </script>
