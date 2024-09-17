@@ -33,9 +33,20 @@
             margin: 0 auto;
             padding: 20px;
         }
-        h1, h2 {
-            border-bottom: 1px solid #00c600;
-            padding-bottom: 10px;
+        h1, h2, button, input {
+            color: #00c600;
+            font-family: 'IBM Plex Mono', monospace;
+            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
+        }
+        button, input[type="file"]::file-selector-button {
+            background-color: #000;
+            border: 1px solid #00c600;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        button:hover, input[type="file"]::file-selector-button:hover {
+            background-color: #00c600;
+            color: #000;
         }
         a {
             color: #00ff00;
@@ -53,10 +64,6 @@
             padding: 10px;
             background-color: black;
         }
-        /* Text glow effect */
-        body, h1, h2, p, a, footer {
-            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
-        }
         .to-mars {
             display: block;
             margin-top: 5px;
@@ -70,24 +77,13 @@
         .rotate {
             transition: transform 0.2s ease;
         }
-        #addBotBtn {
-            background-color: #000;
-            color: #00c600;
-            border: 1px solid #00c600;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-family: 'IBM Plex Mono', monospace;
-            margin-bottom: 20px;
-        }
-        #addBotBtn:hover {
-            background-color: #00c600;
-            color: #000;
-        }
     </style>
 </head>
 <body>
     <header>
-        <h1>SlipBot Simulator <button id="addBotBtn">Add SlipBot</button> </h1>
+        <h1>SlipBot Simulator</h1>
+        <button id="addBotBtn">Add SlipBot</button>
+        <input type="file" id="backgroundUpload" accept="image/*" style="margin-top: 10px;">
     </header>
     <div class="container">
         <main>
@@ -115,10 +111,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     let rotateDeg = 0;
 
     img.addEventListener('click', function(e) {
+        if (e.detail === 3 && isDragging) { // Check for triple click
+            img.src = 'slipbot_loaded.png';
+        }
         isDragging = !isDragging; 
-        if (isDragging) {
-            img.classList.add('dragging');
-        } else {
+        if (!isDragging) {
             img.classList.remove('dragging');
         }
         e.preventDefault();
@@ -145,6 +142,18 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     function setTranslateRotate(centerX, centerY, deg, el) {
         el.style.transform = `rotate(${deg}deg)`; 
+    }
+});
+
+document.getElementById('backgroundUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            document.body.style.backgroundImage = `url(${event.target.result})`;
+            document.body.style.backgroundSize = 'cover';
+        }
+        reader.readAsDataURL(file);
     }
 });
 
