@@ -120,7 +120,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = false, rotateDeg = 0, isImageLoaded = false;
+    let isDragging = true, rotateDeg = 0, isImageLoaded = false;
 
     img.addEventListener('click', function(e) {
         if (e.detail === 3) { 
@@ -128,7 +128,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             isImageLoaded = !isImageLoaded;
             img.style.width = isImageLoaded ? '80px' : '100px'; 
             img.style.height = 'auto';
-            isDragging = true; // Maintain dragging state after triple click
+            isDragging = true; 
         } else if (e.detail === 2) {
             rotateDeg += 45;
             setTranslateRotate(rotateDeg, img);
@@ -182,10 +182,10 @@ style.textContent = `
         cursor: none !important;
     }
     .draggable {
-        cursor: grab;
+        cursor: none !important;
     }
     .draggable:active {
-        cursor: grabbing;
+        cursor: none !important;
     }
 `;
 document.head.appendChild(style);
