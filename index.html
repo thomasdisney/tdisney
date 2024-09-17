@@ -33,13 +33,14 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            z-index: 2; /* Ensure content is above background image */
         }
         h1, h2, button, input {
             color: #00c600;
             font-family: 'IBM Plex Mono', monospace;
             text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
         }
-        button, input[type="file"], input[type="range"] {
+        button, input[type="file"]::file-selector-button, input[type="range"] {
             background-color: #000;
             border: 1px solid #00c600;
             padding: 10px 20px;
@@ -109,32 +110,25 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
     img.src = 'Slipbot.png';
     img.classList.add('draggable', 'rotate');
-    img.style.width = '100px';
+    img.style.width = '100px'; // Ensure both images have same dimensions
     img.style.height = 'auto';
     img.style.left = `${e.clientX}px`;
     img.style.top = `${e.clientY}px`;
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = true; 
-    let currentImage = 0; // 0 for Slipbot, 1 for SlipBot_Loaded
+    let rotateDeg = 0;
 
     img.addEventListener('click', function(e) {
-        if (e.detail === 3 && isDragging) { 
-            currentImage = (currentImage + 1) % 2;
-            img.src = currentImage ? 'SlipBot_Loaded.png' : 'Slipbot.png';
-        }
-        isDragging = !isDragging; 
-        if (!isDragging) {
-            img.classList.remove('dragging');
+        if (e.detail === 3) { 
+            img.src = img.src.includes('Loaded') ? 'Slipbot.png' : 'SlipBot_Loaded.png';
         }
         e.preventDefault();
     });
 
     img.addEventListener('dblclick', function(e) {
-        let centerX = img.offsetLeft + img.offsetWidth / 2;
-        let centerY = img.offsetTop + img.offsetHeight / 2;
-        setTranslateRotate(centerX, centerY, 45, img);
+        rotateDeg += 45;
+        setTranslateRotate(rotateDeg, img);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -142,14 +136,12 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     document.addEventListener('mousemove', drag);
 
     function drag(e) {
-        if (isDragging) {
-            e.preventDefault();
-            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
-            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
-        }
+        e.preventDefault();
+        img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
+        img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
     }
 
-    function setTranslateRotate(centerX, centerY, deg, el) {
+    function setTranslateRotate(deg, el) {
         el.style.transform = `rotate(${deg}deg)`; 
     }
 });
@@ -162,7 +154,7 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
             const backgroundImage = document.getElementById('backgroundImage');
             backgroundImage.src = event.target.result;
             backgroundImage.style.display = 'block';
-            document.getElementById('scaleBackground').value = 100;
+            document.getElementById('scaleBackground').value = 50; // Default scale to 50%
         }
         reader.readAsDataURL(file);
     }
@@ -170,7 +162,7 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
 
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
     const scaleValue = e.target.value;
-    document.getElementById('backgroundImage').style.transform = `scale(${scaleValue/100})`;
+    document.getElementById('backgroundImage').style.transform = `scale(${scaleValue/100}) translateZ(0)`; // translateZ(0) for hardware acceleration
 });
 
 const style = document.createElement('style');
@@ -179,7 +171,7 @@ style.textContent = `
         cursor: none !important;
     }
     .draggable {
-        cursor: none;
+        cursor: move;
     }
 `;
 document.head.appendChild(style);
