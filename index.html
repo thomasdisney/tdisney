@@ -138,18 +138,16 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
 
     img.addEventListener('click', function(e) {
+        e.preventDefault();
         if (e.detail === 1) {
             isDragging = !isDragging;
         } else if (e.detail === 2) {
             rotateDeg += 45;
             setTranslateRotate(rotateDeg, img);
-        } else if (e.detail === 3) { 
+        } else if (e.detail === 3) {
             img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
             isImageLoaded = !isImageLoaded;
-            img.style.width = 'auto'; 
-            img.style.height = '100px';
         }
-        e.preventDefault();
     });
 
     document.addEventListener('mousemove', drag);
