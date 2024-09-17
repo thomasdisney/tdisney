@@ -82,8 +82,9 @@
 <body>
     <header>
         <h1>SlipBot Simulator</h1>
-        <button id="addBotBtn">Add a SlipBot</button>
+        <button id="addBotBtn">Add SlipBot</button>
         <input type="file" id="backgroundUpload" accept="image/*" style="margin-top: 10px;">
+        <input type="range" id="scaleBackground" min="10" max="300" value="100" style="margin-top: 10px;">
     </header>
     <div class="container">
         <main>
@@ -93,8 +94,34 @@
     <footer>
         <p>&copy; tdisney.com 2024</p>
     </footer>
+    <div id="backgroundContainer">
+        <img id="backgroundImage" src="" alt="Background">
+    </div>
   </body>
 <script>
+document.getElementById('addBotBtn').addEventListener('click', function(e) {
+    // ... (existing SlipBot code, keep unchanged)
+});
+
+document.getElementById('backgroundUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = document.getElementById('backgroundImage');
+            img.src = event.target.result;
+            img.onload = function() {
+                document.getElementById('scaleBackground').value = 100; // Reset scale on new image load
+            };
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('scaleBackground').addEventListener('input', function(e) {
+    const scaleValue = e.target.value;
+    document.getElementById('backgroundImage').style.transform = `scale(${scaleValue/100})`;
+});
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
     img.src = 'Slipbot.png';
