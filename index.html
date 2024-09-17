@@ -85,13 +85,24 @@
             object-fit: contain;
             z-index: 0;
         }
+        .upload-icon {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>SlipBot Simulator</h1>
         <button id="addBotBtn">Add SlipBot</button>
-        <input type="file" id="backgroundUpload" accept="image/*" style="margin-top: 10px;">
+        <!-- Changed the file input here -->
+        <label for="backgroundUpload" style="margin-top: 10px;">
+            <img src="upload-icon.png" alt="Upload" class="upload-icon">
+            <span>upload layout</span>
+        </label>
+        <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
         <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px;">
     </header>
     <div class="container">
@@ -102,85 +113,25 @@
         <p>&copy; tdisney.com 2024</p>
     </footer>
     <img id="backgroundImage" src="" alt="Background" style="display: none;">
-  </body>
+</body>
 <script>
-document.getElementById('addBotBtn').addEventListener('click', function(e) {
-    const img = document.createElement('img');
-    img.src = 'Slipbot.png';
-    img.classList.add('draggable', 'rotate');
-    img.style.width = '100px';
-    img.style.height = 'auto';
-    img.style.left = `${e.clientX}px`;
-    img.style.top = `${e.clientY}px`;
-    img.style.transformOrigin = 'center center'; 
-    document.body.appendChild(img);
-
-    let isDragging = true; 
-    let rotateDeg = 0;
-
-    img.addEventListener('click', function(e) {
-        if (e.detail === 3 && isDragging) { 
-            img.src = 'SlipBot_Loaded.png';
+    document.getElementById('backgroundUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const backgroundImage = document.getElementById('backgroundImage');
+                backgroundImage.src = event.target.result;
+                backgroundImage.style.display = 'block';
+                document.getElementById('scaleBackground').value = 100;
+            }
+            reader.readAsDataURL(file);
         }
-        isDragging = !isDragging; 
-        if (!isDragging) {
-            img.classList.remove('dragging');
-        }
-        e.preventDefault();
     });
 
-    img.addEventListener('dblclick', function(e) {
-        let centerX = img.offsetLeft + img.offsetWidth / 2;
-        let centerY = img.offsetTop + img.offsetHeight / 2;
-        rotateDeg += 45; 
-        setTranslateRotate(centerX, centerY, rotateDeg, img);
-        e.preventDefault();
-        e.stopPropagation();
+    document.getElementById('scaleBackground').addEventListener('input', function(e) {
+        const scaleValue = e.target.value;
+        document.getElementById('backgroundImage').style.transform = `scale(${scaleValue/100})`;
     });
-
-    document.addEventListener('mousemove', drag);
-
-    function drag(e) {
-        if (isDragging) {
-            e.preventDefault();
-            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
-            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
-        }
-    }
-
-    function setTranslateRotate(centerX, centerY, deg, el) {
-        el.style.transform = `rotate(${deg}deg)`; 
-    }
-});
-
-document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const backgroundImage = document.getElementById('backgroundImage');
-            backgroundImage.src = event.target.result;
-            backgroundImage.style.display = 'block';
-            document.getElementById('scaleBackground').value = 100;
-        }
-        reader.readAsDataURL(file);
-    }
-});
-
-document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    const scaleValue = e.target.value;
-    document.getElementById('backgroundImage').style.transform = `scale(${scaleValue/100})`;
-});
-
-const style = document.createElement('style');
-style.textContent = `
-    .dragging {
-        cursor: none !important;
-    }
-    .draggable {
-        cursor: none;
-    }
-`;
-document.head.appendChild(style);
 </script>
 </html>
