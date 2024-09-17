@@ -43,9 +43,10 @@
             background-color: #000;
             border: 1px solid #00c600;
             padding: 10px 20px;
-            cursor: pointer;
+            cursor: grabbing;
             font-size: 1em; 
-            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; /* Added glow effect */
+            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
+            border-radius: 5px; /* Adds rounded corners */
         }
         button:hover, input[type="file"]::file-selector-button:hover, input[type="range"]:hover {
             background-color: #00c600;
@@ -97,7 +98,7 @@
         <button id="addBotBtn">Add SlipBot</button>
         <label for="backgroundUpload" class="upload-button">Upload Layout</label>
         <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
-        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px; width: 200px;">
+        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px; width: 200px; appearance: slider-vertical;">
     </header>
     <div class="container">
         <main>
@@ -106,7 +107,7 @@
     <footer>
         <p>&copy; tdisney.com 2024</p>
     </footer>
-    <img id="backgroundImage" src="" style="display:none;">
+    <img id="backgroundImage" src="" style="display:none; transform: scale(0.5);">
 </body>
 <script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
@@ -118,40 +119,48 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.left = `${e.clientX}px`;
     img.style.top = `${e.clientY}px`;
     img.style.transformOrigin = 'center center'; 
+
+    // Ensure Slipbot and Slipbot_loaded have the same dimensions
+    const imgLoaded = new Image();
+    imgLoaded.onload = function() {
+        const width = this.width;
+        const height = this.height;
+        img.style.width = `${width}px`;
+        img.style.height = `${height}px`;
+        img.src = 'SlipBot_Loaded.png';
+    };
+    imgLoaded.src = 'SlipBot_Loaded.png';
+
     document.body.appendChild(img);
 
-    let isDragging = true, rotateDeg = 0, isImageLoaded = false;
+    let isDragging = false, rotateDeg = 0, isImageLoaded = false;
 
     img.addEventListener('click', function(e) {
-        if (e.detail === 3) { 
-            img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-            isImageLoaded = !isImageLoaded;
-            img.style.width = isImageLoaded ? '80px' : '100px'; 
-            img.style.height = 'auto';
-            isDragging = true; 
+        if (e.detail === 1) {
+            isDragging = !isDragging;
+            if (!isDragging) {
+                img.classList.remove('dragging');
+            } else {
+                img.classList.add('dragging');
+            }
         } else if (e.detail === 2) {
             rotateDeg += 45;
             setTranslateRotate(rotateDeg, img);
+        } else if (e.detail === 3) { 
+            img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
+            isImageLoaded = !isImageLoaded;
+            isDragging = true; 
         }
         e.preventDefault();
     });
 
-    document.addEventListener('mousedown', function() {
-        if (!isDragging) {
-            isDragging = true;
-            img.classList.add('dragging');
-        }
-    });
-
-    document.addEventListener('mousemove', drag);
-
-    function drag(e) {
+    document.addEventListener('mousemove', function(e) {
         if (isDragging) {
             e.preventDefault();
             img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
             img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
         }
-    }
+    });
 
     function setTranslateRotate(deg, el) {
         el.style.transform = `rotate(${deg}deg)`; 
@@ -163,8 +172,9 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
     if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            document.getElementById('backgroundImage').src = event.target.result;
-            document.getElementById('backgroundImage').style.display = 'block';
+            const img = document.getElementById('backgroundImage');
+            img.src = event.target.result;
+            img.style.display = 'block';
             document.getElementById('scaleBackground').value = 50;
         }
         reader.readAsDataURL(file);
@@ -182,10 +192,7 @@ style.textContent = `
         cursor: none !important;
     }
     .draggable {
-        cursor: none !important;
-    }
-    .draggable:active {
-        cursor: none !important;
+        cursor: none;
     }
 `;
 document.head.appendChild(style);
