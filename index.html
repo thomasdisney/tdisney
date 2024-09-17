@@ -92,7 +92,7 @@
         <h1>SlipBot Simulator</h1>
         <button id="addBotBtn">Add SlipBot</button>
         <input type="file" id="backgroundUpload" accept="image/*" style="margin-top: 10px;">
-        <input type="range" id="scaleBackground" min="10" max="300" value="100" style="margin-top: 10px;">
+        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px;">
     </header>
     <div class="container">
         <main>
@@ -120,7 +120,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     img.addEventListener('click', function(e) {
         if (e.detail === 3 && isDragging) { 
-            img.src = 'slipbot_loaded.png';
+            img.src = 'SlipBot_Loaded.png';
         }
         isDragging = !isDragging; 
         if (!isDragging) {
