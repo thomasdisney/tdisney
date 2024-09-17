@@ -95,7 +95,7 @@
     <header style="position: relative; z-index: 10;"> 
         <h1>SlipBot Simulator</h1>
         <button id="addBotBtn">Add SlipBot</button>
-        <label for="backgroundUpload" class="upload-button">upload layout</label>
+        <label for="backgroundUpload" class="upload-button">Upload Layout</label>
         <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
         <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px; width: 200px;">
     </header>
@@ -106,6 +106,7 @@
     <footer>
         <p>&copy; tdisney.com 2024</p>
     </footer>
+    <img id="backgroundImage" src="" style="display:none;">
 </body>
 <script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
@@ -119,28 +120,27 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = true, rotateDeg = 0;
+    let isDragging = false, rotateDeg = 0, isImageLoaded = false;
 
     img.addEventListener('click', function(e) {
-        if (e.detail === 3 && isDragging) { 
-            img.src = img.src.includes('Loaded') ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-            if (img.src.includes('Loaded')) {
-                img.style.width = '80px'; 
-                img.style.height = 'auto';
-            }
-        }
-        isDragging = !isDragging; 
-        if (!isDragging) {
-            img.classList.remove('dragging');
+        if (e.detail === 3) { 
+            img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
+            isImageLoaded = !isImageLoaded;
+            img.style.width = isImageLoaded ? '80px' : '100px'; 
+            img.style.height = 'auto';
+            isDragging = true; // Maintain dragging state after triple click
+        } else if (e.detail === 2) {
+            rotateDeg += 45;
+            setTranslateRotate(rotateDeg, img);
         }
         e.preventDefault();
     });
 
-    img.addEventListener('dblclick', function(e) {
-        rotateDeg += 45;
-        setTranslateRotate(rotateDeg, img);
-        e.preventDefault();
-        e.stopPropagation();
+    document.addEventListener('mousedown', function() {
+        if (!isDragging) {
+            isDragging = true;
+            img.classList.add('dragging');
+        }
     });
 
     document.addEventListener('mousemove', drag);
@@ -163,10 +163,9 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
     if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            const backgroundImage = document.getElementById('backgroundImage');
-            backgroundImage.src = event.target.result;
-            backgroundImage.style.display = 'block';
-            document.getElementById('scaleBackground').value = 20;
+            document.getElementById('backgroundImage').src = event.target.result;
+            document.getElementById('backgroundImage').style.display = 'block';
+            document.getElementById('scaleBackground').value = 50;
         }
         reader.readAsDataURL(file);
     }
@@ -183,7 +182,10 @@ style.textContent = `
         cursor: none !important;
     }
     .draggable {
-        cursor:  none !important;
+        cursor: grab;
+    }
+    .draggable:active {
+        cursor: grabbing;
     }
 `;
 document.head.appendChild(style);
