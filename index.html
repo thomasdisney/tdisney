@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tdisney.com</title>
-    <meta property="og:title" content="Tdisney.com">
+    <meta property="og:title" content="tdisney.com">
     <meta property="og:description" content="SlipBot Workflow Simulator">
     <meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
     <meta property="og:url" content="https://thomasdisney.github.io">
@@ -83,7 +83,7 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            z-index: 0; /* Ensure background is behind all other elements */
+            z-index: 0; 
         }
         .upload-button {
             display: inline-block;
@@ -92,7 +92,7 @@
     </style>
 </head>
 <body>
-    <header style="position: relative; z-index: 3;"> <!-- Increased z-index for header -->
+    <header style="position: relative; z-index: 10;"> 
         <h1>SlipBot Simulator</h1>
         <button id="addBotBtn">Add SlipBot</button>
         <label for="backgroundUpload" class="upload-button">upload layout</label>
@@ -106,7 +106,6 @@
     <footer>
         <p>&copy; tdisney.com 2024</p>
     </footer>
-    <img id="backgroundImage" src="" alt="Background" style="display: none;">
 </body>
 <script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
@@ -126,7 +125,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         if (e.detail === 3 && isDragging) { 
             img.src = img.src.includes('Loaded') ? 'Slipbot.png' : 'SlipBot_Loaded.png';
             if (img.src.includes('Loaded')) {
-                img.style.width = '100px'; // Ensures the loaded image has the same dimensions
+                img.style.width = '80px'; 
                 img.style.height = 'auto';
             }
         }
@@ -167,7 +166,7 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
             const backgroundImage = document.getElementById('backgroundImage');
             backgroundImage.src = event.target.result;
             backgroundImage.style.display = 'block';
-            document.getElementById('scaleBackground').value = 50;
+            document.getElementById('scaleBackground').value = 20;
         }
         reader.readAsDataURL(file);
     }
@@ -184,7 +183,7 @@ style.textContent = `
         cursor: none !important;
     }
     .draggable {
-        cursor: move;
+        cursor:  none !important;
     }
 `;
 document.head.appendChild(style);
