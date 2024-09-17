@@ -38,7 +38,6 @@
         h1, h2, button, input {
             color: #00c600;
             font-family: 'IBM Plex Mono', monospace;
-            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
         }
         button, input[type="file"], input[type="file"]::file-selector-button, input[type="range"] {
             background-color: #000;
@@ -46,6 +45,7 @@
             padding: 10px 20px;
             cursor: pointer;
             font-size: 1em; 
+            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; /* Added glow effect */
         }
         button:hover, input[type="file"]::file-selector-button:hover, input[type="range"]:hover {
             background-color: #00c600;
@@ -83,23 +83,21 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            z-index: 0;
+            z-index: 0; /* Ensure background is behind all other elements */
         }
         .upload-button {
             display: inline-block;
-            padding: 10px 20px;
             margin-top: 10px;
-            border: 1px solid #00c600;
         }
     </style>
 </head>
 <body>
-    <header>
+    <header style="position: relative; z-index: 3;"> <!-- Increased z-index for header -->
         <h1>SlipBot Simulator</h1>
         <button id="addBotBtn">Add SlipBot</button>
         <label for="backgroundUpload" class="upload-button">upload layout</label>
         <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
-        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px;">
+        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px; width: 200px;">
     </header>
     <div class="container">
         <main>
@@ -115,23 +113,26 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
     img.src = 'Slipbot.png';
     img.classList.add('draggable', 'rotate');
-    img.style.width = '100px'; // Set width for Slipbot image
+    img.style.width = '100px'; 
     img.style.height = 'auto';
     img.style.left = `${e.clientX}px`;
     img.style.top = `${e.clientY}px`;
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let rotateDeg = 0;
+    let isDragging = true, rotateDeg = 0;
 
     img.addEventListener('click', function(e) {
-        if (e.detail === 3) { 
+        if (e.detail === 3 && isDragging) { 
             img.src = img.src.includes('Loaded') ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-            // Ensure SlipBot_Loaded has the same dimensions
             if (img.src.includes('Loaded')) {
-                img.style.width = '100px'; // Match the width of Slipbot.png
+                img.style.width = '100px'; // Ensures the loaded image has the same dimensions
                 img.style.height = 'auto';
             }
+        }
+        isDragging = !isDragging; 
+        if (!isDragging) {
+            img.classList.remove('dragging');
         }
         e.preventDefault();
     });
@@ -146,9 +147,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     document.addEventListener('mousemove', drag);
 
     function drag(e) {
-        e.preventDefault();
-        img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
-        img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
+        if (isDragging) {
+            e.preventDefault();
+            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
+            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
+        }
     }
 
     function setTranslateRotate(deg, el) {
@@ -181,7 +184,7 @@ style.textContent = `
         cursor: none !important;
     }
     .draggable {
-        cursor: none;
+        cursor: move;
     }
 `;
 document.head.appendChild(style);
