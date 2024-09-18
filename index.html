@@ -46,9 +46,9 @@
             font-size: 1em;
             text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
             border-radius: 4px;
-            width: 200px; /* Uniform width */
-            height: 40px; /* Uniform height */
-            box-sizing: border-box; /* Ensure padding doesn't affect overall dimensions */
+            width: 200px; 
+            height: 40px; 
+            box-sizing: border-box; 
         }
         button:hover, input[type="file"]::file-selector-button:hover, input[type="range"]:hover {
             background-color: #00c600;
@@ -122,8 +122,8 @@
         <main>
         </main>
     </div>
-    <footer>
-        <p>&copy; tdisney.com 2024 v1.1</p>
+    <footer
+        <p>&copy; tdisney.com 2024 v1.2</p>
     </footer>
     <img id="backgroundImage" src="" style="display:none;">
 </body>
@@ -143,44 +143,40 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     img.addEventListener('click', function(e) {
         e.preventDefault();
-        if (isDragging) {
-            return; // If we're currently dragging, ignore clicks for image manipulation
-        }
         
-        clickCount++;
-        if (clickTimer) clearTimeout(clickTimer);
-
-        clickTimer = setTimeout(function() {
-            if (clickCount === 1) {
-                // Single click
-                isDragging = !isDragging;
-                img.classList.toggle('dragging', isDragging);
+        if (clickCount === 0) {
+            clickCount = 1;
+            clickTimer = setTimeout(function() {
+                if (clickCount === 1 && !isDragging) {
+                    isDragging = !isDragging;
+                    img.classList.toggle('dragging', isDragging);
+                }
+                clickCount = 0;
+            }, 250);
+        } else {
+            clickCount++;
+            clearTimeout(clickTimer);
+            if (clickCount === 2 && !isDragging) {
+                rotateDeg += 45;
+                setTranslateRotate(rotateDeg, img);
+            } else if (clickCount >= 3 && !isDragging) {
+                img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
+                img.style.width = '100px';
+                img.style.height = 'auto';
+                isImageLoaded = !isImageLoaded;
             }
-            clickCount = 0;
-        }, 250);
-
-        if (clickCount === 2) {
-            // Double click
-            rotateDeg += 45;
-            setTranslateRotate(rotateDeg, img);
-        } else if (clickCount >= 3) {
-            // Triple click or more
-            img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-            img.style.width = '100px'; 
-            img.style.height = 'auto'; 
-            isImageLoaded = !isImageLoaded;
-               }
+        }
     });
 
-    document.addEventListener('mousemove', drag);
-
-    function drag(e) {
+    document.addEventListener('mousemove', function(e) {
         if (isDragging) {
             e.preventDefault();
-            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
-            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
+            if (e.target === img) {
+                img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
+                img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
+            }
         }
-    }
+    });
 
     function setTranslateRotate(deg, el) {
         el.style.transform = `rotate(${deg}deg)`; 
@@ -195,7 +191,7 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
             const img = document.getElementById('backgroundImage');
             img.src = event.target.result;
             img.style.display = 'block';
-            img.style.transform = 'scale(0.5) translateZ(0)'; // Start at 50% scale
+            img.style.transform = 'scale(0.5) translateZ(0)'; 
         }
         reader.readAsDataURL(file);
     }
