@@ -139,36 +139,38 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = true, rotateDeg = 0, isImageLoaded = false, clickCount = 0, clickTimer;
+    let isDragging = true, rotateDeg = 0, isImageLoaded = false, clickCount = 0, clickTimer = null;
 
-    img.addEventListener('click', function(e) {
+    img.addEventListener('mousedown', function(e) {
         e.preventDefault();
-        clickCount++;
-        if (clickCount === 1) {
-            clickTimer = setTimeout(function() {
-                clickCount = 0;
-                if (!isDragging) {
-                    isDragging = true;
-                } else {
-                    isDragging = false;
-                }
-            }, 250);
-        } else if (clickCount === 2) {
-            clearTimeout(clickTimer);
-            clickCount = 0;
-            if (!isDragging) {
+        if (!isDragging) {
+            clickCount++;
+            if (clickCount === 1) {
+                clickTimer = setTimeout(function() {
+                    if (clickCount === 1) {
+                        // Single click
+                        isDragging = !isDragging;
+                        img.classList.toggle('dragging', isDragging);
+                    }
+                    clickCount = 0;
+                }, 250);
+            } else if (clickCount === 2) {
+                clearTimeout(clickTimer);
+                // Double click
                 rotateDeg += 45;
                 setTranslateRotate(rotateDeg, img);
-            }
-        } else if (clickCount === 3) {
-            clearTimeout(clickTimer);
-            clickCount = 0;
-            if (!isDragging) {
+                clickCount = 0;
+            } else if (clickCount === 3) {
+                clearTimeout(clickTimer);
+                // Triple click
                 img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-                img.style.width = '100px'; // Ensure both images have the same width
-                img.style.height = 'auto'; // Maintain aspect ratio
+                img.style.width = '100px'; 
+                img.style.height = 'auto'; 
                 isImageLoaded = !isImageLoaded;
+                clickCount = 0;
             }
+        } else {
+            clickCount = 0; // Reset click count if currently dragging
         }
     });
 
