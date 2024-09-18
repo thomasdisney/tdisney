@@ -123,12 +123,12 @@
         </main>
     </div>
     <footer>
-        <p>&copy; tdisney.com 2024 v1.7</p>
+        <p>&copy; tdisney.com 2024 v1.8</p>
     </footer>
     <img id="backgroundImage" src="" style="display:none;">
 </body>
 <script>
-
+<script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
     img.src = 'Slipbot.png';
@@ -146,44 +146,54 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     let clickCount = 0;
     let clickTimer = null;
 
-    img.addEventListener('mousedown', function(e) {
-        if (e.detail === 1) {
-            e.preventDefault();
+    img.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (!isDragging) {
             clickCount++;
             if (clickCount === 1) {
                 clickTimer = setTimeout(() => {
-                    if (!isDragging) {  // Toggle dragging only if not dragging
-                        document.body.style.cursor = isDragging ? 'none' : 'default';
-                        isDragging = !isDragging;
-                    }
+                    isDragging = !isDragging;
+                    document.body.style.cursor = isDragging ? 'none' : 'default';
                     clickCount = 0;
                 }, 250);
-            } else if (clickCount === 2) {
-                clearTimeout(clickTimer);
-                if (!isDragging) {
-                    rotateImage(img);
-                }
-                clickCount = 0;
             } else if (clickCount === 3) {
                 clearTimeout(clickTimer);
-                if (!isDragging) {
-                    swapImage(img);
-                }
+                swapImage(img);
                 clickCount = 0;
             }
         }
     });
 
-    img.addEventListener('mouseup', function() {
-        if (isDragging) {
-            document.body.style.cursor = 'none';
+    img.addEventListener('dblclick', function(e) {
+        if (!isDragging) {
+            e.preventDefault();
+            e.stopPropagation();
+            rotateImage(img);
         }
     });
+
+    img.addEventListener('mousedown', function(e) {
+        if (isDragging && e.button === 0) {
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+    });
+
+    function drag(e) {
+        e.preventDefault();
+        img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
+        img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
+    }
+
+    function stopDrag() {
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', stopDrag);
+    }
 
     function rotateImage(el) {
         let centerX = el.offsetLeft + el.offsetWidth / 2;
         let centerY = el.offsetTop + el.offsetHeight / 2;
-        rotateDeg += 45;
+        rotateDeg = (rotateDeg + 45) % 360;
         setTranslateRotate(centerX, centerY, rotateDeg, el);
     }
 
@@ -191,16 +201,8 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         el.src = el.src.includes('Slipbot.png') ? 'SlipBot_Loaded.png' : 'Slipbot.png';
     }
 
-    document.addEventListener('mousemove', function(e) {
-        if (isDragging) {
-            e.preventDefault();
-            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
-            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
-        }
-    });
-
     function setTranslateRotate(centerX, centerY, deg, el) {
-        el.style.transform = `rotate(${deg}deg)`;
+        el.style.transform = `translate(-50%, -50%) rotate(${deg}deg)`;
     }
 });
 
