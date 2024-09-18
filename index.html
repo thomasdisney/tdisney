@@ -3,206 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tdisney.com</title>
-    <meta property="og:title" content="tdisney.com">
-    <meta property="og:description" content="SlipBot Workflow Simulator">
-    <meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
-    <meta property="og:url" content="https://thomasdisney.github.io">
+    <title>SlipBot Workflow Simulator</title>
+    <meta property="og:title" content="SlipBot Simulator">
+    <meta property="og:description" content="Simulate workflows with SlipBot.">
+    <meta property="og:image" content="thumbnail.jpg">
+    <meta property="og:url" content="your-url-here">
     <meta name="twitter:card" content="summary_large_image">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="path/to/your/stylesheet.css"> <!-- Adjust the path -->
     <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            background-color: black;
-            color: #00c600;
-            font-family: 'IBM Plex Mono', monospace;
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            position: relative; 
-        }
-        .container {
-            flex: 1 0 auto;
-            display: flex;
-            flex-direction: column;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            z-index: 2;
-        }
-        h1, h2, button, input {
-            color: #00c600;
-            font-family: 'IBM Plex Mono', monospace;
-        }
-        button, input[type="file"], input[type="file"]::file-selector-button, input[type="range"] {
-            background-color: #000;
-            border: 1px solid #00c600;
-            padding: 10px 20px;
-            font-size: 1em;
-            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
-            border-radius: 4px;
-            width: 200px; 
-            height: 40px; 
-            box-sizing: border-box; 
-        }
-        button:hover, input[type="file"]::file-selector-button:hover, input[type="range"]:hover {
-            background-color: #00c600;
-            color: #000;
-        }
-        a {
-            color: #00ff00;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .article {
-            margin-bottom: 20px;
-        }
-        footer {
-            flex-shrink: 0;
-            text-align: center;
-            padding: 10px;
-            background-color: black;
-        }
-        .draggable {
-            position: absolute;
-            touch-action: none;
-            user-select: none;
-            z-index: 1; 
-        }
-        .rotate {
-            transition: transform 0.2s ease;
-        }
-        #backgroundImage {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            z-index: 0; 
-        }
-        .upload-button {
-            display: inline-block;
-            margin-top: 10px;
-        }
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 200px;
-            height: 15px;
-            background: #000;
-            outline: none;
-            border: 1px solid #00c600;
-            margin-top: 10px;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 25px;
-            height: 25px;
-            background: #000;
-        }
+        /* Inline styles here if necessary, but it's better to link them externally */
     </style>
 </head>
 <body>
-    <header style="position: relative; z-index: 10;"> 
+    <header>
         <h1>SlipBot Simulator</h1>
         <button id="addBotBtn">Add SlipBot</button>
-        <label for="backgroundUpload" class="upload-button">Upload Layout</label>
         <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
-        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="display:block;">
+        <label for="backgroundUpload">Upload Background</label>
+        <input type="range" id="scaleBackground" min="1" max="100" value="50">
     </header>
     <div class="container">
         <main>
+            <!-- Your main content goes here -->
         </main>
     </div>
     <footer>
-        <p>&copy; tdisney.com 2024 v1.8</p>
+        <p>&copy; 2024 SlipBot Simulator. All rights reserved.</p>
     </footer>
     <img id="backgroundImage" src="" style="display:none;">
-</body>
-<script>
-<script>
+
+    <script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
-    img.src = 'Slipbot.png';
+    img.src = 'SlipBot.png'; 
     img.classList.add('draggable', 'rotate');
     img.style.width = '100px';
     img.style.height = 'auto';
     img.style.position = 'absolute';
     img.style.left = `${e.clientX}px`;
     img.style.top = `${e.clientY}px`;
-    img.style.transformOrigin = 'center center';
+    img.style.zIndex = '100';
     document.body.appendChild(img);
 
-    let isDragging = true;
+    let isDragging = false;
     let rotateDeg = 0;
     let clickCount = 0;
     let clickTimer = null;
 
     img.addEventListener('click', function(e) {
         e.preventDefault();
-        if (!isDragging) {
-            clickCount++;
-            if (clickCount === 1) {
-                clickTimer = setTimeout(() => {
-                    isDragging = !isDragging;
-                    document.body.style.cursor = isDragging ? 'none' : 'default';
-                    clickCount = 0;
-                }, 250);
-            } else if (clickCount === 3) {
-                clearTimeout(clickTimer);
-                swapImage(img);
+        clickCount++;
+        if (clickCount === 1) {
+            clickTimer = setTimeout(function() {
+                if (!isDragging) {
+                    isDragging = true;
+                    document.body.style.cursor = 'none';
+                } else {
+                    isDragging = false;
+                    document.body.style.cursor = 'auto';
+                }
                 clickCount = 0;
+            }, 250);
+        } else if (clickCount === 3) {
+            clearTimeout(clickTimer);
+            if (!isDragging) {
+                img.src = img.src.includes('Slipbot.png') ? 'SlipBot_Loaded.png' : 'Slipbot.png';
             }
+            clickCount = 0;
         }
     });
 
     img.addEventListener('dblclick', function(e) {
         if (!isDragging) {
             e.preventDefault();
-            e.stopPropagation();
-            rotateImage(img);
+            rotateDeg = (rotateDeg + 45) % 360;
+            img.style.transform = `rotate(${rotateDeg}deg)`;
         }
     });
 
+    let dragStartX, dragStartY;
     img.addEventListener('mousedown', function(e) {
-        if (isDragging && e.button === 0) {
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', stopDrag);
+        if (isDragging) {
+            dragStartX = e.clientX - this.offsetLeft;
+            dragStartY = e.clientY - this.offsetTop;
+            document.addEventListener('mousemove', move);
+            document.addEventListener('mouseup', stopMove);
         }
     });
 
-    function drag(e) {
-        e.preventDefault();
-        img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
-        img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
+    function move(e) {
+        img.style.left = `${e.clientX - dragStartX}px`;
+        img.style.top = `${e.clientY - dragStartY}px`;
     }
 
-    function stopDrag() {
-        document.removeEventListener('mousemove', drag);
-        document.removeEventListener('mouseup', stopDrag);
-    }
-
-    function rotateImage(el) {
-        let centerX = el.offsetLeft + el.offsetWidth / 2;
-        let centerY = el.offsetTop + el.offsetHeight / 2;
-        rotateDeg = (rotateDeg + 45) % 360;
-        setTranslateRotate(centerX, centerY, rotateDeg, el);
-    }
-
-    function swapImage(el) {
-        el.src = el.src.includes('Slipbot.png') ? 'SlipBot_Loaded.png' : 'Slipbot.png';
-    }
-
-    function setTranslateRotate(centerX, centerY, deg, el) {
-        el.style.transform = `translate(-50%, -50%) rotate(${deg}deg)`;
+    function stopMove() {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', stopMove);
     }
 });
 
@@ -214,29 +110,15 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
             const img = document.getElementById('backgroundImage');
             img.src = event.target.result;
             img.style.display = 'block';
-            img.style.transform = 'scale(0.5) translateZ(0)'; 
         }
         reader.readAsDataURL(file);
     }
 });
 
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    const scaleValue = e.target.value / 100;
-    document.getElementById('backgroundImage').style.transform = `scale(${scaleValue}) translateZ(0)`;
+    const img = document.getElementById('backgroundImage');
+    img.style.transform = `scale(${e.target.value / 100})`;
 });
-
-const style = document.createElement('style');
-style.textContent = `
-    .dragging {
-        cursor: none !important;
-    }
-    .draggable {
-        cursor: none !important;
-    }
-    .draggable:active {
-        cursor: none !important;
-    }
-`;
-document.head.appendChild(style);
-</script>
+    </script>
+</body>
 </html>
