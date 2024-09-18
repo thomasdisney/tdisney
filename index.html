@@ -43,9 +43,12 @@
             background-color: #000;
             border: 1px solid #00c600;
             padding: 10px 20px;
-            font-size: 1em; 
+            font-size: 1em;
             text-shadow: 0 0 4px #00c600, 0 0 8px #00c600;
-            border-radius: 4px; 
+            border-radius: 4px;
+            width: 200px; /* Uniform width */
+            height: 40px; /* Uniform height */
+            box-sizing: border-box; /* Ensure padding doesn't affect overall dimensions */
         }
         button:hover, input[type="file"]::file-selector-button:hover, input[type="range"]:hover {
             background-color: #00c600;
@@ -96,12 +99,13 @@
             background: #000;
             outline: none;
             border: 1px solid #00c600;
+            margin-top: 10px;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 25px;
+            height: 25px;
             background: #000;
         }
     </style>
@@ -112,7 +116,7 @@
         <button id="addBotBtn">Add SlipBot</button>
         <label for="backgroundUpload" class="upload-button">Upload Layout</label>
         <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
-        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px;">
+        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="display:block;">
     </header>
     <div class="container">
         <main>
@@ -135,18 +139,36 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = true, rotateDeg = 0, isImageLoaded = false;
+    let isDragging = true, rotateDeg = 0, isImageLoaded = false, clickCount = 0, clickTimer;
 
     img.addEventListener('click', function(e) {
         e.preventDefault();
-        if (e.detail === 1) {
-            isDragging = !isDragging;
-        } else if (e.detail === 2) {
-            rotateDeg += 45;
-            setTranslateRotate(rotateDeg, img);
-        } else if (e.detail === 3) {
-            img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-            isImageLoaded = !isImageLoaded;
+        clickCount++;
+        if (clickCount === 1) {
+            clickTimer = setTimeout(function() {
+                clickCount = 0;
+                if (!isDragging) {
+                    isDragging = true;
+                } else {
+                    isDragging = false;
+                }
+            }, 250);
+        } else if (clickCount === 2) {
+            clearTimeout(clickTimer);
+            clickCount = 0;
+            if (!isDragging) {
+                rotateDeg += 45;
+                setTranslateRotate(rotateDeg, img);
+            }
+        } else if (clickCount === 3) {
+            clearTimeout(clickTimer);
+            clickCount = 0;
+            if (!isDragging) {
+                img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
+                img.style.width = '100px'; // Ensure both images have the same width
+                img.style.height = 'auto'; // Maintain aspect ratio
+                isImageLoaded = !isImageLoaded;
+            }
         }
     });
 
@@ -173,7 +195,7 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
             const img = document.getElementById('backgroundImage');
             img.src = event.target.result;
             img.style.display = 'block';
-            img.style.transform = 'scale(0.5) translateZ(0)'; 
+            img.style.transform = 'scale(0.5) translateZ(0)'; // Start at 50% scale
         }
         reader.readAsDataURL(file);
     }
