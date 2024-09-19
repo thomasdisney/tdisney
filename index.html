@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -113,23 +113,23 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.classList.add('draggable', 'rotate');
     img.style.width = '100px'; 
     img.style.height = 'auto';
-    img.style.left = `${e.clientX - 50}px`; // Adjusted to center the click
-    img.style.top = `${e.clientY - 50}px`;  // Adjusted to center the click
+    img.style.left = `${e.clientX}px`;
+    img.style.top = `${e.clientY}px`;
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = false, rotateDeg = 0;
+    let isDragging = true, rotateDeg = 0;
 
     img.addEventListener('click', function(e) {
-        if (e.detail === 3) { 
+        if (e.detail === 3 && isDragging) { 
             img.src = img.src.includes('Loaded') ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-            img.style.width = img.src.includes('Loaded') ? '100px' : '100px'; // Assuming both images should now have the same size
-            img.style.height = 'auto';
+            if (img.src.includes('Loaded')) {
+                img.style.width = '80px'; 
+                img.style.height = 'auto';
+            }
         }
         isDragging = !isDragging; 
-        if (isDragging) {
-            img.classList.add('dragging');
-        } else {
+        if (!isDragging) {
             img.classList.remove('dragging');
         }
         e.preventDefault();
@@ -163,42 +163,39 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
         const reader = new FileReader();
         reader.onload = function(event) {
             const backgroundImage = document.getElementById('backgroundImage');
-            if (!backgroundImage) {
-                const img = document.createElement('img');
-                img.id = 'backgroundImage';
-                img.style.display = 'none';
-                document.body.appendChild(img);
-                backgroundImage = img;
-            }
             backgroundImage.src = event.target.result;
-            backgroundImage.onload = function() {
-                backgroundImage.style.display = 'block';
-                adjustBackgroundSize();
-            }
+            backgroundImage.style.display = 'block';
+            document.getElementById('scaleBackground').value = 20;
+        }
+        reader.readAsDataURL(file);
+    }
+});
+document.getElementById('backgroundUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = document.getElementById('backgroundImage');
+            img.src = event.target.result;
+            img.style.display = 'block';
+            img.style.transform = 'scale(0.5) translateZ(0)'; 
         }
         reader.readAsDataURL(file);
     }
 });
 
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    adjustBackgroundSize();
+    const scaleValue = e.target.value / 100;
+    document.getElementById('backgroundImage').style.transform = `scale(${scaleValue}) translateZ(0)`;
 });
-
-function adjustBackgroundSize() {
-    const scaleValue = document.getElementById('scaleBackground').value;
-    const backgroundImage = document.getElementById('backgroundImage');
-    if (backgroundImage) {
-        backgroundImage.style.transform = `scale(${scaleValue/100}) translateZ(0)`;
-    }
-}
 
 const style = document.createElement('style');
 style.textContent = `
     .dragging {
-        cursor: move !important;
+        cursor: none !important;
     }
     .draggable {
-        cursor: move !important;
+        cursor:  none !important;
     }
 `;
 document.head.appendChild(style);
