@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tdisney.com</title>
     <meta property="og:title" content="tdisney.com">
-    <meta property="og:description" content="SlipBot Simulator">
+    <meta property="og:description" content="SlipBot Workflow Simulator">
     <meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
     <meta property="og:url" content="https://thomasdisney.github.io">
     <meta name="twitter:card" content="summary_large_image">
@@ -41,11 +41,16 @@
         }
         button, input[type="file"], input[type="file"]::file-selector-button, input[type="range"] {
             background-color: #000;
+            border: 1px solid #00c600;
             padding: 10px 20px;
-            cursor: crosshair;
+            cursor: grabbing;
             font-size: 1em; 
-            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; 
-
+            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; /* Added glow effect */
+        }
+        button:hover, input[type="file"]::file-selector-button:hover, input[type="range"]:hover {
+            background-color: #00c600;
+            color: #000;
+        }
         a {
             color: #00ff00;
             text-decoration: none;
@@ -84,21 +89,13 @@
             display: inline-block;
             margin-top: 10px;
         }
-  
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 25px;
-            height: 25px;
-            background: #000;
-        }
     </style>
 </head>
 <body>
     <header style="position: relative; z-index: 10;"> 
         <h1>SlipBot Simulator</h1>
-        <button id="addBotBtn">[Add SlipBot]</button>
-        <label for="backgroundUpload" class="upload-button">[upload layout]</label>
+        <button id="addBotBtn">Add SlipBot</button>
+        <label for="backgroundUpload" class="upload-button">Upload Layout</label>
         <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
         <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px; width: 200px;">
     </header>
@@ -107,7 +104,9 @@
         </main>
     </div>
     <footer>
+        <p>&copy; tdisney.com 2024</p>
     </footer>
+    <img id="backgroundImage" src="" style="display:none;">
 </body>
 <script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
@@ -121,28 +120,27 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = true, rotateDeg = 0;
+    let isDragging = true, rotateDeg = 0, isImageLoaded = false;
 
     img.addEventListener('click', function(e) {
-        if (e.detail === 3 && isDragging) { 
-            img.src = img.src.includes('Loaded') ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-            if (img.src.includes('Loaded')) {
-                img.style.width = '80px'; 
-                img.style.height = 'auto';
-            }
-        }
-        isDragging = !isDragging; 
-        if (!isDragging) {
-            img.classList.remove('dragging');
+        if (e.detail === 3) { 
+            img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
+            isImageLoaded = !isImageLoaded;
+            img.style.width = isImageLoaded ? '80px' : '100px'; 
+            img.style.height = 'auto';
+            isDragging = true; 
+        } else if (e.detail === 2) {
+            rotateDeg += 45;
+            setTranslateRotate(rotateDeg, img);
         }
         e.preventDefault();
     });
 
-    img.addEventListener('dblclick', function(e) {
-        rotateDeg += 45;
-        setTranslateRotate(rotateDeg, img);
-        e.preventDefault();
-        e.stopPropagation();
+    document.addEventListener('click', function() {
+        if (!isDragging) {
+            isDragging = true;
+            img.classList.add('dragging');
+        }
     });
 
     document.addEventListener('mousemove', drag);
@@ -165,31 +163,17 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
     if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            const backgroundImage = document.getElementById('backgroundImage');
-            backgroundImage.src = event.target.result;
-            backgroundImage.style.display = 'block';
-            document.getElementById('scaleBackground').value = 20;
-        }
-        reader.readAsDataURL(file);
-    }
-});
-document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = document.getElementById('backgroundImage');
-            img.src = event.target.result;
-            img.style.display = 'block';
-            img.style.transform = 'scale(0.5) translateZ(0)'; 
+            document.getElementById('backgroundImage').src = event.target.result;
+            document.getElementById('backgroundImage').style.display = 'block';
+            document.getElementById('scaleBackground').value = 50;
         }
         reader.readAsDataURL(file);
     }
 });
 
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    const scaleValue = e.target.value / 100;
-    document.getElementById('backgroundImage').style.transform = `scale(${scaleValue}) translateZ(0)`;
+    const scaleValue = e.target.value;
+    document.getElementById('backgroundImage').style.transform = `scale(${scaleValue/100}) translateZ(0)`;
 });
 
 const style = document.createElement('style');
@@ -198,7 +182,10 @@ style.textContent = `
         cursor: none !important;
     }
     .draggable {
-        cursor:  none !important;
+        cursor: none !important;
+    }
+    .draggable:active {
+        cursor: none !important;
     }
 `;
 document.head.appendChild(style);
