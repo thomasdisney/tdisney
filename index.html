@@ -26,32 +26,78 @@
             flex-direction: column;
             position: relative; 
         }
-
+        .container {
+            flex: 1 0 auto;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            z-index: 2;
+        }
+        h1, h2, button, input {
+            color: #00c600;
+            font-family: 'IBM Plex Mono', monospace;
+        }
         button, input[type="file"], input[type="file"]::file-selector-button, input[type="range"] {
             background-color: #000;
             padding: 10px 20px;
             cursor: crosshair;
             font-size: 1em; 
-              text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; 
-    }
+            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; 
+
+        a {
+            color: #00ff00;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            flex-shrink: 0;
+            text-align: center;
+            padding: 10px;
+            background-color: black;
+        }
+        .draggable {
+            position: absolute;
+            touch-action: none;
+            user-select: none;
+            z-index: 1; 
+        }
+        .rotate {
+            transition: transform 0.2s ease;
+        }
+        #backgroundImage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 0; 
+        }
+        .upload-button {
+            display: inline-block;
+            margin-top: 10px;
+        }
+  
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             width: 25px;
             height: 25px;
-            background: #000;
+            background: #00ff00;
         }
     </style>
 </head>
 <body>
-   <header style="position: relative; z-index: 10;"> 
+    <header style="position: relative; z-index: 10;"> 
         <h1>SlipBot Simulator</h1>
-        <label for="addBotInput" class="upload-button">[Add SlipBot]</label>
-        <input type="button" id="addBotInput" style="display:none;">
+        <button id="addBotBtn">[Add SlipBot]</button>
         <label for="backgroundUpload" class="upload-button">[upload layout]</label>
         <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
-        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px; width: 200px; background-color: #000; padding: 10px 20px; 
-            cursor: crosshair; font-size: 1em; text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; appearance: none; -webkit-appearance: none;">
+        <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px; width: 200px;">
     </header>
     <div class="container">
         <main>
@@ -110,6 +156,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         el.style.transform = `rotate(${deg}deg)`; 
     }
 });
+
 document.getElementById('backgroundUpload').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -118,13 +165,25 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
             const backgroundImage = document.getElementById('backgroundImage');
             backgroundImage.src = event.target.result;
             backgroundImage.style.display = 'block';
-            // Set the initial scale, assuming 50% as default based on your slider's initial value
-            backgroundImage.style.transform = 'scale(0.5) translateZ(0)';
-            document.getElementById('scaleBackground').value = 50; // Ensure this matches the slider's initial value
+            document.getElementById('scaleBackground').value = 20;
         }
         reader.readAsDataURL(file);
     }
 });
+document.getElementById('backgroundUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = document.getElementById('backgroundImage');
+            img.src = event.target.result;
+            img.style.display = 'block';
+            img.style.transform = 'scale(0.5) translateZ(0)'; 
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
     const scaleValue = e.target.value / 100;
     document.getElementById('backgroundImage').style.transform = `scale(${scaleValue}) translateZ(0)`;
