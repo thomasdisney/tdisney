@@ -157,7 +157,6 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         el.style.transform = `rotate(${deg}deg)`; 
     }
 });
-
 document.getElementById('backgroundUpload').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -166,25 +165,13 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
             const backgroundImage = document.getElementById('backgroundImage');
             backgroundImage.src = event.target.result;
             backgroundImage.style.display = 'block';
-            document.getElementById('scaleBackground').value = 20;
+            // Set the initial scale, assuming 50% as default based on your slider's initial value
+            backgroundImage.style.transform = 'scale(0.5) translateZ(0)';
+            document.getElementById('scaleBackground').value = 50; // Ensure this matches the slider's initial value
         }
         reader.readAsDataURL(file);
     }
 });
-document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = document.getElementById('backgroundImage');
-            img.src = event.target.result;
-            img.style.display = 'block';
-            img.style.transform = 'scale(0.5) translateZ(0)'; 
-        }
-        reader.readAsDataURL(file);
-    }
-});
-
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
     const scaleValue = e.target.value / 100;
     document.getElementById('backgroundImage').style.transform = `scale(${scaleValue}) translateZ(0)`;
