@@ -53,6 +53,9 @@
         a:hover {
             text-decoration: underline;
         }
+        .article {
+            margin-bottom: 20px;
+        }
         footer {
             flex-shrink: 0;
             text-align: center;
@@ -87,7 +90,7 @@
             appearance: none;
             width: 25px;
             height: 25px;
-            background: #00ff00;
+            background: #000;
         }
     </style>
 </head>
@@ -156,6 +159,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         el.style.transform = `rotate(${deg}deg)`; 
     }
 });
+
 
 document.getElementById('backgroundUpload').addEventListener('change', function(e) {
     const file = e.target.files[0];
