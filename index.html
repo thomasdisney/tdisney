@@ -162,19 +162,6 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
     if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            const backgroundImage = document.getElementById('backgroundImage');
-            backgroundImage.src = event.target.result;
-            backgroundImage.style.display = 'block';
-            document.getElementById('scaleBackground').value = 20;
-        }
-        reader.readAsDataURL(file);
-    }
-});
-document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
             const img = document.getElementById('backgroundImage');
             img.src = event.target.result;
             img.style.display = 'block';
