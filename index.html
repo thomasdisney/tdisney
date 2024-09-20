@@ -61,12 +61,7 @@
         .article {
             margin-bottom: 20px;
         }
-        footer {
-            flex-shrink: 0;
-            text-align: center;
-            padding: 10px;
-            background-color: black;
-        }
+
         .draggable {
             position: absolute;
             touch-action: none;
@@ -104,7 +99,6 @@
         </main>
     </div>
     <footer>
-        <p>&copy; tdisney.com 2024</p>
     </footer>
     <img id="backgroundImage" src="" style="display:none;">
 </body>
@@ -122,26 +116,25 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
 
-    img.addEventListener('click', function(e) {
-        if (e.detail === 3) { 
-            img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-            isImageLoaded = !isImageLoaded;
-            img.style.width = isImageLoaded ? '80px' : '100px'; 
-            img.style.height = 'auto';
-            isDragging = true; 
-        } else if (e.detail === 2) {
-            rotateDeg += 45;
-            setTranslateRotate(rotateDeg, img);
-        }
-        e.preventDefault();
-    });
-
-    document.addEventListener('click', function() {
-        if (!isDragging) {
-            isDragging = true;
+ img.addEventListener('click', function(e) {
+    if (e.detail === 1) {
+        isDragging = !isDragging;
+        if (isDragging) {
             img.classList.add('dragging');
+        } else {
+            img.classList.remove('dragging');
         }
-    });
+    } else if (e.detail === 2) {
+        rotateDeg += 45;
+        setTranslateRotate(rotateDeg, img);
+    } else if (e.detail === 3) { 
+        img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
+        isImageLoaded = !isImageLoaded;
+        img.style.width = '100px'; // Ensure both images have the same dimensions
+        img.style.height = 'auto';
+    }
+    e.preventDefault();
+});
 
     document.addEventListener('mousemove', drag);
 
