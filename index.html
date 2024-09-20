@@ -41,16 +41,11 @@
         }
         button, input[type="file"], input[type="file"]::file-selector-button, input[type="range"] {
             background-color: #000;
-            border: 1px solid #00c600;
             padding: 10px 20px;
-            cursor: pointer;
+            cursor: crosshair;
             font-size: 1em; 
-            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; /* Added glow effect */
-        }
-        button:hover, input[type="file"]::file-selector-button:hover, input[type="range"]:hover {
-            background-color: #00c600;
-            color: #000;
-        }
+            text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; 
+
         a {
             color: #00ff00;
             text-decoration: none;
@@ -102,8 +97,8 @@
 <body>
     <header style="position: relative; z-index: 10;"> 
         <h1>SlipBot Simulator</h1>
-        <button id="addBotBtn">Add SlipBot</button>
-        <label for="backgroundUpload" class="upload-button">upload layout</label>
+        <button id="addBotBtn">[Add SlipBot]</button>
+        <label for="backgroundUpload" class="upload-button">[upload layout]</label>
         <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
         <input type="range" id="scaleBackground" min="1" max="100" value="50" style="margin-top: 10px; width: 200px;">
     </header>
