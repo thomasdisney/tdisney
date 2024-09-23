@@ -43,14 +43,19 @@
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
     img.src = 'Slipbot.png';
-    img.classList.add('draggable', 'rotate');
+    img.classList.add('draggable', 'rotate', 'dragging');
     img.style.width = '100px'; img.style.height = 'auto';
     img.style.left = `${e.clientX}px`; img.style.top = `${e.clientY}px`;
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
-    img.classList.add('dragging');
+    let originalWidth, originalHeight;
+
+    img.onload = function() {
+        originalWidth = this.width;
+        originalHeight = this.height;
+    }
 
     img.addEventListener('click', function(e) {
         if (e.detail === 1) { 
@@ -66,11 +71,16 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
                 const loadedImg = new Image();
                 loadedImg.onload = () => {
                     img.src = 'SlipBot_Loaded.png';
-                    img.style.width = `${img.width}px`;
-                    img.style.height = `${img.height}px`;
+                    img.style.width = `${originalWidth}px`;
+                    img.style.height = `${originalHeight}px`;
                     isImageLoaded = true;
                 };
                 loadedImg.src = 'SlipBot_Loaded.png';
+            } else {
+                img.src = 'Slipbot.png';
+                img.style.width = `${originalWidth}px`;
+                img.style.height = `${originalHeight}px`;
+                isImageLoaded = false;
             }
         }
         e.preventDefault();
