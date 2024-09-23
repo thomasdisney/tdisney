@@ -48,7 +48,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = false, rotateDeg = 0, isImageLoaded = false;
+    let isDragging = True, rotateDeg = 0, isImageLoaded = false;
 
     img.addEventListener('click', function(e) {
         if (e.detail === 1) { isDragging = !isDragging; e.target.classList.toggle('dragging', isDragging); }
@@ -90,7 +90,7 @@ document.getElementById('scaleBackground').addEventListener('input', function(e)
 const style = document.createElement('style');
 style.textContent = `
     .dragging { cursor: none; }
-    .draggable { cursor: crosshair; }
+    .draggable { cursor: none; }
 `;
 document.head.appendChild(style);
 </script>
