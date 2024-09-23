@@ -101,7 +101,7 @@
     }
     #backgroundImage {
         position: fixed;
-        bottom: 0%;
+        top:75%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0.5);
         max-width: 100%;
@@ -152,11 +152,13 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             e.target.classList.toggle('dragging', isDragging); 
         }
         else if (e.detail === 2) { 
+            isDragging = true;
             rotateDeg += 45; 
             this.style.transform = `rotate(${rotateDeg}deg)`; 
         }
         else if (e.detail === 3) { 
             if (!isImageLoaded) {
+                isDragging = true
                 const loadedImg = new Image();
                 loadedImg.onload = () => {
                     img.src = 'SlipBot_Loaded.png';
