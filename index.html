@@ -11,32 +11,116 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <style>
-    body, html { height: 100%; margin: 0; padding: 0; background: black; color: #00c600; font-family: 'IBM Plex Mono', monospace; line-height: 1.6; display: flex; flex-direction: column; }
-    .container { flex: 1 0 auto; max-width: 800px; margin: 0 auto; padding: 20px; z-index: 2; }
-    h1, button, input { color: #00c600; font-family: inherit; }
-    button, input[type="file"], input[type="file"]::file-selector-button, input[type="range"] { background-color: #000; border: 1px solid #00c600; padding: 10px 20px; cursor: none; font-size: 1em; text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; }
-    button:hover, input[type="file"]::file-selector-button:hover, input[type="range"]:hover { background-color: #00c600; color: #000; }
-    a { color: #00ff00; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .draggable { position: absolute; touch-action: none; user-select: none; z-index: 1; }
-    .rotate { transition: transform 0.2s ease; }
-    #backgroundImage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; display: none; }
-    .upload-button { display: inline-block; margin-top: 10px; }
-    input[type="range"] { -webkit-appearance: none; width: 200px; height: 15px; outline: none; }
-    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 25px; height: 25px; background: #00c600; cursor: none; }
-    header { position: relative; z-index: 3; background: black; padding: 20px; }
+    body, html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: #000;
+        color: #00c600;
+        font-family: 'Courier New', monospace;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 20px;
+        box-sizing: border-box;
+        max-width: 100%;
+        width: 100%;
+    }
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .control-link {
+        color: #00c600;
+        text-decoration: underline;
+        cursor: none;
+        font-family: inherit;
+        font-size: 1em;
+        transition: all 0.3s ease;
+    }
+    .control-link:hover {
+        color: #00ff00;
+    }
+    input[type="file"] {
+        display: none;
+    }
+    input[type="range"] {
+        -webkit-appearance: none;
+        width: 200px;
+        height: 2px;
+        background: #00c600;
+        outline: none;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    input[type="range"]:hover {
+        opacity: 1;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 15px;
+        height: 15px;
+        background: #00c600;
+        cursor: none;
+        border-radius: 50%;
+    }
+    input[type="range"]::-moz-range-thumb {
+        width: 15px;
+        height: 15px;
+        background: #00c600;
+        cursor: none;
+        border-radius: 50%;
+    }
+    .draggable {
+        position: absolute;
+        touch-action: none;
+        user-select: none;
+        z-index: 1;
+    }
+    .rotate {
+        transition: transform 0.2s ease;
+    }
+    #backgroundImage {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
+        display: none;
+    }
+    .dragging, .draggable {
+        cursor: none;
+    }
 </style>
 </head>
 <body>
-<header>
-    <h1>SlipBot Simulator</h1>
-    <button id="addBotBtn">Add SlipBot</button>
-    <label for="backgroundUpload" class="upload-button">Upload Layout</label>
-    <input type="file" id="backgroundUpload" accept="image/*" style="display:none;">
-    <input type="range" id="scaleBackground" min="1" max="100" value="50">
-</header>
 <div class="container">
-    <main></main>
+    <h1>SlipBot Simulator</h1>
+    <div class="controls">
+        <span class="control-link" id="addBotBtn">[Add SlipBot]</span>
+        <label for="backgroundUpload" class="control-link">[Upload Layout]</label>
+        <input type="file" id="backgroundUpload" accept="image/*">
+        <input type="range" id="scaleBackground" min="1" max="100" value="50">
+    </div>
 </div>
 <img id="backgroundImage" src="">
 <script>
@@ -50,14 +134,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     document.body.appendChild(img);
 
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
-    let originalWidth, originalHeight, aspectRatio;
+    let originalWidth, originalHeight;
 
     img.onload = function() {
-        originalWidth = this.naturalWidth;
-        originalHeight = this.naturalHeight;
-        aspectRatio = originalWidth / originalHeight;
-        img.style.width = '100px';
-        img.style.height = `${100 / aspectRatio}px`;
+        originalWidth = this.width;
+        originalHeight = this.height;
     }
 
     img.addEventListener('click', function(e) {
@@ -74,16 +155,15 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
                 const loadedImg = new Image();
                 loadedImg.onload = () => {
                     img.src = 'SlipBot_Loaded.png';
-                    const loadedAspectRatio = loadedImg.naturalWidth / loadedImg.naturalHeight;
-                    img.style.width = '100px';
-                    img.style.height = `${100 / loadedAspectRatio}px`;
+                    img.style.width = `${originalWidth}px`;
+                    img.style.height = `${originalHeight}px`;
                     isImageLoaded = true;
                 };
                 loadedImg.src = 'SlipBot_Loaded.png';
             } else {
                 img.src = 'Slipbot.png';
-                img.style.width = '100px';
-                img.style.height = `${100 / aspectRatio}px`;
+                img.style.width = `${originalWidth}px`;
+                img.style.height = `${originalHeight}px`;
                 isImageLoaded = false;
             }
         }
@@ -118,12 +198,6 @@ document.getElementById('scaleBackground').addEventListener('input', function(e)
     const scale = e.target.value / 50;  // This will give a range from 0.02 to 2
     backgroundImage.style.transform = `scale(${scale})`;
 });
-
-const style = document.createElement('style');
-style.textContent = `
-    .dragging, .draggable { cursor: none; }
-`;
-document.head.appendChild(style);
 </script>
 </body>
 </html>
