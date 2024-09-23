@@ -14,16 +14,17 @@
     body, html { height: 100%; margin: 0; padding: 0; background: black; color: #00c600; font-family: 'IBM Plex Mono', monospace; line-height: 1.6; display: flex; flex-direction: column; }
     .container { flex: 1 0 auto; max-width: 800px; margin: 0 auto; padding: 20px; z-index: 2; }
     h1, button, input { color: #00c600; font-family: inherit; }
-    button, input[type="file"], input[type="file"]::file-selector-button, input[type="range"] { background-color: #000; border: 1px solid #00c600; padding: 10px 20px; cursor: crosshair; font-size: 1em; text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; }
+    button, input[type="file"], input[type="file"]::file-selector-button, input[type="range"] { background-color: #000; border: 1px solid #00c600; padding: 10px 20px; cursor: none; font-size: 1em; text-shadow: 0 0 4px #00c600, 0 0 8px #00c600; }
     button:hover, input[type="file"]::file-selector-button:hover, input[type="range"]:hover { background-color: #00c600; color: #000; }
     a { color: #00ff00; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .draggable { position: absolute; touch-action: none; user-select: none; z-index: 1; }
     .rotate { transition: transform 0.2s ease; }
-    #backgroundImage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 0; display: none; }
+    #backgroundImage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: -1; display: none; }
     .upload-button { display: inline-block; margin-top: 10px; }
     input[type="range"] { -webkit-appearance: none; width: 200px; height: 15px; outline: none; }
-    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 25px; height: 25px; background: #00c600; cursor: crosshair; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 25px; height: 25px; background: #00c600; cursor: none; }
+    header { position: relative; z-index: 3; background: black; padding: 20px; }
 </style>
 </head>
 <body>
@@ -48,14 +49,29 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
-    let isDragging = True, rotateDeg = 0, isImageLoaded = false;
+    let isDragging = true, rotateDeg = 0, isImageLoaded = false;
+    img.classList.add('dragging');
 
     img.addEventListener('click', function(e) {
-        if (e.detail === 1) { isDragging = !isDragging; e.target.classList.toggle('dragging', isDragging); }
-        else if (e.detail === 2) { rotateDeg += 45; this.style.transform = `rotate(${rotateDeg}deg)`; }
+        if (e.detail === 1) { 
+            isDragging = !isDragging; 
+            e.target.classList.toggle('dragging', isDragging); 
+        }
+        else if (e.detail === 2) { 
+            rotateDeg += 45; 
+            this.style.transform = `rotate(${rotateDeg}deg)`; 
+        }
         else if (e.detail === 3) { 
-            img.src = isImageLoaded ? 'Slipbot.png' : 'SlipBot_Loaded.png';
-            isImageLoaded = !isImageLoaded;
+            if (!isImageLoaded) {
+                const loadedImg = new Image();
+                loadedImg.onload = () => {
+                    img.src = 'SlipBot_Loaded.png';
+                    img.style.width = `${img.width}px`;
+                    img.style.height = `${img.height}px`;
+                    isImageLoaded = true;
+                };
+                loadedImg.src = 'SlipBot_Loaded.png';
+            }
         }
         e.preventDefault();
     });
@@ -89,8 +105,7 @@ document.getElementById('scaleBackground').addEventListener('input', function(e)
 
 const style = document.createElement('style');
 style.textContent = `
-    .dragging { cursor: none; }
-    .draggable { cursor: none; }
+    .dragging, .draggable { cursor: none; }
 `;
 document.head.appendChild(style);
 </script>
