@@ -136,7 +136,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.style.height = 'auto';
     img.style.left = `${e.clientX}px`;
     img.style.top = `${e.clientY}px`;
-    img.style.transformOrigin = 'center center'; 
+    img.style.transformOrigin = 'center bottom'; 
     document.body.appendChild(img);
 
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
