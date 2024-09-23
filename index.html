@@ -165,6 +165,8 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
                     img.style.width = `${originalWidth}px`;
                     img.style.height = `${originalHeight}px`;
                     isImageLoaded = true;
+                    rotateDeg -= 45; 
+                    this.style.transform = `rotate(${rotateDeg}deg)`;
                 };
                 loadedImg.src = 'SlipBot_Loaded.png';
             } else {
