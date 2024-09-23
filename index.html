@@ -51,7 +51,7 @@
     .control-link {
         color: #00c600;
         text-decoration: underline;
-        cursor: pointer;
+        cursor: none;
         font-family: inherit;
         font-size: 1em;
         transition: all 0.3s ease;
@@ -80,21 +80,21 @@
         width: 15px;
         height: 15px;
         background: #00c600;
-        cursor: pointer;
+        cursor: none;
         border-radius: 50%;
     }
     input[type="range"]::-moz-range-thumb {
         width: 15px;
         height: 15px;
         background: #00c600;
-        cursor: pointer;
+        cursor: none;
         border-radius: 50%;
     }
     .draggable {
         position: absolute;
         touch-action: none;
         user-select: none;
-        z-index: 2;
+        z-index: 1;
     }
     .rotate {
         transition: transform 0.2s ease;
@@ -107,11 +107,11 @@
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
-        z-index: 1;
+        z-index: -1;
         display: none;
     }
-    .dragging {
-        cursor: move;
+    .dragging, .draggable {
+        cursor: none;
     }
 </style>
 </head>
@@ -125,7 +125,7 @@
         <input type="range" id="scaleBackground" min="10" max="200" value="100">
     </div>
 </div>
-<img id="backgroundImage" src="" alt="Background Layout">
+<img id="backgroundImage" src="">
 <script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
@@ -139,14 +139,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     document.body.appendChild(img);
 
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
-    let originalWidth, originalHeight, aspectRatio;
+    let originalWidth, originalHeight;
 
     img.onload = function() {
-        originalWidth = this.naturalWidth;
-        originalHeight = this.naturalHeight;
-        aspectRatio = originalWidth / originalHeight;
-        img.style.width = '100px';
-        img.style.height = `${100 / aspectRatio}px`;
+        originalWidth = this.width;
+        originalHeight = this.height;
     }
 
     img.addEventListener('click', function(e) {
@@ -160,10 +157,18 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         }
         else if (e.detail === 3) { 
             if (!isImageLoaded) {
-                this.src = 'SlipBot_Loaded.png';
-                isImageLoaded = true;
+                const loadedImg = new Image();
+                loadedImg.onload = () => {
+                    img.src = 'SlipBot_Loaded.png';
+                    img.style.width = `${originalWidth}px`;
+                    img.style.height = `${originalHeight}px`;
+                    isImageLoaded = true;
+                };
+                loadedImg.src = 'SlipBot_Loaded.png';
             } else {
-                this.src = 'Slipbot.png';
+                img.src = 'Slipbot.png';
+                img.style.width = `${originalWidth}px`;
+                img.style.height = `${originalHeight}px`;
                 isImageLoaded = false;
             }
         }
@@ -171,11 +176,10 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     });
 
     document.addEventListener('mousemove', function(e) {
-        if (isDragging && e.target.classList.contains('dragging')) {
+        if (isDragging) {
             e.preventDefault();
-            const rect = e.target.getBoundingClientRect();
-            e.target.style.left = `${e.clientX - rect.width / 2}px`;
-            e.target.style.top = `${e.clientY - rect.height / 2}px`;
+            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
+            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
         }
     });
 });
