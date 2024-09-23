@@ -20,7 +20,7 @@
     a:hover { text-decoration: underline; }
     .draggable { position: absolute; touch-action: none; user-select: none; z-index: 1; }
     .rotate { transition: transform 0.2s ease; }
-    #backgroundImage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: -1; display: none; }
+    #backgroundImage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; display: none; }
     .upload-button { display: inline-block; margin-top: 10px; }
     input[type="range"] { -webkit-appearance: none; width: 200px; height: 15px; outline: none; }
     input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 25px; height: 25px; background: #00c600; cursor: none; }
@@ -50,11 +50,14 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     document.body.appendChild(img);
 
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
-    let originalWidth, originalHeight;
+    let originalWidth, originalHeight, aspectRatio;
 
     img.onload = function() {
-        originalWidth = this.width;
-        originalHeight = this.height;
+        originalWidth = this.naturalWidth;
+        originalHeight = this.naturalHeight;
+        aspectRatio = originalWidth / originalHeight;
+        img.style.width = '100px';
+        img.style.height = `${100 / aspectRatio}px`;
     }
 
     img.addEventListener('click', function(e) {
@@ -71,15 +74,16 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
                 const loadedImg = new Image();
                 loadedImg.onload = () => {
                     img.src = 'SlipBot_Loaded.png';
-                    img.style.width = `${originalWidth}px`;
-                    img.style.height = `${originalHeight}px`;
+                    const loadedAspectRatio = loadedImg.naturalWidth / loadedImg.naturalHeight;
+                    img.style.width = '100px';
+                    img.style.height = `${100 / loadedAspectRatio}px`;
                     isImageLoaded = true;
                 };
                 loadedImg.src = 'SlipBot_Loaded.png';
             } else {
                 img.src = 'Slipbot.png';
-                img.style.width = `${originalWidth}px`;
-                img.style.height = `${originalHeight}px`;
+                img.style.width = '100px';
+                img.style.height = `${100 / aspectRatio}px`;
                 isImageLoaded = false;
             }
         }
@@ -110,7 +114,9 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
 });
 
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    document.getElementById('backgroundImage').style.transform = `scale(${e.target.value/100}) translateZ(0)`;
+    const backgroundImage = document.getElementById('backgroundImage');
+    const scale = e.target.value / 50;  // This will give a range from 0.02 to 2
+    backgroundImage.style.transform = `scale(${scale})`;
 });
 
 const style = document.createElement('style');
