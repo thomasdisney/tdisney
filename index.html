@@ -12,13 +12,13 @@
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <style>
     body, html {
-        height: 100%;
+        height: 50%;
         margin: 0;
         padding: 0;
         background: #000;
         color: #00c600;
         font-family: 'IBM PLEX MONO', monospace;
-        line-height: 1.6;
+        line-height: 1;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -29,7 +29,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        padding: 20px;
+        padding: 10px;
         box-sizing: border-box;
         max-width: 100%;
         width: 100%;
@@ -37,16 +37,21 @@
         z-index: 5;
     }
     h1 {
-        font-size: 2.5em;
-        margin-bottom: 20px;
-        text-align: center;
+        font-size: 2em;
+        margin-bottom: 10px;
+        text-align: left;
+    }
+        h2 {
+        font-size: 1em;
+        margin-bottom: 5px;
+        text-align: left;
     }
     .controls {
         display: flex;
         justify-content: center;
         align-items: center;
         gap: 20px;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
     .control-link {
         color: #00c600;
@@ -54,7 +59,7 @@
         cursor: none;
         font-family: inherit;
         font-size: 1em;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
     .control-link:hover {
         color: #00ff00;
@@ -118,6 +123,7 @@
 <body>
 <div class="container">
     <h1>SlipBot Simulator</h1>
+    <h2>click=start/top dragging // Dbl-click=rotate // trpl_click=load/unload</h2>
     <div class="controls">
         <span class="control-link" id="addBotBtn">[Add SlipBot]</span>
         <label for="backgroundUpload" class="control-link">[Upload Layout]</label>
