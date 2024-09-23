@@ -101,8 +101,7 @@
     }
     #backgroundImage {
         position: fixed;
-        Bottom: 0;
-        top: 50%;
+        top: 80%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0.5);
         max-width: 100%;
@@ -132,11 +131,11 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
     img.src = 'Slipbot.png';
     img.classList.add('draggable', 'rotate', 'dragging');
-    img.style.width = '50px';
+    img.style.width = '40px';
     img.style.height = 'auto';
     img.style.left = `${e.clientX}px`;
     img.style.top = `${e.clientY}px`;
-    img.style.transformOrigin = 'center bottom'; 
+    img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
