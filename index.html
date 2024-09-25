@@ -101,6 +101,9 @@
         user-select: none;
         z-index: 2;
     }
+    .rotate-slow {
+    transition: transform 0.3s ease;
+    }
     #backgroundImage {
         position: fixed;
         top:55%;
@@ -156,12 +159,15 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         }
         else if (e.detail === 2) { 
             isDragging = true;
+            this.classList.add('rotate-slow');
             rotateDeg += 45; 
             this.style.transform = `rotate(${rotateDeg}deg)`; 
         }
         else if (e.detail === 3) { 
             if (!isImageLoaded) {
                 isDragging = true
+                this.classList.remove('rotate-slow');
+                void this.offsetWidth;
                 const loadedImg = new Image();
                 loadedImg.onload = () => {
                     img.src = 'SlipBot_Loaded.png';
