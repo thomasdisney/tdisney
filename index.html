@@ -118,6 +118,18 @@
     .dragging, .draggable {
         cursor: none;
     }
+    @keyframes dissolveRightToLeft {
+    0% {
+        clip-path: inset(0 0 0 0);
+    }
+    100% {
+        clip-path: inset(0 0 0 100%);
+    }
+}
+
+.dissolve-right-to-left {
+    animation: dissolveRightToLeft 1s ease-in-out forwards;
+}
 </style>
 </head>
 <body>
@@ -150,24 +162,22 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
     img.onload = function() {
         originalWidth = this.width;
         originalHeight = this.height;
-    }
+    };
 
     img.addEventListener('click', function(e) {
         if (e.detail === 1) { 
             isDragging = !isDragging; 
             e.target.classList.toggle('dragging', isDragging); 
-        }
-        else if (e.detail === 2) { 
+        } else if (e.detail === 2) { 
             isDragging = true;
             this.classList.add('rotate-slow');
             rotateDeg += 45; 
             this.style.transform = `rotate(${rotateDeg}deg)`; 
-        }
-        else if (e.detail === 3) { 
+        } else if (e.detail === 3) { 
+            isDragging = true;
+            this.classList.remove('rotate-slow');
+            void this.offsetWidth;
             if (!isImageLoaded) {
-                isDragging = true
-                this.classList.remove('rotate-slow');
-                void this.offsetWidth;
                 const loadedImg = new Image();
                 loadedImg.onload = () => {
                     img.src = 'SlipBot_Loaded.png';
@@ -190,6 +200,15 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         e.preventDefault();
     });
 
+    img.addEventListener('contextmenu', function(e) {
+        e.preventDefault(); 
+        this.classList.add('dissolve-right-to-left');
+        this.addEventListener('animationend', function onAnimationEnd() {
+            this.remove();
+            this.removeEventListener('animationend', onAnimationEnd);
+        });
+    });
+    
     document.addEventListener('mousemove', function(e) {
         if (isDragging) {
             e.preventDefault();
@@ -209,7 +228,7 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
             image.style.display = 'block';
             document.getElementById('scaleBackground').value = 100;
             updateBackgroundScale(100);
-        }
+        };
         reader.readAsDataURL(file);
     }
 });
