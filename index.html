@@ -41,7 +41,7 @@
         margin-bottom: 10px;
         text-align: left;
     }
-        h2 {
+    h2 {
         font-size: 1em;
         margin-bottom: 10px;
         text-align: left;
@@ -102,48 +102,42 @@
         z-index: 2;
     }
     .rotate-slow {
-    transition: transform 0.3s ease;
+        transition: transform 0.3s ease;
     }
-    #backgroundImage {
-        position: fixed;
-        top:55%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0.5);
+    .background-image {
+        position: absolute;
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
         z-index: 1;
-        display: none;
     }
     .dragging, .draggable {
         cursor: none;
     }
     @keyframes dissolveRightToLeft {
-    0% {
-        clip-path: inset(0 0 0 0);
+        0% {
+            clip-path: inset(0 0 0 0);
+        }
+        100% {
+            clip-path: inset(100% 0 0 0);
+        }
     }
-    100% {
-        clip-path: inset(100% 0 0 0);
+    .dissolve-right-to-left {
+        animation: dissolveRightToLeft 1.5s ease-in-out forwards;
     }
-}
-
-.dissolve-right-to-left {
-    animation: dissolveRightToLeft 1.5s ease-in-out forwards;
-}
 </style>
 </head>
 <body>
 <div class="container">
     <h1>SlipBot Simulator</h1>
-    <h2>click = start/top dragging // dbl_click = rotate // trpl_click = load/unload // slider = scale layout</h2>
+    <h2>click = start/stop dragging // dbl_click = rotate // trpl_click = load/unload // slider = scale layout</h2>
     <div class="controls">
         <span class="control-link" id="addBotBtn">[add SlipBot]</span>
         <label for="backgroundUpload" class="control-link">[upload layout]</label>
-        <input type="file" id="backgroundUpload" accept="image/*">
+        <input type="file" id="backgroundUpload" accept="image/*" multiple>
         <input type="range" id="scaleBackground" min="10" max="200" value="100">
     </div>
 </div>
-<img id="backgroundImage" src="">
 <script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
@@ -219,24 +213,84 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 });
 
 document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) { 
-            const image = document.getElementById('backgroundImage');
-            image.src = e.target.result; 
-            image.style.display = 'block';
-            document.getElementById('scaleBackground').value = 100;
-            updateBackgroundScale(100);
-        };
-        reader.readAsDataURL(file);
+    const files = e.target.files;
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) { 
+                const image = document.createElement('img');
+                image.src = e.target.result;
+                image.classList.add('background-image', 'draggable');
+                image.style.display = 'block';
+                image.style.left = '50%';
+                image.style.top = '55%';
+                image.style.transform = 'translate(-50%, -50%) scale(0.5)';
+                document.body.appendChild(image);
+                makeDraggable(image);
+            };
+            reader.readAsDataURL(file);
+        }
     }
 });
 
+function makeDraggable(element) {
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    element.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    function dragStart(e) {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+
+        if (e.target === element) {
+            isDragging = true;
+        }
+    }
+
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            setTranslate(currentX, currentY, element);
+        }
+    }
+
+    function dragEnd(e) {
+        initialX = currentX;
+        initialY = currentY;
+
+        isDragging = false;
+    }
+
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) scale(${el.scaleValue || 0.5})`;
+    }
+}
+
 function updateBackgroundScale(value) {
-    const backgroundImage = document.getElementById('backgroundImage');
+    const backgroundImages = document.querySelectorAll('.background-image');
     const scale = value / 100;
-    backgroundImage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    backgroundImages.forEach(image => {
+        image.scaleValue = scale;
+        const rect = image.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        image.style.transform = `translate3d(${centerX - image.offsetWidth / 2}px, ${centerY - image.offsetHeight / 2}px, 0) scale(${scale})`;
+    });
 }
 
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
