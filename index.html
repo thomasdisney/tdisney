@@ -133,17 +133,18 @@
     <h2>click = start/stop dragging // dbl_click = rotate // trpl_click = load/unload // slider = scale layout</h2>
     <div class="controls">
         <span class="control-link" id="addBotBtn">[add SlipBot]</span>
+        <span class="control-link" id="addTrailerBtn">[add trailer]</span>
         <label for="backgroundUpload" class="control-link">[upload layout]</label>
         <input type="file" id="backgroundUpload" accept="image/*" multiple>
         <input type="range" id="scaleBackground" min="10" max="200" value="100">
     </div>
 </div>
 <script>
-document.getElementById('addBotBtn').addEventListener('click', function(e) {
+function addDraggableImage(e, imageSrc, defaultWidth = '40px') {
     const img = document.createElement('img');
-    img.src = 'Slipbot.png';
+    img.src = imageSrc;
     img.classList.add('draggable', 'rotate', 'dragging');
-    img.style.width = '40px';
+    img.style.width = defaultWidth;
     img.style.height = 'auto';
     img.style.left = `${e.clientX}px`;
     img.style.top = `${e.clientY}px`;
@@ -167,7 +168,7 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             this.classList.add('rotate-slow');
             rotateDeg += 45; 
             this.style.transform = `rotate(${rotateDeg}deg)`; 
-        } else if (e.detail === 3) { 
+        } else if (e.detail === 3 && imageSrc === 'Slipbot.png') { 
             isDragging = true;
             this.classList.remove('rotate-slow');
             void this.offsetWidth;
@@ -210,6 +211,14 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
             img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
         }
     });
+}
+
+document.getElementById('addBotBtn').addEventListener('click', function(e) {
+    addDraggableImage(e, 'Slipbot.png');
+});
+
+document.getElementById('addTrailerBtn').addEventListener('click', function(e) {
+    addDraggableImage(e, 'truck.png', '60px');
 });
 
 document.getElementById('backgroundUpload').addEventListener('change', function(e) {
@@ -277,7 +286,7 @@ function makeDraggable(element) {
     }
 
     function setTranslate(xPos, yPos, el) {
-        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) scale(${el.scaleValue || 0.5})`;
+        el.style.transform = `translate(${xPos}px, ${yPos}px) scale(${el.scaleValue || 0.5})`;
     }
 }
 
@@ -289,7 +298,13 @@ function updateBackgroundScale(value) {
         const rect = image.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
-        image.style.transform = `translate3d(${centerX - image.offsetWidth / 2}px, ${centerY - image.offsetHeight / 2}px, 0) scale(${scale})`;
+        const transformValues = image.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+        if (transformValues) {
+            const [, translateX, translateY] = transformValues;
+            image.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        } else {
+            image.style.transform = `translate(${centerX - image.offsetWidth / 2}px, ${centerY - image.offsetHeight / 2}px) scale(${scale})`;
+        }
     });
 }
 
