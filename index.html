@@ -198,7 +198,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.position = 'absolute';
     document.body.appendChild(img);
 
-    let isDragging = imageSrc === 'Slipbot.png', rotateDeg = 0, isImageLoaded = false;
+    let isDragging = false, rotateDeg = 0, isImageLoaded = false;
     let originalWidth, originalHeight;
 
     img.onload = function() {
@@ -215,12 +215,10 @@ function addDraggableImage(imageSrc, event) {
                 isDragging = !isDragging; 
                 e.target.classList.toggle('dragging', isDragging); 
             } else if (e.detail === 2) { 
-                isDragging = true;
                 this.classList.add('rotate-slow');
                 rotateDeg += 45; 
                 this.style.transform = `rotate(${rotateDeg}deg)`; 
             } else if (e.detail === 3) { 
-                isDragging = true;
                 this.classList.remove('rotate-slow');
                 void this.offsetWidth;
                 if (!isImageLoaded) {
@@ -244,6 +242,15 @@ function addDraggableImage(imageSrc, event) {
                 }
             }
             e.preventDefault();
+        });
+
+        img.addEventListener('contextmenu', function(e) {
+            e.preventDefault(); 
+            this.classList.add('dissolve-right-to-left');
+            this.addEventListener('animationend', function onAnimationEnd() {
+                this.remove();
+                this.removeEventListener('animationend', onAnimationEnd);
+            });
         });
     } else if (imageSrc === 'truck.png') {
         img.addEventListener('mousedown', function(e) {
@@ -283,10 +290,8 @@ function addDraggableImage(imageSrc, event) {
                         slipbotRect.top >= truckRect.top &&
                         slipbotRect.bottom <= truckRect.bottom
                     ) {
-                        const currentLeft = parseInt(slipbot.style.left);
-                        const currentTop = parseInt(slipbot.style.top);
-                        slipbot.style.left = `${currentLeft + dx}px`;
-                        slipbot.style.top = `${currentTop + dy}px`;
+                        slipbot.style.left = `${parseInt(slipbot.style.left) + dx}px`;
+                        slipbot.style.top = `${parseInt(slipbot.style.top) + dy}px`;
                     }
                 });
             } else {
