@@ -204,13 +204,11 @@ function addDraggableImage(e, imageSrc, defaultWidth = '40px') {
         });
     });
     
-    document.addEventListener('mousemove', function(e) {
-        if (isDragging) {
-            e.preventDefault();
-            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
-            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
-        }
-    });
+    if (imageSrc === 'truck.png') {
+        makeDraggableContainer(img);
+    } else {
+        makeDraggable(img);
+    }
 }
 
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
@@ -287,6 +285,65 @@ function makeDraggable(element) {
 
     function setTranslate(xPos, yPos, el) {
         el.style.transform = `translate(${xPos}px, ${yPos}px) scale(${el.scaleValue || 0.5})`;
+    }
+}
+
+function makeDraggableContainer(element) {
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    element.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+
+    function dragStart(e) {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+
+        if (e.target === element) {
+            isDragging = true;
+        }
+    }
+
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            setTranslate(currentX, currentY, element);
+            moveSlipbots(currentX - initialX, currentY - initialY);
+        }
+    }
+
+    function dragEnd(e) {
+        initialX = currentX;
+        initialY = currentY;
+
+        isDragging = false;
+    }
+
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate(${xPos}px, ${yPos}px) scale(${el.scaleValue || 0.5})`;
+    }
+
+    function moveSlipbots(deltaX, deltaY) {
+        const slipbots = document.querySelectorAll('img[src="Slipbot.png"], img[src="SlipBot_Loaded.png"]');
+        slipbots.forEach(slipbot => {
+            const rect = slipbot.getBoundingClientRect();
+            const newX = rect.left + deltaX;
+            const newY = rect.top + deltaY;
+            slipbot.style.left = `${newX}px`;
+            slipbot.style.top = `${newY}px`;
+        });
     }
 }
 
