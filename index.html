@@ -159,6 +159,10 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
         originalHeight = this.height;
     };
 
+    document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
+    addDraggableImage('truck.png', e);
+});
+
     img.addEventListener('click', function(e) {
         if (e.detail === 1) { 
             isDragging = !isDragging; 
