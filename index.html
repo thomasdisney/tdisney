@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SlipBot Simulator</title>
-<meta property="og:title" content="tdisney.com">
-<meta property="og:description" content="SlipBot Workflow Simulator">
-<meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
-<meta property="og:url" content="https://thomasdisney.github.io">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlipBot Simulator</title>
+    <meta property="og:title" content="tdisney.com">
+    <meta property="og:description" content="SlipBot Workflow Simulator">
+    <meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
+    <meta property="og:url" content="https://thomasdisney.github.io">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <style>
 <style>
     body, html {
         height: 60%;
@@ -318,6 +319,40 @@ function updateBackgroundScale(value) {
 
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
     updateBackgroundScale(e.target.value);
+});
+
+document.getElementById('addBotBtn').addEventListener('click', function(e) {
+    addDraggableImage(e, 'Slipbot.png');
+});
+
+document.getElementById('addTrailerBtn').addEventListener('click', function(e) {
+    addDraggableImage(e, 'truck.png', '100px');
+});
+
+document.getElementById('backgroundUpload').addEventListener('change', function(e) {
+    const files = e.target.files;
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.classList.add('background-image');
+            img.style.position = 'absolute';
+            img.style.top = '50%';
+            img.style.left = '50%';
+            img.style.transform = 'translate(-50%, -50%)';
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+            img.style.zIndex = '1';
+            document.body.appendChild(img);
+
+            makeDraggable(img);
+        };
+
+        reader.readAsDataURL(file);
+    }
 });
 </script>
 </body>
