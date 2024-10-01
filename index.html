@@ -141,28 +141,27 @@
 <img id="backgroundImage" src="">
 <script>
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
+    addDraggableImage('Slipbot.png', e);
+});
+
+document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
+    addDraggableImage('truck.png', e);
+});
+
+function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
-    img.src = 'Slipbot.png';
+    img.src = imageSrc;
     img.classList.add('draggable', 'rotate', 'dragging');
     img.style.width = '40px';
     img.style.height = 'auto';
-    img.style.left = `${e.clientX}px`;
-    img.style.top = `${e.clientY}px`;
+    img.style.left = `${event.clientX}px`;
+    img.style.top = `${event.clientY}px`;
     img.style.transformOrigin = 'center center'; 
     document.body.appendChild(img);
 
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
     let originalWidth, originalHeight;
-
-    img.onload = function() {
-        originalWidth = this.width;
-        originalHeight = this.height;
-    };
-
-    document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
-    addDraggableImage('truck.png', e);
-});
-
+    
     img.addEventListener('click', function(e) {
         if (e.detail === 1) { 
             isDragging = !isDragging; 
