@@ -188,7 +188,6 @@ function addDraggableImage(imageSrc, event) {
     img.src = imageSrc;
     img.classList.add('draggable', 'rotate', 'dragging');
     img.style.width = imageSrc === 'truck.png' ? 'auto' : '40px';
-    img.style.width = '40px';
     img.style.height = 'auto';
     img.style.left = `${event.clientX}px`;
     img.style.top = `${event.clientY}px`;
