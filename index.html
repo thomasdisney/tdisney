@@ -187,9 +187,6 @@ function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
     img.classList.add('draggable', 'rotate');
-    if (imageSrc === 'Slipbot.png') {
-        img.classList.add('dragging');
-    }
     img.style.width = imageSrc === 'truck.png' ? 'auto' : '40px';
     img.style.height = 'auto';
     img.style.left = `${event.clientX}px`;
@@ -198,7 +195,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.position = 'absolute';
     document.body.appendChild(img);
 
-    let isDragging = true, rotateDeg = 0, isImageLoaded = false;
+    let isDragging = imageSrc === 'Slipbot.png', rotateDeg = 0, isImageLoaded = false;
     let originalWidth, originalHeight;
 
     img.onload = function() {
@@ -210,6 +207,7 @@ function addDraggableImage(imageSrc, event) {
     };
 
     if (imageSrc === 'Slipbot.png') {
+        img.classList.add('dragging');
         img.addEventListener('click', function(e) {
             if (e.detail === 1) { 
                 isDragging = !isDragging; 
@@ -275,13 +273,13 @@ function addDraggableImage(imageSrc, event) {
             const newX = e.clientX - img.offsetWidth / 2;
             const newY = e.clientY - img.offsetHeight / 2;
             
-            if (imageSrc === 'truck.png') {
-                const dx = newX - parseInt(img.style.left);
-                const dy = newY - parseInt(img.style.top);
-                
-                img.style.left = `${newX}px`;
-                img.style.top = `${newY}px`;
+            const dx = newX - parseInt(img.style.left);
+            const dy = newY - parseInt(img.style.top);
+            
+            img.style.left = `${newX}px`;
+            img.style.top = `${newY}px`;
 
+            if (imageSrc === 'truck.png') {
                 const slipbots = document.querySelectorAll('img[src^="Slipbot"]');
                 slipbots.forEach(slipbot => {
                     const slipbotRect = slipbot.getBoundingClientRect();
@@ -296,18 +294,16 @@ function addDraggableImage(imageSrc, event) {
                         slipbot.style.top = `${parseInt(slipbot.style.top) + dy}px`;
                     }
                 });
-            } else {
-                img.style.left = `${newX}px`;
-                img.style.top = `${newY}px`;
             }
         }
     });
 
     document.addEventListener('mouseup', function() {
-        isDragging = false;
+        if (imageSrc === 'truck.png') {
+            isDragging = false;
+        }
     });
 }
-
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     addDraggableImage('Slipbot.png', e);
 });
