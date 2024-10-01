@@ -97,34 +97,74 @@
         z-index: 2;
     }
     .rotate-slow {
-    transition: transform 0.3s ease;
-    }
-    #backgroundImage {
-        position: fixed;
-        top:55%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0.5);
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        z-index: 1;
-        display: none;
+        transition: transform 0.3s ease;
     }
     .dragging, .draggable {
         cursor: none;
     }
     @keyframes dissolveRightToLeft {
-    0% {
-        clip-path: inset(0 0 0 0);
+        0% {
+            clip-path: inset(0 0 0 0);
+        }
+        100% {
+            clip-path: inset(100% 0 0 0);
+        }
     }
-    100% {
-        clip-path: inset(100% 0 0 0);
+    .dissolve-right-to-left {
+        animation: dissolveRightToLeft 1.5s ease-in-out forwards;
     }
-}
-
-.dissolve-right-to-left {
-    animation: dissolveRightToLeft 1.5s ease-in-out forwards;
-}
+    .background-image {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        z-index: 1;
+    }
+    .background-image.selected {
+        box-shadow: 0 0 10px 5px #00ff00;
+    }
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #00c600;
+    }
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
 </style>
 </head>
 <body>
@@ -134,20 +174,15 @@
         <span class="control-link" id="addBotBtn">[add SlipBot]</span>
         <span class="control-link" id="addtrlrBtn">[add trailer]</span>
         <label for="backgroundUpload" class="control-link">[upload layout]</label>
-        <input type="file" id="backgroundUpload" accept="image/*">
+        <input type="file" id="backgroundUpload" accept="image/*" multiple>
+        <label class="toggle-switch">
+            <input type="checkbox" id="backgroundToggle" checked>
+            <span class="slider"></span>
+        </label>
         <input type="range" id="scaleBackground" min="10" max="200" value="100">
     </div>
 </div>
-<img id="backgroundImage" src="">
 <script>
-document.getElementById('addBotBtn').addEventListener('click', function(e) {
-    addDraggableImage('Slipbot.png', e);
-});
-
-document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
-    addDraggableImage('truck.png', e);
-});
-
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
@@ -156,12 +191,18 @@ function addDraggableImage(imageSrc, event) {
     img.style.height = 'auto';
     img.style.left = `${event.clientX}px`;
     img.style.top = `${event.clientY}px`;
-    img.style.transformOrigin = 'center center'; 
+    img.style.transformOrigin = 'center center';
+    img.style.position = 'absolute';
     document.body.appendChild(img);
 
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
     let originalWidth, originalHeight;
-    
+
+    img.onload = function() {
+        originalWidth = this.width;
+        originalHeight = this.height;
+    };
+
     img.addEventListener('click', function(e) {
         if (e.detail === 1) { 
             isDragging = !isDragging; 
@@ -175,7 +216,7 @@ function addDraggableImage(imageSrc, event) {
             isDragging = true;
             this.classList.remove('rotate-slow');
             void this.offsetWidth;
-            if (!isImageLoaded) {
+            if (!isImageLoaded && imageSrc === 'Slipbot.png') {
                 const loadedImg = new Image();
                 loadedImg.onload = () => {
                     img.src = 'SlipBot_Loaded.png';
@@ -186,7 +227,7 @@ function addDraggableImage(imageSrc, event) {
                     this.style.transform = `rotate(${rotateDeg}deg)`;
                 };
                 loadedImg.src = 'SlipBot_Loaded.png';
-            } else {
+            } else if (isImageLoaded && imageSrc === 'Slipbot.png') {
                 img.src = 'Slipbot.png';
                 img.style.width = `${originalWidth}px`;
                 img.style.height = `${originalHeight}px`;
@@ -214,31 +255,113 @@ function addDraggableImage(imageSrc, event) {
             img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
         }
     });
+}
+
+document.getElementById('addBotBtn').addEventListener('click', function(e) {
+    addDraggableImage('Slipbot.png', e);
 });
 
+document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
+    addDraggableImage('truck.png', e);
+});
+
+let backgroundImages = [];
+let selectedBackground = null;
+
+function addBackgroundImage(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.classList.add('background-image');
+        img.style.display = 'block';
+        img.dataset.scale = 1;
+        img.dataset.rotation = 0;
+        document.body.appendChild(img);
+
+        backgroundImages.push(img);
+        selectBackgroundImage(img);
+
+        makeBackgroundDraggable(img);
+    };
+    reader.readAsDataURL(file);
+}
+
+function makeBackgroundDraggable(img) {
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+
+    img.addEventListener('mousedown', function(e) {
+        if (document.getElementById('backgroundToggle').checked) {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = img.offsetLeft;
+            startTop = img.offsetTop;
+            e.preventDefault();
+        }
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (isDragging && document.getElementById('backgroundToggle').checked) {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            img.style.left = `${startLeft + dx}px`;
+            img.style.top = `${startTop + dy}px`;
+        }
+    });
+
+    document.addEventListener('mouseup', function() {
+        isDragging = false;
+    });
+
+    img.addEventListener('dblclick', function(e) {
+        if (document.getElementById('backgroundToggle').checked) {
+            const currentRotation = parseInt(img.dataset.rotation) || 0;
+            const newRotation = (currentRotation + 90) % 360;
+            img.style.transform = `translate(-50%, -50%) scale(${img.dataset.scale}) rotate(${newRotation}deg)`;
+            img.dataset.rotation = newRotation;
+            e.preventDefault();
+        }
+    });
+}
+
+function selectBackgroundImage(img) {
+    if (selectedBackground) {
+        selectedBackground.classList.remove('selected');
+    }
+    selectedBackground = img;
+    selectedBackground.classList.add('selected');
+    document.getElementById('scaleBackground').value = selectedBackground.dataset.scale * 100;
+}
+
 document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) { 
-            const image = document.getElementById('backgroundImage');
-            image.src = e.target.result; 
-            image.style.display = 'block';
-            document.getElementById('scaleBackground').value = 100;
-            updateBackgroundScale(100);
-        };
-        reader.readAsDataURL(file);
+    const files = e.target.files;
+    for (let i = 0; i < files.length; i++) {
+        addBackgroundImage(files[i]);
     }
 });
 
-function updateBackgroundScale(value) {
-    const backgroundImage = document.getElementById('backgroundImage');
-    const scale = value / 100;
-    backgroundImage.style.transform = `translate(-50%, -50%) scale(${scale})`;
-}
-
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    updateBackgroundScale(e.target.value);
+    if (selectedBackground && document.getElementById('backgroundToggle').checked) {
+        const scale = e.target.value / 100;
+        selectedBackground.dataset.scale = scale;
+        const rotation = selectedBackground.dataset.rotation || 0;
+        selectedBackground.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`;
+    }
+});
+
+document.getElementById('backgroundToggle').addEventListener('change', function(e) {
+    const isEnabled = e.target.checked;
+    backgroundImages.forEach(img => {
+        img.style.pointerEvents = isEnabled ? 'auto' : 'none';
+    });
+});
+
+document.body.addEventListener('click', function(e) {
+    if (e.target.classList.contains('background-image')) {
+        selectBackgroundImage(e.target);
+    }
 });
 </script>
 </body>
