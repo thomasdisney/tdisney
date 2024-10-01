@@ -222,6 +222,7 @@ function addDraggableImage(imageSrc, event) {
             } else if (e.detail === 3) { 
                 this.classList.remove('rotate-slow');
                 void this.offsetWidth;
+                isDragging = true;
                 if (!isImageLoaded) {
                     const loadedImg = new Image();
                     loadedImg.onload = () => {
