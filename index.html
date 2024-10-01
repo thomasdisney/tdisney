@@ -211,38 +211,7 @@ function addDraggableImage(e, imageSrc, defaultWidth = '40px') {
     }
 }
 
-document.getElementById('addBotBtn').addEventListener('click', function(e) {
-    addDraggableImage(e, 'Slipbot.png');
-});
-
-document.getElementById('addTrailerBtn').addEventListener('click', function(e) {
-    addDraggableImage(e, 'truck.png');
-});
-
-document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const files = e.target.files;
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) { 
-                const image = document.createElement('img');
-                image.src = e.target.result;
-                image.classList.add('background-image', 'draggable');
-                image.style.display = 'block';
-                image.style.left = '50%';
-                image.style.top = '55%';
-                image.style.transform = 'translate(-50%, -50%) scale(0.5)';
-                document.body.appendChild(image);
-                makeDraggable(image);
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-});
-
 function makeDraggable(element) {
-    let isDragging = false;
     let currentX;
     let currentY;
     let initialX;
@@ -250,21 +219,10 @@ function makeDraggable(element) {
     let xOffset = 0;
     let yOffset = 0;
 
-    element.addEventListener('mousedown', dragStart);
     document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', dragEnd);
-
-    function dragStart(e) {
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
-
-        if (e.target === element) {
-            isDragging = true;
-        }
-    }
 
     function drag(e) {
-        if (isDragging) {
+        if (element.classList.contains('dragging')) {
             e.preventDefault();
             currentX = e.clientX - initialX;
             currentY = e.clientY - initialY;
@@ -273,23 +231,18 @@ function makeDraggable(element) {
             yOffset = currentY;
 
             setTranslate(currentX, currentY, element);
+        } else {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
         }
     }
 
-    function dragEnd(e) {
-        initialX = currentX;
-        initialY = currentY;
-
-        isDragging = false;
-    }
-
     function setTranslate(xPos, yPos, el) {
-        el.style.transform = `translate(${xPos}px, ${yPos}px) scale(${el.scaleValue || 0.5})`;
+        el.style.transform = `translate(${xPos}px, ${yPos}px) ${el.style.transform.replace(/translate\([^)]*\)/, '')}`;
     }
 }
 
 function makeDraggableContainer(element) {
-    let isDragging = false;
     let currentX;
     let currentY;
     let initialX;
@@ -297,21 +250,10 @@ function makeDraggableContainer(element) {
     let xOffset = 0;
     let yOffset = 0;
 
-    element.addEventListener('mousedown', dragStart);
     document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', dragEnd);
-
-    function dragStart(e) {
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
-
-        if (e.target === element) {
-            isDragging = true;
-        }
-    }
 
     function drag(e) {
-        if (isDragging) {
+        if (element.classList.contains('dragging')) {
             e.preventDefault();
             currentX = e.clientX - initialX;
             currentY = e.clientY - initialY;
@@ -320,30 +262,39 @@ function makeDraggableContainer(element) {
             yOffset = currentY;
 
             setTranslate(currentX, currentY, element);
-            moveSlipbots(currentX - initialX, currentY - initialY);
+            moveSlipbots(currentX - xOffset, currentY - yOffset);
+        } else {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
         }
     }
 
-    function dragEnd(e) {
-        initialX = currentX;
-        initialY = currentY;
-
-        isDragging = false;
-    }
-
     function setTranslate(xPos, yPos, el) {
-        el.style.transform = `translate(${xPos}px, ${yPos}px) scale(${el.scaleValue || 0.5})`;
+        el.style.transform = `translate(${xPos}px, ${yPos}px) ${el.style.transform.replace(/translate\([^)]*\)/, '')}`;
     }
 
     function moveSlipbots(deltaX, deltaY) {
+        const containerRect = element.getBoundingClientRect();
         const slipbots = document.querySelectorAll('img[src="Slipbot.png"], img[src="SlipBot_Loaded.png"]');
         slipbots.forEach(slipbot => {
-            const rect = slipbot.getBoundingClientRect();
-            const newX = rect.left + deltaX;
-            const newY = rect.top + deltaY;
-            slipbot.style.left = `${newX}px`;
-            slipbot.style.top = `${newY}px`;
+            const slipbotRect = slipbot.getBoundingClientRect();
+            if (isInsideContainer(slipbotRect, containerRect)) {
+                const currentTransform = getComputedStyle(slipbot).transform;
+                const matrix = new DOMMatrix(currentTransform);
+                const newX = matrix.e + deltaX;
+                const newY = matrix.f + deltaY;
+                slipbot.style.transform = `translate(${newX}px, ${newY}px) ${slipbot.style.transform.replace(/translate\([^)]*\)/, '')}`;
+            }
         });
+    }
+
+    function isInsideContainer(slipbotRect, containerRect) {
+        return (
+            slipbotRect.left >= containerRect.left &&
+            slipbotRect.right <= containerRect.right &&
+            slipbotRect.top >= containerRect.top &&
+            slipbotRect.bottom <= containerRect.bottom
+        );
     }
 }
 
