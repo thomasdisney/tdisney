@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SlipBot Simulator</title>
-    <meta property="og:title" content="tdisney.com">
-    <meta property="og:description" content="SlipBot Workflow Simulator">
-    <meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
-    <meta property="og:url" content="https://thomasdisney.github.io">
-    <meta name="twitter:card" content="summary_large_image">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SlipBot Simulator</title>
+<meta property="og:title" content="tdisney.com">
+<meta property="og:description" content="SlipBot Workflow Simulator">
+<meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
+<meta property="og:url" content="https://thomasdisney.github.io">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
 <style>
     body, html {
         height: 60%;
         margin: 0;
         padding: 0;
-        background: #fff;
+        background: #000;
         color: #00c600;
         font-family: 'IBM PLEX MONO', monospace;
         line-height: 1;
@@ -98,29 +97,34 @@
         z-index: 2;
     }
     .rotate-slow {
-        transition: transform 0.3s ease;
+    transition: transform 0.3s ease;
     }
-    .background-image {
-        position: absolute;
+    #backgroundImage {
+        position: fixed;
+        top:55%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.5);
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
         z-index: 1;
+        display: none;
     }
     .dragging, .draggable {
         cursor: none;
     }
     @keyframes dissolveRightToLeft {
-        0% {
-            clip-path: inset(0 0 0 0);
-        }
-        100% {
-            clip-path: inset(100% 0 0 0);
-        }
+    0% {
+        clip-path: inset(0 0 0 0);
     }
-    .dissolve-right-to-left {
-        animation: dissolveRightToLeft 1.5s ease-in-out forwards;
+    100% {
+        clip-path: inset(100% 0 0 0);
     }
+}
+
+.dissolve-right-to-left {
+    animation: dissolveRightToLeft 1.5s ease-in-out forwards;
+}
 </style>
 </head>
 <body>
@@ -128,18 +132,18 @@
     <h1>SlipBot Simulator</h1>
     <div class="controls">
         <span class="control-link" id="addBotBtn">[add SlipBot]</span>
-        <span class="control-link" id="addTrailerBtn">[add trailer]</span>
         <label for="backgroundUpload" class="control-link">[upload layout]</label>
-        <input type="file" id="backgroundUpload" accept="image/*" multiple>
+        <input type="file" id="backgroundUpload" accept="image/*">
         <input type="range" id="scaleBackground" min="10" max="200" value="100">
     </div>
 </div>
+<img id="backgroundImage" src="">
 <script>
-function addDraggableImage(e, imageSrc, defaultWidth = '40px') {
+document.getElementById('addBotBtn').addEventListener('click', function(e) {
     const img = document.createElement('img');
-    img.src = imageSrc;
+    img.src = 'Slipbot.png';
     img.classList.add('draggable', 'rotate', 'dragging');
-    img.style.width = defaultWidth;
+    img.style.width = '40px';
     img.style.height = 'auto';
     img.style.left = `${e.clientX}px`;
     img.style.top = `${e.clientY}px`;
@@ -163,7 +167,7 @@ function addDraggableImage(e, imageSrc, defaultWidth = '40px') {
             this.classList.add('rotate-slow');
             rotateDeg += 45; 
             this.style.transform = `rotate(${rotateDeg}deg)`; 
-        } else if (e.detail === 3 && imageSrc === 'Slipbot.png') { 
+        } else if (e.detail === 3) { 
             isDragging = true;
             this.classList.remove('rotate-slow');
             void this.offsetWidth;
@@ -199,154 +203,38 @@ function addDraggableImage(e, imageSrc, defaultWidth = '40px') {
         });
     });
     
-    if (imageSrc === 'truck.png') {
-        makeDraggableContainer(img);
-    } else {
-        makeDraggable(img);
-    }
-}
-
-function makeDraggable(element) {
-    let currentX;
-    let currentY;
-    let initialX;
-    let initialY;
-    let xOffset = 0;
-    let yOffset = 0;
-
-    document.addEventListener('mousemove', drag);
-
-    function drag(e) {
-        if (element.classList.contains('dragging')) {
+    document.addEventListener('mousemove', function(e) {
+        if (isDragging) {
             e.preventDefault();
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
-
-            xOffset = currentX;
-            yOffset = currentY;
-
-            setTranslate(currentX, currentY, element);
-        } else {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-        }
-    }
-
-    function setTranslate(xPos, yPos, el) {
-        el.style.transform = `translate(${xPos}px, ${yPos}px) ${el.style.transform.replace(/translate\([^)]*\)/, '')}`;
-    }
-}
-
-function makeDraggableContainer(element) {
-    let currentX;
-    let currentY;
-    let initialX;
-    let initialY;
-    let xOffset = 0;
-    let yOffset = 0;
-
-    document.addEventListener('mousemove', drag);
-
-    function drag(e) {
-        if (element.classList.contains('dragging')) {
-            e.preventDefault();
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
-
-            xOffset = currentX;
-            yOffset = currentY;
-
-            setTranslate(currentX, currentY, element);
-            moveSlipbots(currentX - xOffset, currentY - yOffset);
-        } else {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-        }
-    }
-
-    function setTranslate(xPos, yPos, el) {
-        el.style.transform = `translate(${xPos}px, ${yPos}px) ${el.style.transform.replace(/translate\([^)]*\)/, '')}`;
-    }
-
-    function moveSlipbots(deltaX, deltaY) {
-        const containerRect = element.getBoundingClientRect();
-        const slipbots = document.querySelectorAll('img[src="Slipbot.png"], img[src="SlipBot_Loaded.png"]');
-        slipbots.forEach(slipbot => {
-            const slipbotRect = slipbot.getBoundingClientRect();
-            if (isInsideContainer(slipbotRect, containerRect)) {
-                const currentTransform = getComputedStyle(slipbot).transform;
-                const matrix = new DOMMatrix(currentTransform);
-                const newX = matrix.e + deltaX;
-                const newY = matrix.f + deltaY;
-                slipbot.style.transform = `translate(${newX}px, ${newY}px) ${slipbot.style.transform.replace(/translate\([^)]*\)/, '')}`;
-            }
-        });
-    }
-
-    function isInsideContainer(slipbotRect, containerRect) {
-        return (
-            slipbotRect.left >= containerRect.left &&
-            slipbotRect.right <= containerRect.right &&
-            slipbotRect.top >= containerRect.top &&
-            slipbotRect.bottom <= containerRect.bottom
-        );
-    }
-}
-
-function updateBackgroundScale(value) {
-    const backgroundImages = document.querySelectorAll('.background-image');
-    const scale = value / 100;
-    backgroundImages.forEach(image => {
-        image.scaleValue = scale;
-        const rect = image.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const transformValues = image.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
-        if (transformValues) {
-            const [, translateX, translateY] = transformValues;
-            image.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-        } else {
-            image.style.transform = `translate(${centerX - image.offsetWidth / 2}px, ${centerY - image.offsetHeight / 2}px) scale(${scale})`;
+            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
+            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
         }
     });
+});
+
+document.getElementById('backgroundUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) { 
+            const image = document.getElementById('backgroundImage');
+            image.src = e.target.result; 
+            image.style.display = 'block';
+            document.getElementById('scaleBackground').value = 100;
+            updateBackgroundScale(100);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+function updateBackgroundScale(value) {
+    const backgroundImage = document.getElementById('backgroundImage');
+    const scale = value / 100;
+    backgroundImage.style.transform = `translate(-50%, -50%) scale(${scale})`;
 }
 
 document.getElementById('scaleBackground').addEventListener('input', function(e) {
     updateBackgroundScale(e.target.value);
-});
-
-document.getElementById('addBotBtn').addEventListener('click', function(e) {
-    addDraggableImage(e, 'Slipbot.png');
-});
-
-document.getElementById('addTrailerBtn').addEventListener('click', function(e) {
-    addDraggableImage(e, 'truck.png', '100px');
-});
-
-document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const files = e.target.files;
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-
-        reader.onload = function(event) {
-            const img = document.createElement('img');
-            img.src = event.target.result;
-            img.classList.add('background-image');
-            img.style.position = 'absolute';
-            img.style.top = '50%';
-            img.style.left = '50%';
-            img.style.transform = 'translate(-50%, -50%)';
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '100%';
-            img.style.zIndex = '1';
-            document.body.appendChild(img);
-
-            makeDraggable(img);
-        };
-
-        reader.readAsDataURL(file);
-    }
 });
 </script>
 </body>
