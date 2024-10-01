@@ -198,7 +198,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.position = 'absolute';
     document.body.appendChild(img);
 
-    let isDragging = false, rotateDeg = 0, isImageLoaded = false;
+    let isDragging = true, rotateDeg = 0, isImageLoaded = false;
     let originalWidth, originalHeight;
 
     img.onload = function() {
