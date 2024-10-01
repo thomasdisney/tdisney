@@ -129,8 +129,8 @@
     .toggle-switch {
         position: relative;
         display: inline-block;
-        width: 60px;
-        height: 34px;
+        width: 40px;
+        height: 20px;
     }
     .toggle-switch input {
         opacity: 0;
@@ -146,15 +146,15 @@
         bottom: 0;
         background-color: #ccc;
         transition: .4s;
-        border-radius: 34px;
+        border-radius: 20px;
     }
     .slider:before {
         position: absolute;
         content: "";
-        height: 26px;
-        width: 26px;
-        left: 4px;
-        bottom: 4px;
+        height: 16px;
+        width: 16px;
+        left: 2px;
+        bottom: 2px;
         background-color: white;
         transition: .4s;
         border-radius: 50%;
@@ -163,7 +163,7 @@
         background-color: #00c600;
     }
     input:checked + .slider:before {
-        transform: translateX(26px);
+        transform: translateX(20px);
     }
 </style>
 </head>
@@ -186,7 +186,10 @@
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
-    img.classList.add('draggable', 'rotate', 'dragging');
+    img.classList.add('draggable', 'rotate');
+    if (imageSrc === 'Slipbot.png') {
+        img.classList.add('dragging');
+    }
     img.style.width = imageSrc === 'truck.png' ? 'auto' : '40px';
     img.style.height = 'auto';
     img.style.left = `${event.clientX}px`;
@@ -195,10 +198,10 @@ function addDraggableImage(imageSrc, event) {
     img.style.position = 'absolute';
     document.body.appendChild(img);
 
-    let isDragging = true, rotateDeg = 0, isImageLoaded = false;
+    let isDragging = imageSrc === 'Slipbot.png', rotateDeg = 0, isImageLoaded = false;
     let originalWidth, originalHeight;
 
-        img.onload = function() {
+    img.onload = function() {
         originalWidth = this.width;
         originalHeight = this.height;
         if (imageSrc === 'truck.png') {
@@ -206,41 +209,48 @@ function addDraggableImage(imageSrc, event) {
         }
     };
 
-    img.addEventListener('click', function(e) {
-        if (e.detail === 1) { 
-            isDragging = !isDragging; 
-            e.target.classList.toggle('dragging', isDragging); 
-        } else if (e.detail === 2) { 
-            isDragging = true;
-            this.classList.add('rotate-slow');
-            rotateDeg += 45; 
-            this.style.transform = `rotate(${rotateDeg}deg)`; 
-        } else if (e.detail === 3) { 
-            isDragging = true;
-            this.classList.remove('rotate-slow');
-            void this.offsetWidth;
-            if (!isImageLoaded && imageSrc === 'Slipbot.png') {
-                const loadedImg = new Image();
-                loadedImg.onload = () => {
-                    img.src = 'SlipBot_Loaded.png';
+    if (imageSrc === 'Slipbot.png') {
+        img.addEventListener('click', function(e) {
+            if (e.detail === 1) { 
+                isDragging = !isDragging; 
+                e.target.classList.toggle('dragging', isDragging); 
+            } else if (e.detail === 2) { 
+                isDragging = true;
+                this.classList.add('rotate-slow');
+                rotateDeg += 45; 
+                this.style.transform = `rotate(${rotateDeg}deg)`; 
+            } else if (e.detail === 3) { 
+                isDragging = true;
+                this.classList.remove('rotate-slow');
+                void this.offsetWidth;
+                if (!isImageLoaded) {
+                    const loadedImg = new Image();
+                    loadedImg.onload = () => {
+                        img.src = 'SlipBot_Loaded.png';
+                        img.style.width = `${originalWidth}px`;
+                        img.style.height = `${originalHeight}px`;
+                        isImageLoaded = true;
+                        rotateDeg -= 45; 
+                        this.style.transform = `rotate(${rotateDeg}deg)`;
+                    };
+                    loadedImg.src = 'SlipBot_Loaded.png';
+                } else {
+                    img.src = 'Slipbot.png';
                     img.style.width = `${originalWidth}px`;
                     img.style.height = `${originalHeight}px`;
-                    isImageLoaded = true;
+                    isImageLoaded = false;
                     rotateDeg -= 45; 
                     this.style.transform = `rotate(${rotateDeg}deg)`;
-                };
-                loadedImg.src = 'SlipBot_Loaded.png';
-            } else if (isImageLoaded && imageSrc === 'Slipbot.png') {
-                img.src = 'Slipbot.png';
-                img.style.width = `${originalWidth}px`;
-                img.style.height = `${originalHeight}px`;
-                isImageLoaded = false;
-                rotateDeg -= 45; 
-                this.style.transform = `rotate(${rotateDeg}deg)`;
+                }
             }
-        }
-        e.preventDefault();
-    });
+            e.preventDefault();
+        });
+    } else if (imageSrc === 'truck.png') {
+        img.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            e.preventDefault();
+        });
+    }
 
     img.addEventListener('contextmenu', function(e) {
         e.preventDefault(); 
@@ -254,8 +264,35 @@ function addDraggableImage(imageSrc, event) {
     document.addEventListener('mousemove', function(e) {
         if (isDragging) {
             e.preventDefault();
-            img.style.left = `${e.clientX - img.offsetWidth / 2}px`;
-            img.style.top = `${e.clientY - img.offsetHeight / 2}px`;
+            const newX = e.clientX - img.offsetWidth / 2;
+            const newY = e.clientY - img.offsetHeight / 2;
+            img.style.left = `${newX}px`;
+            img.style.top = `${newY}px`;
+
+            if (imageSrc === 'truck.png') {
+                const slipbots = document.querySelectorAll('img[src^="Slipbot"]');
+                slipbots.forEach(slipbot => {
+                    const slipbotRect = slipbot.getBoundingClientRect();
+                    const truckRect = img.getBoundingClientRect();
+                    if (
+                        slipbotRect.left >= truckRect.left &&
+                        slipbotRect.right <= truckRect.right &&
+                        slipbotRect.top >= truckRect.top &&
+                        slipbotRect.bottom <= truckRect.bottom
+                    ) {
+                        const relativeX = slipbotRect.left - truckRect.left;
+                        const relativeY = slipbotRect.top - truckRect.top;
+                        slipbot.style.left = `${newX + relativeX}px`;
+                        slipbot.style.top = `${newY + relativeY}px`;
+                    }
+                });
+            }
+        }
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (imageSrc === 'truck.png') {
+            isDragging = false;
         }
     });
 }
@@ -358,6 +395,7 @@ document.getElementById('backgroundToggle').addEventListener('change', function(
     const isEnabled = e.target.checked;
     backgroundImages.forEach(img => {
         img.style.pointerEvents = isEnabled ? 'auto' : 'none';
+        img.style.boxShadow = isEnabled ? '' : 'none';
     });
 });
 
