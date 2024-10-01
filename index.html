@@ -217,6 +217,7 @@ function addDraggableImage(imageSrc, event) {
             } else if (e.detail === 2) { 
                 this.classList.add('rotate-slow');
                 rotateDeg += 45; 
+                isDragging = true;
                 this.style.transform = `rotate(${rotateDeg}deg)`; 
             } else if (e.detail === 3) { 
                 this.classList.remove('rotate-slow');
@@ -254,7 +255,7 @@ function addDraggableImage(imageSrc, event) {
         });
     } else if (imageSrc === 'truck.png') {
         img.addEventListener('mousedown', function(e) {
-            if (e.button === 0) { // Left click
+            if (e.button === 0) { 
                 isDragging = true;
             }
             e.preventDefault();
