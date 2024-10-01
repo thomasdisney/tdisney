@@ -209,6 +209,7 @@ function addDraggableImage(imageSrc, event) {
     if (imageSrc === 'Slipbot.png') {
         img.classList.add('dragging');
         img.addEventListener('click', function(e) {
+            e.stopPropagation();
             if (e.detail === 1) { 
                 isDragging = !isDragging; 
                 this.classList.toggle('dragging', isDragging);
