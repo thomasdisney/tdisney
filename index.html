@@ -213,7 +213,7 @@ function addDraggableImage(imageSrc, event) {
         img.addEventListener('click', function(e) {
             if (e.detail === 1) { 
                 isDragging = !isDragging; 
-                e.target.classList.toggle('dragging', isDragging); 
+                this.classList.toggle('dragging', isDragging);
             } else if (e.detail === 2) { 
                 this.classList.add('rotate-slow');
                 rotateDeg += 45; 
