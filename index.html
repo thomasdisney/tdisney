@@ -247,29 +247,32 @@ function addDraggableImage(imageSrc, event) {
         });
     } else if (imageSrc === 'truck.png') {
         img.addEventListener('mousedown', function(e) {
-            isDragging = true;
+            if (e.button === 0) { // Left click
+                isDragging = true;
+            }
             e.preventDefault();
         });
-    }
 
-    img.addEventListener('contextmenu', function(e) {
-        e.preventDefault(); 
-        this.classList.add('dissolve-right-to-left');
-        this.addEventListener('animationend', function onAnimationEnd() {
-            this.remove();
-            this.removeEventListener('animationend', onAnimationEnd);
+        img.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            rotateDeg += 45;
+            this.style.transform = `rotate(${rotateDeg}deg)`;
         });
-    });
+    }
     
     document.addEventListener('mousemove', function(e) {
         if (isDragging) {
             e.preventDefault();
             const newX = e.clientX - img.offsetWidth / 2;
             const newY = e.clientY - img.offsetHeight / 2;
-            img.style.left = `${newX}px`;
-            img.style.top = `${newY}px`;
-
+            
             if (imageSrc === 'truck.png') {
+                const dx = newX - parseInt(img.style.left);
+                const dy = newY - parseInt(img.style.top);
+                
+                img.style.left = `${newX}px`;
+                img.style.top = `${newY}px`;
+
                 const slipbots = document.querySelectorAll('img[src^="Slipbot"]');
                 slipbots.forEach(slipbot => {
                     const slipbotRect = slipbot.getBoundingClientRect();
@@ -280,20 +283,21 @@ function addDraggableImage(imageSrc, event) {
                         slipbotRect.top >= truckRect.top &&
                         slipbotRect.bottom <= truckRect.bottom
                     ) {
-                        const relativeX = slipbotRect.left - truckRect.left;
-                        const relativeY = slipbotRect.top - truckRect.top;
-                        slipbot.style.left = `${newX + relativeX}px`;
-                        slipbot.style.top = `${newY + relativeY}px`;
+                        const currentLeft = parseInt(slipbot.style.left);
+                        const currentTop = parseInt(slipbot.style.top);
+                        slipbot.style.left = `${currentLeft + dx}px`;
+                        slipbot.style.top = `${currentTop + dy}px`;
                     }
                 });
+            } else {
+                img.style.left = `${newX}px`;
+                img.style.top = `${newY}px`;
             }
         }
     });
 
     document.addEventListener('mouseup', function() {
-        if (imageSrc === 'truck.png') {
-            isDragging = false;
-        }
+        isDragging = false;
     });
 }
 
