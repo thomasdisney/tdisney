@@ -187,6 +187,7 @@ function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
     img.classList.add('draggable', 'rotate', 'dragging');
+    img.style.width = imageSrc === 'truck.png' ? 'auto' : '40px';
     img.style.width = '40px';
     img.style.height = 'auto';
     img.style.left = `${event.clientX}px`;
@@ -198,9 +199,12 @@ function addDraggableImage(imageSrc, event) {
     let isDragging = true, rotateDeg = 0, isImageLoaded = false;
     let originalWidth, originalHeight;
 
-    img.onload = function() {
+        img.onload = function() {
         originalWidth = this.width;
         originalHeight = this.height;
+        if (imageSrc === 'truck.png') {
+            img.style.width = `${originalWidth}px`; 
+        }
     };
 
     img.addEventListener('click', function(e) {
