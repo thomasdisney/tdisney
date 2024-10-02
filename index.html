@@ -232,7 +232,6 @@ function addDraggableImage(imageSrc, event) {
                     img.style.width = `${originalWidth}px`;
                     img.style.height = `${originalHeight}px`;
                     isImageLoaded = true;
-                    this.style.transform = `rotate(${rotateDeg}deg)`;
                 };
                 loadedImg.src = 'SlipBot_Loaded.png';
             } else {
@@ -240,8 +239,6 @@ function addDraggableImage(imageSrc, event) {
                 img.style.width = `${originalWidth}px`;
                 img.style.height = `${originalHeight}px`;
                 isImageLoaded = false;
-                rotateDeg -= 45; 
-                this.style.transform = `rotate(${rotateDeg}deg)`;
             }
         });
     } else if (imageSrc === 'truck.png') {
