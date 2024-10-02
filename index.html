@@ -408,4 +408,14 @@ document.getElementById('backgroundToggle').addEventListener('change', function(
     const isEnabled = e.target.checked;
     backgroundImages.forEach(img => {
         img.style.pointerEvents = isEnabled ? 'auto' : 'none';
-        img.style.boxS
+        img.style.boxShadow = isEnabled ? '' : 'none';
+    });
+});
+    document.body.addEventListener('click', function(e) {
+    if (e.target.classList.contains('background-image')) {
+        selectBackgroundImage(e.target);
+    }
+});    
+<script>
+</body>
+</html>
