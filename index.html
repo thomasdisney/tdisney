@@ -156,6 +156,35 @@ function addDraggableImage(imageSrc, event) {
         }
     }
 
+    // New function to handle triple click deletion
+    function handleTripleClick(e) {
+        if (isDragging) {
+            e.preventDefault();
+            img.remove();
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+    }
+
+    // Add triple click event listener to all images
+    img.addEventListener('click', (function() {
+        let clicks = 0;
+        let timeout;
+
+        return function(e) {
+            clicks++;
+            if (clicks === 1) {
+                timeout = setTimeout(() => {
+                    clicks = 0;
+                }, 300);
+            } else if (clicks === 3) {
+                clearTimeout(timeout);
+                handleTripleClick(e);
+                clicks = 0;
+            }
+        };
+    })());
+
     if (imageSrc === 'Slipbot.png') {
         state.offsetX = event.clientX - parseFloat(img.style.left);
         state.offsetY = event.clientY - parseFloat(img.style.top);
@@ -245,7 +274,6 @@ function addDraggableImage(imageSrc, event) {
         });
     }
 }
-
 
 
 
