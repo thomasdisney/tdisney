@@ -84,7 +84,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.transformOrigin = 'center';
     document.body.appendChild(img);
 
-    let isDragging = false, 
+    let isDragging = true, 
         rotateDeg = 0,
         isImageLoaded = false,
         isMirrored = false;
@@ -127,12 +127,12 @@ function addDraggableImage(imageSrc, event) {
     }
 
     function rotateElement(el, angle) {
-        el.style.transform = `rotate(${angle}deg) scaleX(${isMirrored ? -1 : 1})`;
+        el.style.transform = `rotate(${angle}deg) scaleY(${isMirrored ? -1 : 1})`;
     }
 
     function mirrorElement(el) {
         isMirrored = !isMirrored;
-        el.style.transform = `rotate(${rotateDeg}deg) scaleX(${isMirrored ? -1 : 1})`;
+        el.style.transform = `rotate(${rotateDeg}deg) scaleY(${isMirrored ? -1 : 1})`;
     }
 
     function onMouseMove(e) {
@@ -149,18 +149,15 @@ function addDraggableImage(imageSrc, event) {
     }
 
     function onMouseUp() {
-        isDragging = false;
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
     }
 
     function handleTripleClick(e) {
         e.preventDefault();
-        if (isDragging || imageSrc === 'Slipbot.png') {
-            img.remove();
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
+        img.remove();
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
     }
 
     let clickCount = 0;
@@ -179,8 +176,7 @@ function addDraggableImage(imageSrc, event) {
             return;
         }
 
-        if (e.button === 0) {
-            isDragging = true;
+        if (e.button === 0 && isDragging) {
             state.offsetX = e.clientX - parseFloat(img.style.left);
             state.offsetY = e.clientY - parseFloat(img.style.top);
             state.startX = e.clientX;
@@ -193,34 +189,21 @@ function addDraggableImage(imageSrc, event) {
         }
     });
 
-    if (imageSrc === 'Slipbot.png') {
-        img.addEventListener('click', function(e) {
-            if (clickCount !== 1) return;
-            isDragging = !isDragging;
-            if (isDragging) {
-                state.offsetX = e.clientX - parseFloat(img.style.left);
-                state.offsetY = e.clientY - parseFloat(img.style.top);
-                state.lastX = e.clientX;
-                state.lastY = e.clientY;
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            } else {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
-        });
-
-        img.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            if (!isImageLoaded) {
-                img.src = 'SlipBot_Loaded.png';
-                isImageLoaded = true;
-            } else {
-                img.src = 'Slipbot.png';
-                isImageLoaded = false;
-            }
-        });
-    }
+    img.addEventListener('click', function(e) {
+        if (clickCount !== 1) return;
+        isDragging = !isDragging;
+        if (isDragging) {
+            state.offsetX = e.clientX - parseFloat(img.style.left);
+            state.offsetY = e.clientY - parseFloat(img.style.top);
+            state.lastX = e.clientX;
+            state.lastY = e.clientY;
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        } else {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+    });
 
     img.addEventListener('dblclick', function(e) {
         if (clickCount !== 2) return;
@@ -239,16 +222,24 @@ function addDraggableImage(imageSrc, event) {
             });
         }
         
-        // Ensure isDragging remains true and update mouse position
-        if (isDragging) {
-            state.offsetX = e.clientX - parseFloat(img.style.left);
-            state.offsetY = e.clientY - parseFloat(img.style.top);
-            state.lastX = e.clientX;
-            state.lastY = e.clientY;
-        }
+        state.offsetX = e.clientX - parseFloat(img.style.left);
+        state.offsetY = e.clientY - parseFloat(img.style.top);
+        state.lastX = e.clientX;
+        state.lastY = e.clientY;
     });
 
-    if (imageSrc === 'truck.png') {
+    if (imageSrc === 'Slipbot.png') {
+        img.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            if (!isImageLoaded) {
+                img.src = 'SlipBot_Loaded.png';
+                isImageLoaded = true;
+            } else {
+                img.src = 'Slipbot.png';
+                isImageLoaded = false;
+            }
+        });
+    } else if (imageSrc === 'truck.png') {
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             mirrorElement(img);
@@ -256,8 +247,8 @@ function addDraggableImage(imageSrc, event) {
             attachedElements.forEach(el => {
                 const elCenter = getCenter(el);
                 const mirrored = { 
-                    x: 2 * center.x - elCenter.x, 
-                    y: elCenter.y 
+                    x: elCenter.x, 
+                    y: 2 * center.y - elCenter.y 
                 };
                 el.style.left = `${mirrored.x - el.offsetWidth / 2}px`;
                 el.style.top = `${mirrored.y - el.offsetHeight / 2}px`;
@@ -266,6 +257,11 @@ function addDraggableImage(imageSrc, event) {
         });
     }
 }
+
+
+
+
+
 
     
 document.getElementById('addBotBtn').addEventListener('click',function(e){addDraggableImage('Slipbot.png',e)});
