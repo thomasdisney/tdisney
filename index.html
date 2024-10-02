@@ -53,7 +53,6 @@ input:checked + .slider:before{transform:translateX(20px)}
 </div>
 </div>
 <script>
-// Utility functions
 const getCenter = (el) => {
     const rect = el.getBoundingClientRect();
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
@@ -74,8 +73,7 @@ const checkOverlap = (elem1, elem2) => {
     return !(rect1.right < rect2.left || rect1.left > rect2.right ||
              rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 };
-
-// Main function
+    
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
@@ -86,7 +84,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.transformOrigin = 'center';
     document.body.appendChild(img);
 
-    let isDragging = true,
+    let isDragging = imageSrc === 'Slipbot.png',
         rotateDeg = 0,
         isImageLoaded = false;
 
@@ -144,12 +142,22 @@ function addDraggableImage(imageSrc, event) {
     }
 
     function onMouseUp() {
-        isDragging = false;
+        if (imageSrc === 'truck.png') {
+            isDragging = false;
+        }
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
     }
 
     if (imageSrc === 'Slipbot.png') {
+        // Start dragging immediately for Slipbot
+        state.offsetX = event.clientX - parseFloat(img.style.left);
+        state.offsetY = event.clientY - parseFloat(img.style.top);
+        state.lastX = event.clientX;
+        state.lastY = event.clientY;
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
         img.addEventListener('click', function(e) {
             isDragging = !isDragging;
             if (isDragging) {
