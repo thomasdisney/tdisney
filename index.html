@@ -126,8 +126,8 @@ function addDraggableImage(imageSrc, event) {
         el.style.top = `${top}px`;
     }
 
-    function rotateElement(el, angle) {
-        el.style.transform = `rotate(${angle}deg) scaleX(${isFlipped ? -1 : 1})`;
+    function rotateElement(el, angle, flipped) {
+        el.style.transform = `rotate(${angle}deg) scaleX(${flipped ? -1 : 1})`;
     }
 
     function onMouseMove(e) {
@@ -181,7 +181,7 @@ function addDraggableImage(imageSrc, event) {
         img.addEventListener('dblclick', function(e) {
             e.preventDefault();
             rotateDeg = (rotateDeg + 45) % 360;
-            rotateElement(img, rotateDeg);
+            rotateElement(img, rotateDeg, isFlipped);
         });
 
         img.addEventListener('contextmenu', function(e) {
@@ -215,7 +215,7 @@ function addDraggableImage(imageSrc, event) {
             rotateDeg = (rotateDeg + 45) % 360;
             const deltaRotate = rotateDeg - prevRotateDeg;
             
-            rotateElement(img, rotateDeg);
+            rotateElement(img, rotateDeg, isFlipped);
             
             const center = getCenter(img);
             attachedElements.forEach(el => {
@@ -223,14 +223,14 @@ function addDraggableImage(imageSrc, event) {
                 const rotated = rotatePoint(elCenter.x, elCenter.y, center.x, center.y, deltaRotate);
                 el.style.left = `${rotated.x - el.offsetWidth / 2}px`;
                 el.style.top = `${rotated.y - el.offsetHeight / 2}px`;
-                rotateElement(el, rotateDeg);
+                rotateElement(el, rotateDeg, false);
             });
         });
 
         img.addEventListener('dblclick', function(e) {
             e.preventDefault();
             isFlipped = !isFlipped;
-            rotateElement(img, rotateDeg);
+            rotateElement(img, rotateDeg, isFlipped);
         });
     }
 }
