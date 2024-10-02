@@ -11,411 +11,60 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <style>
-    body, html {
-        height: 60%;
-        margin: 0;
-        padding: 0;
-        background: #FFF;
-        color: #00c600;
-        font-family: 'IBM PLEX MONO', monospace;
-        line-height: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-    .container {
-        flex: 0 0 auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        padding: 10px;
-        box-sizing: border-box;
-        max-width: 100%;
-        width: 100%;
-        background-color: rgba(0, 0, 0, 0.8);
-        z-index: 5;
-    }
-    h1 {
-        font-size: 2em;
-        margin-bottom: 10px;
-        text-align: left;
-    }
-    .controls {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 10px;
-    }
-    .control-link {
-        color: #00c600;
-        text-decoration: underline;
-        cursor: none;
-        font-family: inherit;
-        font-size: 1em;
-        transition: all 0.2s ease;
-    }
-    .control-link:hover {
-        color: #00ff00;
-    }
-    input[type="file"] {
-        display: none;
-    }
-    input[type="range"] {
-        -webkit-appearance: none;
-        width: 200px;
-        height: 2px;
-        background: #00c600;
-        outline: none;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    }
-    input[type="range"]:hover {
-        opacity: 5;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 15px;
-        height: 15px;
-        background: #00c600;
-        cursor: none;
-        border-radius: 50%;
-    }
-    input[type="range"]::-moz-range-thumb {
-        width: 15px;
-        height: 15px;
-        background: #00c600;
-        cursor: none;
-        border-radius: 50%;
-    }
-    .draggable {
-        position: absolute;
-        touch-action: none;
-        user-select: none;
-        z-index: 2;
-    }
-    .rotate-slow {
-        transition: transform 0.3s ease;
-    }
-    .dragging, .draggable {
-        cursor: none;
-    }
-    @keyframes dissolveRightToLeft {
-        0% {
-            clip-path: inset(0 0 0 0);
-        }
-        100% {
-            clip-path: inset(100% 0 0 0);
-        }
-    }
-    .dissolve-right-to-left {
-        animation: dissolveRightToLeft 1.5s ease-in-out forwards;
-    }
-    .background-image {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(1);
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        z-index: 1;
-    }
-    .background-image.selected {
-        box-shadow: 0 0 10px 5px #00ff00;
-    }
-    .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 40px;
-        height: 20px;
-    }
-    .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        transition: .4s;
-        border-radius: 20px;
-    }
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 16px;
-        width: 16px;
-        left: 2px;
-        bottom: 2px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-    input:checked + .slider {
-        background-color: #00c600;
-    }
-    input:checked + .slider:before {
-        transform: translateX(20px);
-    }
+body,html{height:60%;margin:0;padding:0;background:#FFF;color:#00c600;font-family:'IBM PLEX MONO',monospace;line-height:1;display:flex;flex-direction:column;overflow:hidden}
+.container{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px;box-sizing:border-box;max-width:100%;width:100%;background-color:rgba(0,0,0,0.8);z-index:5}
+h1{font-size:2em;margin-bottom:10px;text-align:left}
+.controls{display:flex;justify-content:center;align-items:center;gap:20px;margin-bottom:10px}
+.control-link{color:#00c600;text-decoration:underline;cursor:none;font-family:inherit;font-size:1em;transition:all 0.2s ease}
+.control-link:hover{color:#00ff00}
+input[type="file"]{display:none}
+input[type="range"]{-webkit-appearance:none;width:200px;height:2px;background:#00c600;outline:none;opacity:0.7;transition:opacity 0.2s}
+input[type="range"]:hover{opacity:5}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;background:#00c600;cursor:none;border-radius:50%}
+input[type="range"]::-moz-range-thumb{width:15px;height:15px;background:#00c600;cursor:none;border-radius:50%}
+.draggable{position:absolute;touch-action:none;user-select:none;z-index:2}
+.rotate-slow{transition:transform 0.3s ease}
+.dragging,.draggable{cursor:none}
+@keyframes dissolveRightToLeft{0%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(100% 0 0 0)}}
+.dissolve-right-to-left{animation:dissolveRightToLeft 1.5s ease-in-out forwards}
+.background-image{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);max-width:100%;max-height:100%;object-fit:contain;z-index:1}
+.background-image.selected{box-shadow:0 0 10px 5px #00ff00}
+.toggle-switch{position:relative;display:inline-block;width:40px;height:20px}
+.toggle-switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s;border-radius:20px}
+.slider:before{position:absolute;content:"";height:16px;width:16px;left:2px;bottom:2px;background-color:white;transition:.4s;border-radius:50%}
+input:checked + .slider{background-color:#00c600}
+input:checked + .slider:before{transform:translateX(20px)}
 </style>
 </head>
 <body>
 <div class="container">
-    <h1>SlipBot Simulator</h1>
-    <div class="controls">
-        <span class="control-link" id="addBotBtn">[add SlipBot]</span>
-        <span class="control-link" id="addtrlrBtn">[add trailer]</span>
-        <label for="backgroundUpload" class="control-link">[upload layout]</label>
-        <input type="file" id="backgroundUpload" accept="image/*" multiple>
-        <label class="toggle-switch">
-            <input type="checkbox" id="backgroundToggle" checked>
-            <span class="slider"></span>
-        </label>
-        <input type="range" id="scaleBackground" min="10" max="200" value="100">
-    </div>
+<h1>SlipBot Simulator</h1>
+<div class="controls">
+<span class="control-link" id="addBotBtn">[add SlipBot]</span>
+<span class="control-link" id="addtrlrBtn">[add trailer]</span>
+<label for="backgroundUpload" class="control-link">[upload layout]</label>
+<input type="file" id="backgroundUpload" accept="image/*" multiple>
+<label class="toggle-switch">
+<input type="checkbox" id="backgroundToggle" checked>
+<span class="slider"></span>
+</label>
+<input type="range" id="scaleBackground" min="10" max="200" value="100">
+</div>
 </div>
 <script>
-function addDraggableImage(imageSrc, event) {
-    const img = document.createElement('img');
-    img.src = imageSrc;
-    img.classList.add('draggable', 'rotate');
-    img.style.width = imageSrc === 'truck.png' ? 'auto' : '40px';
-    img.style.height = 'auto';
-    img.style.left = `${event.clientX}px`;
-    img.style.top = `${event.clientY}px`;
-    img.style.transformOrigin = 'center center';
-    img.style.position = 'absolute';
-    document.body.appendChild(img);
-
-    let isDragging = imageSrc === 'Slipbot.png', rotateDeg = 0, isImageLoaded = false;
-    let originalWidth, originalHeight;
-
-    img.onload = function() {
-        originalWidth = this.width;
-        originalHeight = this.height;
-        if (imageSrc === 'truck.png') {
-            img.style.width = `${originalWidth}px`; 
-        }
-    };
-
-    // Store relative positions of Slipbots
-    const slipbotRelativePositions = new Map();
-
-    if (imageSrc === 'Slipbot.png') {
-        img.classList.add('dragging');
-        img.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (e.detail === 1) { 
-                isDragging = !isDragging; 
-                this.classList.toggle('dragging', isDragging);
-            } else if (e.detail === 2) { 
-                this.classList.add('rotate-slow');
-                rotateDeg += 45; 
-                isDragging = true;
-                this.style.transform = `rotate(${rotateDeg}deg)`; 
-            }
-            e.preventDefault();
-        });
-
-        img.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            isDragging = true;
-            if (!isImageLoaded) {
-                const loadedImg = new Image();
-                loadedImg.onload = () => {
-                    img.src = 'SlipBot_Loaded.png';
-                    img.style.width = `${originalWidth}px`;
-                    img.style.height = `${originalHeight}px`;
-                    isImageLoaded = true;
-                    rotateDeg -= 45; 
-                    this.style.transform = `rotate(${rotateDeg}deg)`;
-                };
-                loadedImg.src = 'SlipBot_Loaded.png';
-            } else {
-                img.src = 'Slipbot.png';
-                img.style.width = `${originalWidth}px`;
-                img.style.height = `${originalHeight}px`;
-                isImageLoaded = false;
-                rotateDeg -= 45; 
-                this.style.transform = `rotate(${rotateDeg}deg)`;
-            }
-        });
-    } else if (imageSrc === 'truck.png') {
-        img.addEventListener('mousedown', function(e) {
-            if (e.button === 0) { 
-                isDragging = true;
-                // Calculate and store relative positions of overlapping Slipbots
-                const slipbots = document.querySelectorAll('img[src^="Slipbot"]');
-                slipbots.forEach(slipbot => {
-                    if (checkOverlap(img, slipbot)) {
-                        const relativeLeft = slipbot.offsetLeft - img.offsetLeft;
-                        const relativeTop = slipbot.offsetTop - img.offsetTop;
-                        slipbotRelativePositions.set(slipbot, { left: relativeLeft, top: relativeTop });
-                    }
-                });
-            }
-            e.preventDefault();
-        });
-
-        img.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            rotateDeg += 45;
-            this.style.transform = `rotate(${rotateDeg}deg)`;
-        });
-    }
-    
-    document.addEventListener('mousemove', function(e) {
-        if (isDragging) {
-            e.preventDefault();
-            const newX = e.clientX - img.offsetWidth / 2;
-            const newY = e.clientY - img.offsetHeight / 2;
-            
-            // Use transform for smoother performance
-            img.style.transform = `translate(${newX - img.offsetLeft}px, ${newY - img.offsetTop}px) rotate(${rotateDeg}deg)`;
-
-            if (imageSrc === 'truck.png') {
-                slipbotRelativePositions.forEach((relativePos, slipbot) => {
-                    const slipbotNewX = newX + relativePos.left;
-                    const slipbotNewY = newY + relativePos.top;
-                    slipbot.style.transform = `translate(${slipbotNewX - slipbot.offsetLeft}px, ${slipbotNewY - slipbot.offsetTop}px)`;
-                });
-            }
-        }
-    });
-
-    document.addEventListener('mouseup', function() {
-        if (imageSrc === 'truck.png') {
-            isDragging = false;
-            // Clear the stored relative positions
-            slipbotRelativePositions.clear();
-        }
-    });
-}
-
-// Helper function to check if two elements overlap
-function checkOverlap(elem1, elem2) {
-    const rect1 = elem1.getBoundingClientRect();
-    const rect2 = elem2.getBoundingClientRect();
-    return !(rect1.right < rect2.left || 
-             rect1.left > rect2.right || 
-             rect1.bottom < rect2.top || 
-             rect1.top > rect2.bottom);
-}
-
-document.getElementById('addBotBtn').addEventListener('click', function(e) {
-    addDraggableImage('Slipbot.png', e);
-});
-
-document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
-    addDraggableImage('truck.png', e);
-});
-
-let backgroundImages = [];
-let selectedBackground = null;
-
-function addBackgroundImage(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.classList.add('background-image');
-        img.style.display = 'block';
-        img.dataset.scale = 1;
-        img.dataset.rotation = 0;
-        document.body.appendChild(img);
-
-        backgroundImages.push(img);
-        selectBackgroundImage(img);
-
-        makeBackgroundDraggable(img);
-    };
-    reader.readAsDataURL(file);
-}
-
-function makeBackgroundDraggable(img) {
-    let isDragging = false;
-    let startX, startY, startLeft, startTop;
-
-    img.addEventListener('mousedown', function(e) {
-        if (document.getElementById('backgroundToggle').checked) {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = img.offsetLeft;
-            startTop = img.offsetTop;
-            e.preventDefault();
-        }
-    });
-
-    document.addEventListener('mousemove', function(e) {
-        if (isDragging && document.getElementById('backgroundToggle').checked) {
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            img.style.left = `${startLeft + dx}px`;
-            img.style.top = `${startTop + dy}px`;
-        }
-    });
-
-    document.addEventListener('mouseup', function() {
-        isDragging = false;
-    });
-
-    img.addEventListener('dblclick', function(e) {
-        if (document.getElementById('backgroundToggle').checked) {
-            const currentRotation = parseInt(img.dataset.rotation) || 0;
-            const newRotation = (currentRotation + 90) % 360;
-            img.style.transform = `translate(-50%, -50%) scale(${img.dataset.scale}) rotate(${newRotation}deg)`;
-            img.dataset.rotation = newRotation;
-            e.preventDefault();
-        }
-    });
-}
-
-function selectBackgroundImage(img) {
-    if (selectedBackground) {
-        selectedBackground.classList.remove('selected');
-    }
-    selectedBackground = img;
-    selectedBackground.classList.add('selected');
-    document.getElementById('scaleBackground').value = selectedBackground.dataset.scale * 100;
-}
-
-document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const files = e.target.files;
-    for (let i = 0; i < files.length; i++) {
-        addBackgroundImage(files[i]);
-    }
-});
-
-document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    if (selectedBackground && document.getElementById('backgroundToggle').checked) {
-        const scale = e.target.value / 100;
-        selectedBackground.dataset.scale = scale;
-        const rotation = selectedBackground.dataset.rotation || 0;
-        selectedBackground.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`;
-    }
-});
-
-document.getElementById('backgroundToggle').addEventListener('change', function(e) {
-    const isEnabled = e.target.checked;
-    backgroundImages.forEach(img => {
-        img.style.pointerEvents = isEnabled ? 'auto' : 'none';
-        img.style.boxShadow = isEnabled ? '' : 'none';
-    });
-});
-    document.body.addEventListener('click', function(e) {
-    if (e.target.classList.contains('background-image')) {
-        selectBackgroundImage(e.target);
-    }
-});    
-<script>
+function addDraggableImage(imageSrc,event){const img=document.createElement('img');img.src=imageSrc;img.classList.add('draggable','rotate');img.style.width=imageSrc==='truck.png'?'auto':'40px';img.style.height='auto';img.style.left=`${event.clientX}px`;img.style.top=`${event.clientY}px`;img.style.transformOrigin='center center';img.style.position='absolute';document.body.appendChild(img);let isDragging=imageSrc==='Slipbot.png',rotateDeg=0,isImageLoaded=false;let originalWidth,originalHeight;img.onload=function(){originalWidth=this.width;originalHeight=this.height;if(imageSrc==='truck.png'){img.style.width=`${originalWidth}px`}};const slipbotRelativePositions=new Map();if(imageSrc==='Slipbot.png'){img.classList.add('dragging');img.addEventListener('click',function(e){e.stopPropagation();if(e.detail===1){isDragging=!isDragging;this.classList.toggle('dragging',isDragging)}else if(e.detail===2){this.classList.add('rotate-slow');rotateDeg+=45;isDragging=true;this.style.transform=`rotate(${rotateDeg}deg)`}e.preventDefault()});img.addEventListener('contextmenu',function(e){e.preventDefault();isDragging=true;if(!isImageLoaded){const loadedImg=new Image();loadedImg.onload=()=>{img.src='SlipBot_Loaded.png';img.style.width=`${originalWidth}px`;img.style.height=`${originalHeight}px`;isImageLoaded=true;rotateDeg-=45;this.style.transform=`rotate(${rotateDeg}deg)`};loadedImg.src='SlipBot_Loaded.png'}else{img.src='Slipbot.png';img.style.width=`${originalWidth}px`;img.style.height=`${originalHeight}px`;isImageLoaded=false;rotateDeg-=45;this.style.transform=`rotate(${rotateDeg}deg)`}})}else if(imageSrc==='truck.png'){img.addEventListener('mousedown',function(e){if(e.button===0){isDragging=true;const slipbots=document.querySelectorAll('img[src^="Slipbot"]');slipbots.forEach(slipbot=>{if(checkOverlap(img,slipbot)){const relativeLeft=slipbot.offsetLeft-img.offsetLeft;const relativeTop=slipbot.offsetTop-img.offsetTop;slipbotRelativePositions.set(slipbot,{left:relativeLeft,top:relativeTop})}})}e.preventDefault()});img.addEventListener('contextmenu',function(e){e.preventDefault();rotateDeg+=45;this.style.transform=`rotate(${rotateDeg}deg)`})}document.addEventListener('mousemove',function(e){if(isDragging){e.preventDefault();const newX=e.clientX-img.offsetWidth/2;const newY=e.clientY-img.offsetHeight/2;img.style.transform=`translate(${newX-img.offsetLeft}px, ${newY-img.offsetTop}px) rotate(${rotateDeg}deg)`;if(imageSrc==='truck.png'){slipbotRelativePositions.forEach((relativePos,slipbot)=>{const slipbotNewX=newX+relativePos.left;const slipbotNewY=newY+relativePos.top;slipbot.style.transform=`translate(${slipbotNewX-slipbot.offsetLeft}px, ${slipbotNewY-slipbot.offsetTop}px)`})}}});document.addEventListener('mouseup',function(){if(imageSrc==='truck.png'){isDragging=false;slipbotRelativePositions.clear()}})}
+function checkOverlap(elem1,elem2){const rect1=elem1.getBoundingClientRect();const rect2=elem2.getBoundingClientRect();return!(rect1.right<rect2.left||rect1.left>rect2.right||rect1.bottom<rect2.top||rect1.top>rect2.bottom)}
+document.getElementById('addBotBtn').addEventListener('click',function(e){addDraggableImage('Slipbot.png',e)});
+document.getElementById('addtrlrBtn').addEventListener('click',function(e){addDraggableImage('truck.png',e)});
+let backgroundImages=[];let selectedBackground=null;
+function addBackgroundImage(file){const reader=new FileReader();reader.onload=function(e){const img=document.createElement('img');img.src=e.target.result;img.classList.add('background-image');img.style.display='block';img.dataset.scale=1;img.dataset.rotation=0;document.body.appendChild(img);backgroundImages.push(img);selectBackgroundImage(img);makeBackgroundDraggable(img)};reader.readAsDataURL(file)}
+function makeBackgroundDraggable(img){let isDragging=false;let startX,startY,startLeft,startTop;img.addEventListener('mousedown',function(e){if(document.getElementById('backgroundToggle').checked){isDragging=true;startX=e.clientX;startY=e.clientY;startLeft=img.offsetLeft;startTop=img.offsetTop;e.preventDefault()}});document.addEventListener('mousemove',function(e){if(isDragging&&document.getElementById('backgroundToggle').checked){const dx=e.clientX-startX;const dy=e.clientY-startY;img.style.left=`${startLeft+dx}px`;img.style.top=`${startTop+dy}px`}});document.addEventListener('mouseup',function(){isDragging=false});img.addEventListener('dblclick',function(e){if(document.getElementById('backgroundToggle').checked){const currentRotation=parseInt(img.dataset.rotation)||0;const newRotation=(currentRotation+90)%360;img.style.transform=`translate(-50%, -50%) scale(${img.dataset.scale}) rotate(${newRotation}deg)`;img.dataset.rotation=newRotation;e.preventDefault()}})}
+function selectBackgroundImage(img){if(selectedBackground){selectedBackground.classList.remove('selected')}selectedBackground=img;selectedBackground.classList.add('selected');document.getElementById('scaleBackground').value=selectedBackground.dataset.scale*100}
+document.getElementById('backgroundUpload').addEventListener('change',function(e){const files=e.target.files;for(let i=0;i<files.length;i++){addBackgroundImage(files[i])}});
+document.getElementById('scaleBackground').addEventListener('input',function(e){if(selectedBackground&&document.getElementById('backgroundToggle').checked){const scale=e.target.value/100;selectedBackground.dataset.scale=scale;const rotation=selectedBackground.dataset.rotation||0;selectedBackground.style.transform=`translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`}});
+document.getElementById('backgroundToggle').addEventListener('change',function(e){const isEnabled=e.target.checked;backgroundImages.forEach(img=>{img.style.pointerEvents=isEnabled?'auto':'none';img.style.boxShadow=isEnabled?'':'none'})});
+document.body.addEventListener('click',function(e){if(e.target.classList.contains('background-image')){selectBackgroundImage(e.target)}});
+</script>
 </body>
 </html>
