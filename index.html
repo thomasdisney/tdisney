@@ -53,7 +53,6 @@ input:checked + .slider:before{transform:translateX(20px)}
 </div>
 </div>
 <script>
-
 const getCenter = (el) => {
     const rect = el.getBoundingClientRect();
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
@@ -108,9 +107,10 @@ function addDraggableImage(imageSrc, event) {
         }
     };
 
-    const attachedElements = new Set();
+    let attachedElements = new Set();
 
     function updateAttachedElements(rootEl) {
+        attachedElements.clear();
         document.querySelectorAll('img.draggable').forEach(el => {
             if (el !== rootEl && checkOverlap(rootEl, el)) {
                 attachedElements.add(el);
@@ -223,9 +223,6 @@ function addDraggableImage(imageSrc, event) {
         });
     }
 }
-
-
-
 
 
 
