@@ -229,6 +229,7 @@ function addDraggableImage(imageSrc, event) {
 
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
+            isDragging = true;
             if (!isImageLoaded) {
                 img.src = 'SlipBot_Loaded.png';
                 isImageLoaded = true;
@@ -241,6 +242,7 @@ function addDraggableImage(imageSrc, event) {
         img.addEventListener('dblclick', function(e) {
             if (clickCount !== 2) return;
             e.preventDefault();
+            isDragging = true;
             mirrorElement(img);
             const center = getCenter(img);
             attachedElements.forEach(el => {
@@ -259,6 +261,7 @@ function addDraggableImage(imageSrc, event) {
             e.preventDefault();
             const prevRotateDeg = rotateDeg;
             rotateDeg = (rotateDeg + 45) % 360;
+            isDragging = true;
             const deltaRotate = rotateDeg - prevRotateDeg;
             
             rotateElement(img, rotateDeg);
