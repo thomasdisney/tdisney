@@ -53,6 +53,7 @@ input:checked + .slider:before{transform:translateX(20px)}
 </div>
 </div>
 <script>
+
 const getCenter = (el) => {
     const rect = el.getBoundingClientRect();
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
@@ -86,8 +87,7 @@ function addDraggableImage(imageSrc, event) {
 
     let isDragging = imageSrc === 'Slipbot.png', 
         rotateDeg = 0,
-        isImageLoaded = false,
-        isFlipped = false;
+        isImageLoaded = false;
 
     const state = {
         offsetX: 0,
@@ -111,7 +111,6 @@ function addDraggableImage(imageSrc, event) {
     const attachedElements = new Set();
 
     function updateAttachedElements(rootEl) {
-        attachedElements.clear();
         document.querySelectorAll('img.draggable').forEach(el => {
             if (el !== rootEl && checkOverlap(rootEl, el)) {
                 attachedElements.add(el);
@@ -126,8 +125,8 @@ function addDraggableImage(imageSrc, event) {
         el.style.top = `${top}px`;
     }
 
-    function rotateElement(el, angle, flipped) {
-        el.style.transform = `rotate(${angle}deg) scaleX(${flipped ? -1 : 1})`;
+    function rotateElement(el, angle) {
+        el.style.transform = `rotate(${angle}deg)`;
     }
 
     function onMouseMove(e) {
@@ -137,11 +136,7 @@ function addDraggableImage(imageSrc, event) {
         const dy = e.clientY - state.lastY;
 
         moveElement(img, dx, dy);
-        attachedElements.forEach(el => {
-            if (checkOverlap(img, el)) {
-                moveElement(el, dx, dy);
-            }
-        });
+        attachedElements.forEach(el => moveElement(el, dx, dy));
 
         state.lastX = e.clientX;
         state.lastY = e.clientY;
@@ -181,7 +176,7 @@ function addDraggableImage(imageSrc, event) {
         img.addEventListener('dblclick', function(e) {
             e.preventDefault();
             rotateDeg = (rotateDeg + 45) % 360;
-            rotateElement(img, rotateDeg, isFlipped);
+            rotateElement(img, rotateDeg);
         });
 
         img.addEventListener('contextmenu', function(e) {
@@ -215,7 +210,7 @@ function addDraggableImage(imageSrc, event) {
             rotateDeg = (rotateDeg + 45) % 360;
             const deltaRotate = rotateDeg - prevRotateDeg;
             
-            rotateElement(img, rotateDeg, isFlipped);
+            rotateElement(img, rotateDeg);
             
             const center = getCenter(img);
             attachedElements.forEach(el => {
@@ -223,17 +218,15 @@ function addDraggableImage(imageSrc, event) {
                 const rotated = rotatePoint(elCenter.x, elCenter.y, center.x, center.y, deltaRotate);
                 el.style.left = `${rotated.x - el.offsetWidth / 2}px`;
                 el.style.top = `${rotated.y - el.offsetHeight / 2}px`;
-                rotateElement(el, rotateDeg, false);
+                rotateElement(el, rotateDeg);
             });
-        });
-
-        img.addEventListener('dblclick', function(e) {
-            e.preventDefault();
-            isFlipped = !isFlipped;
-            rotateElement(img, rotateDeg, isFlipped);
         });
     }
 }
+
+
+
+
 
 
 
