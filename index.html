@@ -222,6 +222,7 @@ function addDraggableImage(imageSrc, event) {
         img.addEventListener('dblclick', function(e) {
             if (clickCount !== 2) return;
             e.preventDefault();
+            isDragging = true;
             rotateDeg = (rotateDeg + 45) % 360;
             rotateElement(img, rotateDeg);
         });
