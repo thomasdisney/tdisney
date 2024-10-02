@@ -86,7 +86,8 @@ function addDraggableImage(imageSrc, event) {
 
     let isDragging = imageSrc === 'Slipbot.png', 
         rotateDeg = 0,
-        isImageLoaded = false;
+        isImageLoaded = false,
+        isFlipped = false;
 
     const state = {
         offsetX: 0,
@@ -110,6 +111,7 @@ function addDraggableImage(imageSrc, event) {
     const attachedElements = new Set();
 
     function updateAttachedElements(rootEl) {
+        attachedElements.clear();
         document.querySelectorAll('img.draggable').forEach(el => {
             if (el !== rootEl && checkOverlap(rootEl, el)) {
                 attachedElements.add(el);
@@ -125,7 +127,7 @@ function addDraggableImage(imageSrc, event) {
     }
 
     function rotateElement(el, angle) {
-        el.style.transform = `rotate(${angle}deg)`;
+        el.style.transform = `rotate(${angle}deg) scaleX(${isFlipped ? -1 : 1})`;
     }
 
     function onMouseMove(e) {
@@ -135,7 +137,11 @@ function addDraggableImage(imageSrc, event) {
         const dy = e.clientY - state.lastY;
 
         moveElement(img, dx, dy);
-        attachedElements.forEach(el => moveElement(el, dx, dy));
+        attachedElements.forEach(el => {
+            if (checkOverlap(img, el)) {
+                moveElement(el, dx, dy);
+            }
+        });
 
         state.lastX = e.clientX;
         state.lastY = e.clientY;
@@ -220,9 +226,14 @@ function addDraggableImage(imageSrc, event) {
                 rotateElement(el, rotateDeg);
             });
         });
+
+        img.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            isFlipped = !isFlipped;
+            rotateElement(img, rotateDeg);
+        });
     }
 }
-
 
 
 
