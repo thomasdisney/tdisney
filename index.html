@@ -86,7 +86,8 @@ function addDraggableImage(imageSrc, event) {
 
     let isDragging = imageSrc === 'Slipbot.png', 
         rotateDeg = 0,
-        isImageLoaded = false;
+        isImageLoaded = false,
+        isMirrored = false;
 
     const state = {
         offsetX: 0,
@@ -126,7 +127,12 @@ function addDraggableImage(imageSrc, event) {
     }
 
     function rotateElement(el, angle) {
-        el.style.transform = `rotate(${angle}deg)`;
+        el.style.transform = `rotate(${angle}deg) scaleY(${isMirrored ? -1 : 1})`;
+    }
+
+    function mirrorElement(el) {
+        isMirrored = !isMirrored;
+        el.style.transform = `rotate(${rotateDeg}deg) scaleY(${isMirrored ? -1 : 1})`;
     }
 
     function onMouseMove(e) {
@@ -202,6 +208,22 @@ function addDraggableImage(imageSrc, event) {
             updateAttachedElements(img);
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
+        });
+
+        img.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            mirrorElement(img);
+            const center = getCenter(img);
+            attachedElements.forEach(el => {
+                const elCenter = getCenter(el);
+                const mirrored = { 
+                    x: elCenter.x, 
+                    y: 2 * center.y - elCenter.y 
+                };
+                el.style.left = `${mirrored.x - el.offsetWidth / 2}px`;
+                el.style.top = `${mirrored.y - el.offsetHeight / 2}px`;
+                mirrorElement(el);
+            });
         });
 
         img.addEventListener('contextmenu', function(e) {
