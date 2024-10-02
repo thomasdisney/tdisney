@@ -218,40 +218,32 @@ function addDraggableImage(imageSrc, event) {
                 rotateDeg += 45; 
                 isDragging = true;
                 this.style.transform = `rotate(${rotateDeg}deg)`; 
-            } else if (e.detail === 3) { 
-                this.classList.remove('rotate-slow');
-                void this.offsetWidth;
-                isDragging = true;
-                if (!isImageLoaded) {
-                    const loadedImg = new Image();
-                    loadedImg.onload = () => {
-                        img.src = 'SlipBot_Loaded.png';
-                        img.style.width = `${originalWidth}px`;
-                        img.style.height = `${originalHeight}px`;
-                        isImageLoaded = true;
-                        rotateDeg -= 45; 
-                        this.style.transform = `rotate(${rotateDeg}deg)`;
-                    };
-                    loadedImg.src = 'SlipBot_Loaded.png';
-                } else {
-                    img.src = 'Slipbot.png';
-                    img.style.width = `${originalWidth}px`;
-                    img.style.height = `${originalHeight}px`;
-                    isImageLoaded = false;
-                    rotateDeg -= 45; 
-                    this.style.transform = `rotate(${rotateDeg}deg)`;
-                }
             }
             e.preventDefault();
         });
 
         img.addEventListener('contextmenu', function(e) {
-            e.preventDefault(); 
-            this.classList.add('dissolve-right-to-left');
-            this.addEventListener('animationend', function onAnimationEnd() {
-                this.remove();
-                this.removeEventListener('animationend', onAnimationEnd);
-            });
+            e.preventDefault();
+            isDragging = true;
+            if (!isImageLoaded) {
+                const loadedImg = new Image();
+                loadedImg.onload = () => {
+                    img.src = 'SlipBot_Loaded.png';
+                    img.style.width = `${originalWidth}px`;
+                    img.style.height = `${originalHeight}px`;
+                    isImageLoaded = true;
+                    rotateDeg -= 45; 
+                    this.style.transform = `rotate(${rotateDeg}deg)`;
+                };
+                loadedImg.src = 'SlipBot_Loaded.png';
+            } else {
+                img.src = 'Slipbot.png';
+                img.style.width = `${originalWidth}px`;
+                img.style.height = `${originalHeight}px`;
+                isImageLoaded = false;
+                rotateDeg -= 45; 
+                this.style.transform = `rotate(${rotateDeg}deg)`;
+            }
         });
     } else if (imageSrc === 'truck.png') {
         img.addEventListener('mousedown', function(e) {
@@ -291,8 +283,10 @@ function addDraggableImage(imageSrc, event) {
                         slipbotRect.top >= truckRect.top &&
                         slipbotRect.bottom <= truckRect.bottom
                     ) {
-                        slipbot.style.left = `${parseInt(slipbot.style.left) + dx}px`;
-                        slipbot.style.top = `${parseInt(slipbot.style.top) + dy}px`;
+                        const relativeLeft = parseInt(slipbot.style.left) - parseInt(img.style.left);
+                        const relativeTop = parseInt(slipbot.style.top) - parseInt(img.style.top);
+                        slipbot.style.left = `${newX + relativeLeft}px`;
+                        slipbot.style.top = `${newY + relativeTop}px`;
                     }
                 });
             }
@@ -305,6 +299,7 @@ function addDraggableImage(imageSrc, event) {
         }
     });
 }
+
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     addDraggableImage('Slipbot.png', e);
 });
@@ -312,6 +307,10 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
     addDraggableImage('truck.png', e);
 });
+
+
+
+
 
 let backgroundImages = [];
 let selectedBackground = null;
