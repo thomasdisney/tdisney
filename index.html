@@ -63,7 +63,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.transformOrigin = 'center';
     document.body.appendChild(img);
 
-    let isDragging = true, // Set to true initially
+    let isDragging = true, // Set to true initially for all images
         rotateDeg = 0,
         isImageLoaded = false,
         isMirrored = false;
@@ -195,6 +195,7 @@ function addDraggableImage(imageSrc, event) {
                 rotateElement(el, rotateDeg);
             });
         }
+        isDragging = true; // Retain isDragging as true after double-click
     });
 
     if (imageSrc === 'Slipbot.png') {
@@ -226,7 +227,6 @@ function addDraggableImage(imageSrc, event) {
         });
     }
 }
-
 
 
 
