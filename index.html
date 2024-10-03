@@ -53,6 +53,27 @@ input:checked + .slider:before{transform:translateX(20px)}
 </div>
 </div>
 <script>
+const getCenter = (el) => {
+    const rect = el.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+};
+
+const rotatePoint = (x, y, cx, cy, angle) => {
+    const radians = (Math.PI / 180) * angle,
+          cos = Math.cos(radians),
+          sin = Math.sin(radians),
+          nx = (cos * (x - cx)) + (sin * (y - cy)) + cx,
+          ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
+    return { x: nx, y: ny };
+};
+
+const checkOverlap = (elem1, elem2) => {
+    const rect1 = elem1.getBoundingClientRect(),
+          rect2 = elem2.getBoundingClientRect();
+    return !(rect1.right < rect2.left || rect1.left > rect2.right ||
+             rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+};
+
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
@@ -63,7 +84,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.transformOrigin = 'center';
     document.body.appendChild(img);
 
-    let isDragging = true, // Set to true initially for all images
+    let isDragging = imageSrc === 'Slipbot.png', 
         rotateDeg = 0,
         isImageLoaded = false,
         isMirrored = false;
@@ -128,84 +149,42 @@ function addDraggableImage(imageSrc, event) {
     }
 
     function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    function handleTripleClick(e) {
-        e.preventDefault();
-        img.remove();
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-    }
-
-    let clickCount = 0;
-    let clickTimer = null;
-    
-    function startDragging(e) {
-        if (isDragging) {
-            state.offsetX = e.clientX - parseFloat(img.style.left);
-            state.offsetY = e.clientY - parseFloat(img.style.top);
-            state.startX = e.clientX;
-            state.startY = e.clientY;
-            state.lastX = e.clientX;
-            state.lastY = e.clientY;
-            updateAttachedElements(img);
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        }
-    }
-
-    img.addEventListener('mousedown', function(e) {
-        startDragging(e);
-
-        clickCount++;
-        if (clickCount === 1) {
-            clickTimer = setTimeout(function() {
-                clickCount = 0;
-            }, 400);
-        } else if (clickCount === 3) {
-            clearTimeout(clickTimer);
-            handleTripleClick(e);
-            clickCount = 0;
-            return;
-        }
-    });
-
-    img.addEventListener('click', function(e) {
-        if (clickCount === 1) {
-            isDragging = !isDragging;
-            if (!isDragging) {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            } else {
-                startDragging(e);
-            }
-            e.stopPropagation();
-        }
-    });
-
-    img.addEventListener('dblclick', function(e) {
-        if (clickCount !== 2) return;
-        e.preventDefault();
-        rotateDeg = (rotateDeg + 45) % 360;
-        rotateElement(img, rotateDeg);
-        
         if (imageSrc === 'truck.png') {
-            const center = getCenter(img);
-            attachedElements.forEach(el => {
-                const elCenter = getCenter(el);
-                const rotated = rotatePoint(elCenter.x, elCenter.y, center.x, center.y, 45);
-                el.style.left = `${rotated.x - el.offsetWidth / 2}px`;
-                el.style.top = `${rotated.y - el.offsetHeight / 2}px`;
-                rotateElement(el, rotateDeg);
-            });
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
         }
-        isDragging = true; // Retain isDragging as true after double-click
-        startDragging(e);
-    });
+    }
 
     if (imageSrc === 'Slipbot.png') {
+        state.offsetX = event.clientX - parseFloat(img.style.left);
+        state.offsetY = event.clientY - parseFloat(img.style.top);
+        state.lastX = event.clientX;
+        state.lastY = event.clientY;
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
+        img.addEventListener('click', function(e) {
+            isDragging = !isDragging;
+            if (isDragging) {
+                state.offsetX = e.clientX - parseFloat(img.style.left);
+                state.offsetY = e.clientY - parseFloat(img.style.top);
+                state.lastX = e.clientX;
+                state.lastY = e.clientY;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            } else {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+        });
+
+        img.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            rotateDeg = (rotateDeg + 45) % 360;
+            rotateElement(img, rotateDeg);
+        });
+
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             if (!isImageLoaded) {
@@ -217,7 +196,21 @@ function addDraggableImage(imageSrc, event) {
             }
         });
     } else if (imageSrc === 'truck.png') {
-        img.addEventListener('contextmenu', function(e) {
+        img.addEventListener('mousedown', function(e) {
+            if (e.button !== 0) return;
+            isDragging = true;
+            state.offsetX = e.clientX - parseFloat(img.style.left);
+            state.offsetY = e.clientY - parseFloat(img.style.top);
+            state.startX = e.clientX;
+            state.startY = e.clientY;
+            state.lastX = e.clientX;
+            state.lastY = e.clientY;
+            updateAttachedElements(img);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+
+        img.addEventListener('dblclick', function(e) {
             e.preventDefault();
             mirrorElement(img);
             const center = getCenter(img);
@@ -232,8 +225,27 @@ function addDraggableImage(imageSrc, event) {
                 mirrorElement(el);
             });
         });
+
+        img.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            const prevRotateDeg = rotateDeg;
+            rotateDeg = (rotateDeg + 45) % 360;
+            const deltaRotate = rotateDeg - prevRotateDeg;
+            
+            rotateElement(img, rotateDeg);
+            
+            const center = getCenter(img);
+            attachedElements.forEach(el => {
+                const elCenter = getCenter(el);
+                const rotated = rotatePoint(elCenter.x, elCenter.y, center.x, center.y, deltaRotate);
+                el.style.left = `${rotated.x - el.offsetWidth / 2}px`;
+                el.style.top = `${rotated.y - el.offsetHeight / 2}px`;
+                rotateElement(el, rotateDeg);
+            });
+        });
     }
 }
+
 
 
 
