@@ -127,12 +127,12 @@ function addDraggableImage(imageSrc, event) {
     }
 
     function rotateElement(el, angle) {
-        el.style.transform = `rotate(${angle}deg) scaleY(${isMirrored ? -1 : 1})`;
+        el.style.transform = `rotate(${angle}deg) scaleX(${isMirrored ? -1 : 1})`;
     }
 
     function mirrorElement(el) {
         isMirrored = !isMirrored;
-        el.style.transform = `rotate(${rotateDeg}deg) scaleY(${isMirrored ? -1 : 1})`;
+        el.style.transform = `rotate(${rotateDeg}deg) scaleX(${isMirrored ? -1 : 1})`;
     }
 
     function onMouseMove(e) {
@@ -224,7 +224,11 @@ function addDraggableImage(imageSrc, event) {
             e.preventDefault();
             rotateDeg = (rotateDeg + 45) % 360;
             rotateElement(img, rotateDeg);
+            
+            // Ensure isDragging remains true and update mouse position
             if (isDragging) {
+                state.offsetX = e.clientX - parseFloat(img.style.left);
+                state.offsetY = e.clientY - parseFloat(img.style.top);
                 state.lastX = e.clientX;
                 state.lastY = e.clientY;
             }
@@ -249,8 +253,8 @@ function addDraggableImage(imageSrc, event) {
             attachedElements.forEach(el => {
                 const elCenter = getCenter(el);
                 const mirrored = { 
-                    x: elCenter.x, 
-                    y: 2 * center.y - elCenter.y 
+                    x: 2 * center.x - elCenter.x, 
+                    y: elCenter.y 
                 };
                 el.style.left = `${mirrored.x - el.offsetWidth / 2}px`;
                 el.style.top = `${mirrored.y - el.offsetHeight / 2}px`;
