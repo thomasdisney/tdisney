@@ -156,6 +156,45 @@ function addDraggableImage(imageSrc, event) {
         }
     }
 
+    function handleTripleClick(e) {
+        if (isDragging) {
+            e.preventDefault();
+            img.remove();
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+    }
+
+    let clickCount = 0;
+    let clickTimer = null;
+    
+    img.addEventListener('mousedown', function(e) {
+        clickCount++;
+        if (clickCount === 1) {
+            clickTimer = setTimeout(function() {
+                clickCount = 0;
+            }, 400);
+        } else if (clickCount === 3) {
+            clearTimeout(clickTimer);
+            handleTripleClick(e);
+            clickCount = 0;
+            return;
+        }
+
+        if (imageSrc === 'truck.png' && e.button === 0) {
+            isDragging = true;
+            state.offsetX = e.clientX - parseFloat(img.style.left);
+            state.offsetY = e.clientY - parseFloat(img.style.top);
+            state.startX = e.clientX;
+            state.startY = e.clientY;
+            state.lastX = e.clientX;
+            state.lastY = e.clientY;
+            updateAttachedElements(img);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+    });
+
     if (imageSrc === 'Slipbot.png') {
         state.offsetX = event.clientX - parseFloat(img.style.left);
         state.offsetY = event.clientY - parseFloat(img.style.top);
@@ -165,6 +204,7 @@ function addDraggableImage(imageSrc, event) {
         document.addEventListener('mouseup', onMouseUp);
 
         img.addEventListener('click', function(e) {
+            if (clickCount !== 1) return;
             isDragging = !isDragging;
             if (isDragging) {
                 state.offsetX = e.clientX - parseFloat(img.style.left);
@@ -180,9 +220,18 @@ function addDraggableImage(imageSrc, event) {
         });
 
         img.addEventListener('dblclick', function(e) {
+            if (clickCount !== 2) return;
             e.preventDefault();
             rotateDeg = (rotateDeg + 45) % 360;
             rotateElement(img, rotateDeg);
+            
+            // Ensure isDragging remains true and update mouse position
+            if (isDragging) {
+                state.offsetX = e.clientX - parseFloat(img.style.left);
+                state.offsetY = e.clientY - parseFloat(img.style.top);
+                state.lastX = e.clientX;
+                state.lastY = e.clientY;
+            }
         });
 
         img.addEventListener('contextmenu', function(e) {
@@ -196,21 +245,8 @@ function addDraggableImage(imageSrc, event) {
             }
         });
     } else if (imageSrc === 'truck.png') {
-        img.addEventListener('mousedown', function(e) {
-            if (e.button !== 0) return;
-            isDragging = true;
-            state.offsetX = e.clientX - parseFloat(img.style.left);
-            state.offsetY = e.clientY - parseFloat(img.style.top);
-            state.startX = e.clientX;
-            state.startY = e.clientY;
-            state.lastX = e.clientX;
-            state.lastY = e.clientY;
-            updateAttachedElements(img);
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        });
-
         img.addEventListener('dblclick', function(e) {
+            if (clickCount !== 2) return;
             e.preventDefault();
             mirrorElement(img);
             const center = getCenter(img);
@@ -245,7 +281,6 @@ function addDraggableImage(imageSrc, event) {
         });
     }
 }
-
 
 
 
