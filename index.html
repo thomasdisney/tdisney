@@ -53,27 +53,6 @@ input:checked + .slider:before{transform:translateX(20px)}
 </div>
 </div>
 <script>
-const getCenter = (el) => {
-    const rect = el.getBoundingClientRect();
-    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-};
-
-const rotatePoint = (x, y, cx, cy, angle) => {
-    const radians = (Math.PI / 180) * angle,
-          cos = Math.cos(radians),
-          sin = Math.sin(radians),
-          nx = (cos * (x - cx)) + (sin * (y - cy)) + cx,
-          ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
-    return { x: nx, y: ny };
-};
-
-const checkOverlap = (elem1, elem2) => {
-    const rect1 = elem1.getBoundingClientRect(),
-          rect2 = elem2.getBoundingClientRect();
-    return !(rect1.right < rect2.left || rect1.left > rect2.right ||
-             rect1.bottom < rect2.top || rect1.top > rect2.bottom);
-};
-
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
@@ -84,7 +63,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.transformOrigin = 'center';
     document.body.appendChild(img);
 
-    let isDragging = true, 
+    let isDragging = true, // Set to true initially
         rotateDeg = 0,
         isImageLoaded = false,
         isMirrored = false;
@@ -164,6 +143,18 @@ function addDraggableImage(imageSrc, event) {
     let clickTimer = null;
     
     img.addEventListener('mousedown', function(e) {
+        if (isDragging) {
+            state.offsetX = e.clientX - parseFloat(img.style.left);
+            state.offsetY = e.clientY - parseFloat(img.style.top);
+            state.startX = e.clientX;
+            state.startY = e.clientY;
+            state.lastX = e.clientX;
+            state.lastY = e.clientY;
+            updateAttachedElements(img);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
         clickCount++;
         if (clickCount === 1) {
             clickTimer = setTimeout(function() {
@@ -175,34 +166,16 @@ function addDraggableImage(imageSrc, event) {
             clickCount = 0;
             return;
         }
-
-        if (e.button === 0) {
-            isDragging = true;
-            state.offsetX = e.clientX - parseFloat(img.style.left);
-            state.offsetY = e.clientY - parseFloat(img.style.top);
-            state.startX = e.clientX;
-            state.startY = e.clientY;
-            state.lastX = e.clientX;
-            state.lastY = e.clientY;
-            updateAttachedElements(img);
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        }
     });
 
     img.addEventListener('click', function(e) {
-        if (clickCount !== 1) return;
-        isDragging = !isDragging;
-        if (isDragging) {
-            state.offsetX = e.clientX - parseFloat(img.style.left);
-            state.offsetY = e.clientY - parseFloat(img.style.top);
-            state.lastX = e.clientX;
-            state.lastY = e.clientY;
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        } else {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
+        if (clickCount === 1) {
+            isDragging = !isDragging;
+            if (!isDragging) {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+            e.stopPropagation();
         }
     });
 
@@ -222,11 +195,6 @@ function addDraggableImage(imageSrc, event) {
                 rotateElement(el, rotateDeg);
             });
         }
-        
-        state.offsetX = e.clientX - parseFloat(img.style.left);
-        state.offsetY = e.clientY - parseFloat(img.style.top);
-        state.lastX = e.clientX;
-        state.lastY = e.clientY;
     });
 
     if (imageSrc === 'Slipbot.png') {
