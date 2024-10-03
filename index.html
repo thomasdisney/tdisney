@@ -142,7 +142,7 @@ function addDraggableImage(imageSrc, event) {
     let clickCount = 0;
     let clickTimer = null;
     
-    img.addEventListener('mousedown', function(e) {
+    function startDragging(e) {
         if (isDragging) {
             state.offsetX = e.clientX - parseFloat(img.style.left);
             state.offsetY = e.clientY - parseFloat(img.style.top);
@@ -154,6 +154,10 @@ function addDraggableImage(imageSrc, event) {
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
         }
+    }
+
+    img.addEventListener('mousedown', function(e) {
+        startDragging(e);
 
         clickCount++;
         if (clickCount === 1) {
@@ -174,6 +178,8 @@ function addDraggableImage(imageSrc, event) {
             if (!isDragging) {
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
+            } else {
+                startDragging(e);
             }
             e.stopPropagation();
         }
@@ -196,6 +202,7 @@ function addDraggableImage(imageSrc, event) {
             });
         }
         isDragging = true; // Retain isDragging as true after double-click
+        startDragging(e);
     });
 
     if (imageSrc === 'Slipbot.png') {
@@ -231,8 +238,7 @@ function addDraggableImage(imageSrc, event) {
 
 
 
-
-    
+  
 document.getElementById('addBotBtn').addEventListener('click',function(e){addDraggableImage('Slipbot.png',e)});
 document.getElementById('addtrlrBtn').addEventListener('click',function(e){addDraggableImage('truck.png',e)});
 let backgroundImages=[];let selectedBackground=null;
