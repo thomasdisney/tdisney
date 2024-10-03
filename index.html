@@ -176,7 +176,8 @@ function addDraggableImage(imageSrc, event) {
             return;
         }
 
-        if (e.button === 0 && isDragging) {
+        if (e.button === 0) {
+            isDragging = true;
             state.offsetX = e.clientX - parseFloat(img.style.left);
             state.offsetY = e.clientY - parseFloat(img.style.top);
             state.startX = e.clientX;
