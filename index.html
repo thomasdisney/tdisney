@@ -224,11 +224,7 @@ function addDraggableImage(imageSrc, event) {
             e.preventDefault();
             rotateDeg = (rotateDeg + 45) % 360;
             rotateElement(img, rotateDeg);
-            
-            // Ensure isDragging remains true and update mouse position
             if (isDragging) {
-                state.offsetX = e.clientX - parseFloat(img.style.left);
-                state.offsetY = e.clientY - parseFloat(img.style.top);
                 state.lastX = e.clientX;
                 state.lastY = e.clientY;
             }
