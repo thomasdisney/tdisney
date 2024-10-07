@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlipBot Simulator</title>
+    <meta property="og:title" content="tdisney.com">
+    <meta property="og:description" content="SlipBot Workflow Simulator">
+    <meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
+    <meta property="og:url" content="https://thomasdisney.github.io">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SlipBot Simulator</h1>
+        <div class="controls">
+            <span class="control-link" id="addBotBtn">[add SlipBot]</span>
+            <span class="control-link" id="addtrlrBtn">[add trailer]</span>
+            <label for="backgroundUpload" class="control-link">[upload layout]</label>
+            <input type="file" id="backgroundUpload" accept="image/*" multiple>
+            <label class="toggle-switch">
+                <input type="checkbox" id="backgroundToggle" checked>
+                <span class="slider"></span>
+            </label>
+            <input type="range" id="scaleBackground" min="10" max="200" value="100">
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
