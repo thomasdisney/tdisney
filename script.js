@@ -22,137 +22,182 @@ const checkOverlap = (elem1, elem2) => {
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
-    img.className = 'draggable';
-    img.style.left = event.clientX + 'px';
-    img.style.top = event.clientY + 'px';
-    img.style.transform = 'translate(-50%, -50%)';
+    img.classList.add('draggable');
+    img.style.position = 'absolute';
+    img.style.left = `${event.clientX}px`;
+    img.style.top = `${event.clientY}px`;
+    img.style.transformOrigin = 'center';
     document.body.appendChild(img);
 
-    let isDragging = false;
-    let currentX;
-    let currentY;
-    let initialX;
-    let initialY;
-    let xOffset = 0;
-    let yOffset = 0;
-    let rotation = 0;
+    let isDragging = imageSrc === 'Slipbot.png', 
+        rotateDeg = 0,
+        isImageLoaded = false,
+        isMirrored = false;
 
-    img.addEventListener('mousedown', dragStart);
-    img.addEventListener('mouseup', dragEnd);
-    img.addEventListener('mousemove', drag);
-    img.addEventListener('wheel', rotate);
+    const state = {
+        offsetX: 0,
+        offsetY: 0,
+        startX: 0,
+        startY: 0,
+        lastX: 0,
+        lastY: 0
+    };
 
-    function dragStart(e) {
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
+    img.onload = function() {
+        if (imageSrc === 'truck.png') {
+            img.style.width = `${this.width}px`;
+            img.style.height = 'auto';
+        } else {
+            img.style.width = '40px';
+            img.style.height = 'auto';
+        }
+    };
 
-        if (e.target === img) {
-            isDragging = true;
+    let attachedElements = new Set();
+
+    function updateAttachedElements(rootEl) {
+        attachedElements.clear();
+        document.querySelectorAll('img.draggable').forEach(el => {
+            if (el !== rootEl && checkOverlap(rootEl, el)) {
+                attachedElements.add(el);
+            }
+        });
+    }
+
+    function moveElement(el, dx, dy) {
+        const left = parseFloat(el.style.left) + dx;
+        const top = parseFloat(el.style.top) + dy;
+        el.style.left = `${left}px`;
+        el.style.top = `${top}px`;
+    }
+
+    function rotateElement(el, angle) {
+        el.style.transform = `rotate(${angle}deg) scaleY(${isMirrored ? -1 : 1})`;
+    }
+
+    function mirrorElement(el) {
+        isMirrored = !isMirrored;
+        el.style.transform = `rotate(${rotateDeg}deg) scaleY(${isMirrored ? -1 : 1})`;
+    }
+
+    function onMouseMove(e) {
+        if (!isDragging) return;
+
+        const dx = e.clientX - state.lastX;
+        const dy = e.clientY - state.lastY;
+
+        moveElement(img, dx, dy);
+        attachedElements.forEach(el => moveElement(el, dx, dy));
+
+        state.lastX = e.clientX;
+        state.lastY = e.clientY;
+    }
+
+    function onMouseUp() {
+        if (imageSrc === 'truck.png') {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
         }
     }
 
-    function dragEnd(e) {
-        initialX = currentX;
-        initialY = currentY;
+    if (imageSrc === 'Slipbot.png') {
+        state.offsetX = event.clientX - parseFloat(img.style.left);
+        state.offsetY = event.clientY - parseFloat(img.style.top);
+        state.lastX = event.clientX;
+        state.lastY = event.clientY;
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
 
-        isDragging = false;
-    }
+        img.addEventListener('click', function(e) {
+            isDragging = !isDragging;
+            if (isDragging) {
+                state.offsetX = e.clientX - parseFloat(img.style.left);
+                state.offsetY = e.clientY - parseFloat(img.style.top);
+                state.lastX = e.clientX;
+                state.lastY = e.clientY;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            } else {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+        });
 
-    function drag(e) {
-        if (isDragging) {
+        img.addEventListener('dblclick', function(e) {
             e.preventDefault();
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
+            rotateDeg = (rotateDeg + 45) % 360;
+            rotateElement(img, rotateDeg);
+        });
 
-            xOffset = currentX;
-            yOffset = currentY;
+        img.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            if (!isImageLoaded) {
+                img.src = 'SlipBot_Loaded.png';
+                isImageLoaded = true;
+            } else {
+                img.src = 'Slipbot.png';
+                isImageLoaded = false;
+            }
+        });
+    } else if (imageSrc === 'truck.png') {
+        img.addEventListener('mousedown', function(e) {
+            if (e.button !== 0) return;
+            isDragging = true;
+            state.offsetX = e.clientX - parseFloat(img.style.left);
+            state.offsetY = e.clientY - parseFloat(img.style.top);
+            state.startX = e.clientX;
+            state.startY = e.clientY;
+            state.lastX = e.clientX;
+            state.lastY = e.clientY;
+            updateAttachedElements(img);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
 
-            setTranslate(currentX, currentY, img);
-        }
-    }
+        img.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            mirrorElement(img);
+            const center = getCenter(img);
+            attachedElements.forEach(el => {
+                const elCenter = getCenter(el);
+                const mirrored = { 
+                    x: elCenter.x, 
+                    y: 2 * center.y - elCenter.y 
+                };
+                el.style.left = `${mirrored.x - el.offsetWidth / 2}px`;
+                el.style.top = `${mirrored.y - el.offsetHeight / 2}px`;
+                mirrorElement(el);
+            });
+        });
 
-    function setTranslate(xPos, yPos, el) {
-        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) rotate(${rotation}deg)`;
-    }
-
-    function rotate(e) {
-        e.preventDefault();
-        rotation += Math.sign(e.deltaY) * 5;
-        setTranslate(xOffset, yOffset, img);
+        img.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            const prevRotateDeg = rotateDeg;
+            rotateDeg = (rotateDeg + 45) % 360;
+            const deltaRotate = rotateDeg - prevRotateDeg;
+            
+            rotateElement(img, rotateDeg);
+            
+            const center = getCenter(img);
+            attachedElements.forEach(el => {
+                const elCenter = getCenter(el);
+                const rotated = rotatePoint(elCenter.x, elCenter.y, center.x, center.y, deltaRotate);
+                el.style.left = `${rotated.x - el.offsetWidth / 2}px`;
+                el.style.top = `${rotated.y - el.offsetHeight / 2}px`;
+                rotateElement(el, rotateDeg);
+            });
+        });
     }
 }
 
-document.getElementById('addBotBtn').addEventListener('click', function(e) { addDraggableImage('Slipbot.png', e) });
-document.getElementById('addtrlrBtn').addEventListener('click', function(e) { addDraggableImage('truck.png', e) });
-
-let backgroundImages = [];
-let selectedBackground = null;
-
-function addBackgroundImage(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'background-image';
-        document.body.appendChild(img);
-        backgroundImages.push(img);
-        makeBackgroundDraggable(img);
-    }
-    reader.readAsDataURL(file);
-}
-
-function makeBackgroundDraggable(img) {
-    let isDragging = false;
-    let startX, startY;
-
-    img.addEventListener('mousedown', function(e) {
-        isDragging = true;
-        startX = e.clientX - img.offsetLeft;
-        startY = e.clientY - img.offsetTop;
-    });
-
-    document.addEventListener('mousemove', function(e) {
-        if (isDragging) {
-            img.style.left = (e.clientX - startX) + 'px';
-            img.style.top = (e.clientY - startY) + 'px';
-        }
-    });
-
-    document.addEventListener('mouseup', function() {
-        isDragging = false;
-    });
-}
-
-function selectBackgroundImage(img) {
-    if (selectedBackground) {
-        selectedBackground.classList.remove('selected');
-    }
-    selectedBackground = img;
-    selectedBackground.classList.add('selected');
-}
-
-document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const files = e.target.files;
-    for (let i = 0; i < files.length; i++) {
-        addBackgroundImage(files[i]);
-    }
-});
-
-document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    if (selectedBackground) {
-        const scale = e.target.value / 100;
-        selectedBackground.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    }
-});
-
-document.getElementById('backgroundToggle').addEventListener('change', function(e) {
-    backgroundImages.forEach(img => {
-        img.style.display = e.target.checked ? 'block' : 'none';
-    });
-});
-
-document.body.addEventListener('click', function(e) {
-    if (e.target.classList.contains('background-image')) {
-        selectBackgroundImage(e.target);
-    }
-});
+document.getElementById('addBotBtn').addEventListener('click',function(e){addDraggableImage('Slipbot.png',e)});
+document.getElementById('addtrlrBtn').addEventListener('click',function(e){addDraggableImage('truck.png',e)});
+let backgroundImages=[];let selectedBackground=null;
+function addBackgroundImage(file){const reader=new FileReader();reader.onload=function(e){const img=document.createElement('img');img.src=e.target.result;img.classList.add('background-image');img.style.display='block';img.dataset.scale=1;img.dataset.rotation=0;document.body.appendChild(img);backgroundImages.push(img);selectBackgroundImage(img);makeBackgroundDraggable(img)};reader.readAsDataURL(file)}
+function makeBackgroundDraggable(img){let isDragging=false;let startX,startY,startLeft,startTop;img.addEventListener('mousedown',function(e){if(document.getElementById('backgroundToggle').checked){isDragging=true;startX=e.clientX;startY=e.clientY;startLeft=img.offsetLeft;startTop=img.offsetTop;e.preventDefault()}});document.addEventListener('mousemove',function(e){if(isDragging&&document.getElementById('backgroundToggle').checked){const dx=e.clientX-startX;const dy=e.clientY-startY;img.style.left=`${startLeft+dx}px`;img.style.top=`${startTop+dy}px`}});document.addEventListener('mouseup',function(){isDragging=false});img.addEventListener('dblclick',function(e){if(document.getElementById('backgroundToggle').checked){const currentRotation=parseInt(img.dataset.rotation)||0;const newRotation=(currentRotation+90)%360;img.style.transform=`translate(-50%, -50%) scale(${img.dataset.scale}) rotate(${newRotation}deg)`;img.dataset.rotation=newRotation;e.preventDefault()}})}
+function selectBackgroundImage(img){if(selectedBackground){selectedBackground.classList.remove('selected')}selectedBackground=img;selectedBackground.classList.add('selected');document.getElementById('scaleBackground').value=selectedBackground.dataset.scale*100}
+document.getElementById('backgroundUpload').addEventListener('change',function(e){const files=e.target.files;for(let i=0;i<files.length;i++){addBackgroundImage(files[i])}});
+document.getElementById('scaleBackground').addEventListener('input',function(e){if(selectedBackground&&document.getElementById('backgroundToggle').checked){const scale=e.target.value/100;selectedBackground.dataset.scale=scale;const rotation=selectedBackground.dataset.rotation||0;selectedBackground.style.transform=`translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`}});
+document.getElementById('backgroundToggle').addEventListener('change',function(e){const isEnabled=e.target.checked;backgroundImages.forEach(img=>{img.style.pointerEvents=isEnabled?'auto':'none';img.style.boxShadow=isEnabled?'':'none'})});
+document.body.addEventListener('click',function(e){if(e.target.classList.contains('background-image')){selectBackgroundImage(e.target)}});
