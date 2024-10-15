@@ -72,7 +72,7 @@ function createImageElement(imageSrc, event) {
     img.addEventListener('wheel', rotate);
 
     function toggleDrag(e) {
-        if (imageSrc === 'Slipbot.png' || imageSrc === 'Slipbot_loaded.png') {
+        if (img.src.includes('Slipbot.png') || img.src.includes('Slipbot_loaded.png')) {
             isDragging = !isDragging;
         }
     }
@@ -103,6 +103,14 @@ function createImageElement(imageSrc, event) {
             yOffset = currentY;
 
             setTranslate(currentX, currentY, img);
+
+            // Move attached slipbots with the truck
+            if (img.src.includes('truck.png')) {
+                attachedElements.forEach(slipbot => {
+                    slipbot.style.left = `${parseFloat(slipbot.style.left) + e.movementX}px`;
+                    slipbot.style.top = `${parseFloat(slipbot.style.top) + e.movementY}px`;
+                });
+            }
         }
     }
 
@@ -115,6 +123,14 @@ function createImageElement(imageSrc, event) {
         rotation += Math.sign(e.deltaY) * 5;
         setTranslate(xOffset, yOffset, img);
     }
+}
+
+function toggleSlipbotImage(img) {
+    if (img.src.includes('Slipbot.png')) {
+        img.src = img.src.includes('Slipbot_loaded.png') ? 'Slipbot.png' : 'Slipbot_loaded.png';
+    }
+    // Maintain the current rotation and position
+    img.style.transform = `translate3d(${parseFloat(img.style.left)}px, ${parseFloat(img.style.top)}px, 0) rotate(${rotation}deg)`;
 }
 
 document.getElementById('addBotBtn').addEventListener('click', function(e) { addDraggableImage('Slipbot.png', e) });
