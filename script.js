@@ -28,7 +28,7 @@ function addDraggableImage(imageSrc, event) {
 
     img.onload = () => {
         adjustImageSize(img, imageSrc);
-        if (imageSrc === 'Slipbot.png' || imageSrc === 'Slipbot_loaded.png') {
+        if (imageSrc.toLowerCase().includes('slipbot')) {
             img.style.width = '40px'; // Scale slipbot to 40px width
             img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`; // Maintain aspect ratio
         }
@@ -63,7 +63,7 @@ function createImageElement(imageSrc, event) {
         toggleSlipbotImage(img); // Toggle between images
     });
 
-    if (imageSrc === 'truck.png') {
+    if (imageSrc.toLowerCase().includes('truck')) {
         img.addEventListener('mousedown', dragStart);
         img.addEventListener('mouseup', dragEnd);
         img.addEventListener('mousemove', drag);
@@ -72,7 +72,7 @@ function createImageElement(imageSrc, event) {
     img.addEventListener('wheel', rotate);
 
     function toggleDrag(e) {
-        if (img.src.includes('Slipbot.png') || img.src.includes('Slipbot_loaded.png')) {
+        if (img.src.toLowerCase().includes('slipbot')) {
             isDragging = !isDragging;
         }
     }
@@ -105,7 +105,7 @@ function createImageElement(imageSrc, event) {
             setTranslate(currentX, currentY, img);
 
             // Move attached slipbots with the truck
-            if (img.src.includes('truck.png')) {
+            if (img.src.toLowerCase().includes('truck')) {
                 attachedElements.forEach(slipbot => {
                     slipbot.style.left = `${parseFloat(slipbot.style.left) + e.movementX}px`;
                     slipbot.style.top = `${parseFloat(slipbot.style.top) + e.movementY}px`;
@@ -127,7 +127,9 @@ function createImageElement(imageSrc, event) {
 
 function toggleSlipbotImage(img) {
     if (img.src.includes('Slipbot.png')) {
-        img.src = img.src.includes('Slipbot_loaded.png') ? 'Slipbot.png' : 'Slipbot_loaded.png';
+        img.src = 'SlipBot_Loaded.png';
+    } else if (img.src.includes('SlipBot_Loaded.png')) {
+        img.src = 'Slipbot.png';
     }
     // Maintain the current rotation and position
     img.style.transform = `translate3d(${parseFloat(img.style.left)}px, ${parseFloat(img.style.top)}px, 0) rotate(${rotation}deg)`;
