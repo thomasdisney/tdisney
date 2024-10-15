@@ -1,4 +1,3 @@
-// Utility functions
 const getCenter = (element) => {
     const rect = element.getBoundingClientRect();
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
@@ -20,7 +19,6 @@ const checkOverlap = (elem1, elem2) => {
              rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 };
 
-// Image management
 let draggableImages = [];
 
 function addDraggableImage(imageSrc, event) {
@@ -28,7 +26,13 @@ function addDraggableImage(imageSrc, event) {
     const state = initializeState(event, img);
     const attachedElements = new Set();
 
-    img.onload = () => adjustImageSize(img, imageSrc);
+    img.onload = () => {
+        adjustImageSize(img, imageSrc);
+        if (imageSrc === 'Slipbot.png' || imageSrc === 'Slipbot_loaded.png') {
+            img.style.width = '40px'; // Scale slipbot to 40px width
+            img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`; // Maintain aspect ratio
+        }
+    };
 
     setupImageEventListeners(img, imageSrc, state, attachedElements);
     draggableImages.push({ img, isDragging: () => state.isDragging, setDragging: (value) => state.isDragging = value });
@@ -53,10 +57,25 @@ function createImageElement(imageSrc, event) {
     let yOffset = 0;
     let rotation = 0;
 
-    img.addEventListener('mousedown', dragStart);
-    img.addEventListener('mouseup', dragEnd);
-    img.addEventListener('mousemove', drag);
+    img.addEventListener('click', toggleDrag); // Use click to toggle dragging
+    img.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); // Prevent default context menu
+        toggleSlipbotImage(img); // Toggle between images
+    });
+
+    if (imageSrc === 'truck.png') {
+        img.addEventListener('mousedown', dragStart);
+        img.addEventListener('mouseup', dragEnd);
+        img.addEventListener('mousemove', drag);
+    }
+
     img.addEventListener('wheel', rotate);
+
+    function toggleDrag(e) {
+        if (imageSrc === 'Slipbot.png' || imageSrc === 'Slipbot_loaded.png') {
+            isDragging = !isDragging;
+        }
+    }
 
     function dragStart(e) {
         initialX = e.clientX - xOffset;
