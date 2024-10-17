@@ -41,6 +41,7 @@ function addDraggableImage(imageSrc, event) {
     draggableImages.push({ img, isDragging: false });
 
     makeImageDraggable(img);
+    makeImageRotatable(img); // Add rotation functionality
 }
 
 function createImageElement(imageSrc, event) {
@@ -80,6 +81,21 @@ function makeImageDraggable(img) {
         document.removeEventListener('mousemove', mouseMoveHandler);
         document.removeEventListener('mouseup', mouseUpHandler);
     }
+}
+
+function makeImageRotatable(img) {
+    img.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const currentRotation = getRotation(img);
+        const newRotation = currentRotation + (e.deltaY > 0 ? 10 : -10);
+        img.style.transform = `rotate(${newRotation}deg)`;
+    });
+
+    img.addEventListener('click', function() {
+        if (img.src.includes('Slipbot.png') || img.src.includes('SlipBot_Loaded.png')) {
+            toggleSlipbotImage(img);
+        }
+    });
 }
 
 function toggleSlipbotImage(img) {
