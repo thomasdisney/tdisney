@@ -65,16 +65,12 @@ function makeImageDraggable(img) {
         if (currentDraggable === img) {
             currentDraggable = null; 
         } else {
-            currentDraggable = img; // Toggle on
+            currentDraggable = img; 
             startX = e.clientX - img.getBoundingClientRect().left;
             startY = e.clientY - img.getBoundingClientRect().top;
 
             if (img.src.includes('truck')) {
-                draggableImages.forEach(({ img: slipbot }) => {
-                    if (slipbot.src.includes('slipbot') && checkOverlap(img, slipbot)) {
-                        attachSlipbotToTruck(slipbot, img);
-                    }
-                });
+                attachOverlappingSlipbots(img);
             }
         }
     });
@@ -102,20 +98,19 @@ function makeImageDraggable(img) {
     });
 }
 
-function attachSlipbotToTruck(slipbot, truck) {
+function attachOverlappingSlipbots(truck) {
     const truckRect = truck.getBoundingClientRect();
-    const slipbotRect = slipbot.getBoundingClientRect();
-    const offsetX = slipbotRect.left - truckRect.left;
-    const offsetY = slipbotRect.top - truckRect.top;
+    truck.attachedSlipbots = []; 
 
-    slipbot.style.position = 'absolute';
-    slipbot.style.left = `${offsetX}px`;
-    slipbot.style.top = `${offsetY}px`;
+    draggableImages.forEach(({ img: slipbot }) => {
+        if (slipbot.src.includes('slipbot') && checkOverlap(truck, slipbot)) {
+            const slipbotRect = slipbot.getBoundingClientRect();
+            const offsetX = slipbotRect.left - truckRect.left;
+            const offsetY = slipbotRect.top - truckRect.top;
 
-    if (!truck.attachedSlipbots) {
-        truck.attachedSlipbots = [];
-    }
-    truck.attachedSlipbots.push({ slipbot, offsetX, offsetY });
+            truck.attachedSlipbots.push({ slipbot, offsetX, offsetY });
+        }
+    });
 }
 
 function makeImageRotatable(img) {
