@@ -49,13 +49,41 @@ function createImageElement(imageSrc, event) {
     document.body.appendChild(img);
 
     let isDragging = false;
-    let currentX;
-    let currentY;
-    let initialX;
-    let initialY;
-    let xOffset = 0;
-    let yOffset = 0;
-    let rotation = 0; // Scoped rotation
+    let startX, startY, xOffset = 0, yOffset = 0;
+    let rotation = 0;
+
+    img.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        startX = e.clientX - xOffset;
+        startY = e.clientY - yOffset;
+        isDragging = true;
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+    });
+
+    function drag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        xOffset = e.clientX - startX;
+        yOffset = e.clientY - startY;
+        setTranslate(xOffset, yOffset, img);
+    }
+
+    function dragEnd() {
+        isDragging = false;
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', dragEnd);
+    }
+
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) rotate(${rotation}deg)`;
+    }
+
+    img.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        rotation += Math.sign(e.deltaY) * 5;
+        setTranslate(xOffset, yOffset, img);
+    });
 
     img.onload = () => {
         // Apply initial scaling for slipbot images
@@ -71,82 +99,21 @@ function createImageElement(imageSrc, event) {
         toggleSlipbotImage(img, rotation);
     });
 
-    img.addEventListener('mousedown', dragStart);
-    img.addEventListener('mouseup', dragEnd);
-    img.addEventListener('mousemove', drag);
-    img.addEventListener('wheel', rotate);
-
     function toggleDrag(e) {
         if (img.src.toLowerCase().includes('slipbot')) {
             isDragging = !isDragging;
         }
     }
 
-    function dragStart(e) {
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
-
-        if (e.target === img) {
-            isDragging = true;
-
-            if (img.src.toLowerCase().includes('truck')) {
-                attachedElements.clear();
-                draggableImages.forEach(({ img: slipbot, setDragging }) => {
-                    if (checkOverlap(img, slipbot)) {
-                        setDragging(true);
-                        attachedElements.add(slipbot);
-                    } else {
-                        setDragging(false);
-                    }
-                });
-            }
+    function toggleSlipbotImage(img, rotation) {
+        if (img.src.includes('Slipbot.png')) {
+            img.src = 'SlipBot_Loaded.png';
+        } else if (img.src.includes('SlipBot_Loaded.png')) {
+            img.src = 'Slipbot.png';
         }
-    }
-
-    function dragEnd(e) {
-        initialX = currentX;
-        initialY = currentY;
-        isDragging = false;
-    }
-
-    function drag(e) {
-        if (isDragging) {
-            e.preventDefault();
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
-
-            xOffset = currentX;
-            yOffset = currentY;
-
-            setTranslate(currentX, currentY, img);
-
-            if (img.src.toLowerCase().includes('truck')) {
-                attachedElements.forEach(slipbot => {
-                    slipbot.style.left = `${parseFloat(slipbot.style.left) + e.movementX}px`;
-                    slipbot.style.top = `${parseFloat(slipbot.style.top) + e.movementY}px`;
-                });
-            }
-        }
-    }
-
-    function setTranslate(xPos, yPos, el) {
-        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) rotate(${rotation}deg)`;
-    }
-
-    function rotate(e) {
-        e.preventDefault();
-        rotation += Math.sign(e.deltaY) * 5;
-        setTranslate(xOffset, yOffset, img);
-
-        if (img.src.toLowerCase().includes('truck')) {
-            attachedElements.forEach(slipbot => {
-                const center = getCenter(img);
-                const slipbotCenter = getCenter(slipbot);
-                const rotatedPoint = rotatePoint(slipbotCenter.x, slipbotCenter.y, center.x, center.y, Math.sign(e.deltaY) * 5);
-                slipbot.style.left = `${rotatedPoint.x - slipbot.offsetWidth / 2}px`;
-                slipbot.style.top = `${rotatedPoint.y - slipbot.offsetHeight / 2}px`;
-            });
-        }
+        img.style.width = '40px';
+        img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`;
+        img.style.transform = `translate3d(${parseFloat(img.style.left)}px, ${parseFloat(img.style.top)}px, 0) rotate(${rotation}deg)`;
     }
 }
 
