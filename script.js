@@ -57,18 +57,23 @@ function createImageElement(imageSrc, event) {
     let yOffset = 0;
     let rotation = 0; // Scoped rotation
 
+    img.onload = () => {
+        // Apply initial scaling for slipbot images
+        if (imageSrc.toLowerCase().includes('slipbot')) {
+            img.style.width = '40px';
+            img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`;
+        }
+    };
+
     img.addEventListener('click', toggleDrag);
     img.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         toggleSlipbotImage(img, rotation);
     });
 
-    if (imageSrc.toLowerCase().includes('truck')) {
-        img.addEventListener('mousedown', dragStart);
-        img.addEventListener('mouseup', dragEnd);
-        img.addEventListener('mousemove', drag);
-    }
-
+    img.addEventListener('mousedown', dragStart);
+    img.addEventListener('mouseup', dragEnd);
+    img.addEventListener('mousemove', drag);
     img.addEventListener('wheel', rotate);
 
     function toggleDrag(e) {
@@ -83,6 +88,7 @@ function createImageElement(imageSrc, event) {
 
         if (e.target === img) {
             isDragging = true;
+
             if (img.src.toLowerCase().includes('truck')) {
                 attachedElements.clear();
                 draggableImages.forEach(({ img: slipbot, setDragging }) => {
