@@ -202,8 +202,13 @@ function getRotation(el) {
     return 0;
 }
 
-document.getElementById('addBotBtn').addEventListener('click', function(e) { addDraggableImage('Slipbot.png', e) });
-document.getElementById('addtrlrBtn').addEventListener('click', function(e) { addDraggableImage('truck.png', e) });
+document.getElementById('addBotBtn').addEventListener('click', function(e) {
+    addDraggableImage('Slipbot.png', e);
+});
+
+document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
+    addDraggableImage('truck.png', e);
+});
 
 let backgroundImages = [];
 let selectedBackground = null;
