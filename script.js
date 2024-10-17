@@ -36,13 +36,10 @@ function addDraggableImage(imageSrc, event) {
         }
     };
 
-    // Ensure the image is appended to the document
     document.body.appendChild(img);
 
-    // Add the image to the draggableImages array
     draggableImages.push({ img, isDragging: false });
 
-    // Add event listeners for dragging functionality
     makeImageDraggable(img);
 }
 
