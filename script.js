@@ -49,132 +49,102 @@ function createImageElement(imageSrc, event) {
     document.body.appendChild(img);
 
     let isDragging = false;
-    let startX, startY, xOffset = 0, yOffset = 0;
+    let startX, startY;
     let rotation = 0;
-    let attachedElements = new Set();
+
+    img.onload = () => {
+        adjustImageSize(img, imageSrc);
+    };
 
     img.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', stopDrag);
 
     function startDrag(e) {
+        if (e.button !== 0) return; // Only left mouse button
         e.preventDefault();
         isDragging = true;
-        startX = e.clientX - xOffset;
-        startY = e.clientY - yOffset;
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-
-        if (img.src.includes('truck.png')) {
-            attachOverlappingSlipbots();
-        }
+        startX = e.clientX - img.offsetLeft;
+        startY = e.clientY - img.offsetTop;
     }
 
     function drag(e) {
         if (!isDragging) return;
         e.preventDefault();
-        xOffset = e.clientX - startX;
-        yOffset = e.clientY - startY;
-        setTranslate(xOffset, yOffset, img);
-
-        // Move attached elements
-        attachedElements.forEach(el => {
-            const relX = parseFloat(el.dataset.relativeX);
-            const relY = parseFloat(el.dataset.relativeY);
-            setTranslate(xOffset + relX, yOffset + relY, el);
-        });
+        const left = e.clientX - startX;
+        const top = e.clientY - startY;
+        img.style.left = `${left}px`;
+        img.style.top = `${top}px`;
     }
 
-    function dragEnd() {
+    function stopDrag() {
         isDragging = false;
-        document.removeEventListener('mousemove', drag);
-        document.removeEventListener('mouseup', dragEnd);
-
-        if (img.src.includes('truck.png')) {
-            detachSlipbots();
-        }
-    }
-
-    function setTranslate(xPos, yPos, el) {
-        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) rotate(${el.dataset.rotation || 0}deg)`;
     }
 
     img.addEventListener('wheel', (e) => {
         e.preventDefault();
         rotation += Math.sign(e.deltaY) * 5;
-        img.dataset.rotation = rotation;
-        setTranslate(xOffset, yOffset, img);
-
-        if (img.src.includes('truck.png')) {
-            rotateAttachedElements(rotation);
-        }
+        img.style.transform = `rotate(${rotation}deg)`;
     });
 
-    function rotateAttachedElements(angle) {
-        attachedElements.forEach(el => {
-            const center = getCenter(img);
-            const elCenter = getCenter(el);
-            const rotated = rotatePoint(elCenter.x, elCenter.y, center.x, center.y, angle);
-            const newX = rotated.x - elCenter.x + parseFloat(el.dataset.relativeX);
-            const newY = rotated.y - elCenter.y + parseFloat(el.dataset.relativeY);
-            el.dataset.relativeX = newX;
-            el.dataset.relativeY = newY;
-            setTranslate(xOffset + newX, yOffset + newY, el);
-        });
-    }
-
-    function attachOverlappingSlipbots() {
-        document.querySelectorAll('img.draggable').forEach(el => {
-            if (el.src.includes('Slipbot') && checkOverlap(img, el)) {
-                const rect = img.getBoundingClientRect();
-                const elRect = el.getBoundingClientRect();
-                el.dataset.relativeX = elRect.left - rect.left;
-                el.dataset.relativeY = elRect.top - rect.top;
-                attachedElements.add(el);
-            }
-        });
-    }
-
-    function detachSlipbots() {
-        attachedElements.clear();
-    }
-
-    img.addEventListener('click', toggleDrag);
     img.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         toggleSlipbotImage(img);
     });
 
-    function toggleDrag(e) {
-        if (img.src.toLowerCase().includes('slipbot')) {
-            isDragging = !isDragging;
-        }
-    }
-
     return img;
 }
 
-function toggleSlipbotImage(img) {
-    const rect = img.getBoundingClientRect();
-    const rotation = parseFloat(img.dataset.rotation || 0);
+function adjustImageSize(img, imageSrc) {
+    if (imageSrc.toLowerCase().includes('slipbot')) {
+        img.style.width = '40px';
+        img.style.height = 'auto';
+    } else if (imageSrc.toLowerCase().includes('truck')) {
+        img.style.width = '200px'; // Adjust this value as needed
+        img.style.height = 'auto';
+    }
+}
 
-    if (img.src.includes('Slipbot.png')) {
+function toggleSlipbotImage(img) {
+    const currentSrc = img.src;
+    const currentRect = img.getBoundingClientRect();
+    const currentRotation = getRotation(img);
+
+    if (currentSrc.includes('Slipbot.png')) {
         img.src = 'SlipBot_Loaded.png';
-    } else if (img.src.includes('SlipBot_Loaded.png')) {
+    } else if (currentSrc.includes('SlipBot_Loaded.png')) {
         img.src = 'Slipbot.png';
     }
 
     img.onload = () => {
-        img.style.width = '40px';
-        img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`;
-        
-        // Maintain position and rotation
+        adjustImageSize(img, img.src);
         const newRect = img.getBoundingClientRect();
-        const leftAdjust = rect.left - newRect.left;
-        const topAdjust = rect.top - newRect.top;
+        
+        // Adjust position to maintain center
+        const leftAdjust = (currentRect.width - newRect.width) / 2;
+        const topAdjust = (currentRect.height - newRect.height) / 2;
         
         img.style.left = `${parseFloat(img.style.left) + leftAdjust}px`;
         img.style.top = `${parseFloat(img.style.top) + topAdjust}px`;
-        img.style.transform = `translate3d(${parseFloat(img.style.left)}px, ${parseFloat(img.style.top)}px, 0) rotate(${rotation}deg)`;
+        
+        // Maintain rotation
+        img.style.transform = `rotate(${currentRotation}deg)`;
     };
+}
+
+function getRotation(el) {
+    const st = window.getComputedStyle(el, null);
+    const tm = st.getPropertyValue("-webkit-transform") ||
+               st.getPropertyValue("-moz-transform") ||
+               st.getPropertyValue("-ms-transform") ||
+               st.getPropertyValue("-o-transform") ||
+               st.getPropertyValue("transform");
+    if (tm !== "none") {
+        const values = tm.split('(')[1].split(')')[0].split(',');
+        const angle = Math.round(Math.atan2(values[1], values[0]) * (180/Math.PI));
+        return (angle < 0 ? angle + 360 : angle);
+    }
+    return 0;
 }
 
 document.getElementById('addBotBtn').addEventListener('click', function(e) { addDraggableImage('Slipbot.png', e) });
