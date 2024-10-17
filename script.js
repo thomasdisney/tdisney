@@ -55,12 +55,12 @@ function createImageElement(imageSrc, event) {
     let initialY;
     let xOffset = 0;
     let yOffset = 0;
-    let rotation = 0;
+    let rotation = 0; // Scoped rotation
 
-    img.addEventListener('click', toggleDrag); // Use click to toggle dragging
+    img.addEventListener('click', toggleDrag);
     img.addEventListener('contextmenu', (e) => {
-        e.preventDefault(); // Prevent default context menu
-        toggleSlipbotImage(img); // Toggle between images
+        e.preventDefault();
+        toggleSlipbotImage(img, rotation);
     });
 
     if (imageSrc.toLowerCase().includes('truck')) {
@@ -83,13 +83,23 @@ function createImageElement(imageSrc, event) {
 
         if (e.target === img) {
             isDragging = true;
+            if (img.src.toLowerCase().includes('truck')) {
+                attachedElements.clear();
+                draggableImages.forEach(({ img: slipbot, setDragging }) => {
+                    if (checkOverlap(img, slipbot)) {
+                        setDragging(true);
+                        attachedElements.add(slipbot);
+                    } else {
+                        setDragging(false);
+                    }
+                });
+            }
         }
     }
 
     function dragEnd(e) {
         initialX = currentX;
         initialY = currentY;
-
         isDragging = false;
     }
 
@@ -104,7 +114,6 @@ function createImageElement(imageSrc, event) {
 
             setTranslate(currentX, currentY, img);
 
-            // Move attached slipbots with the truck
             if (img.src.toLowerCase().includes('truck')) {
                 attachedElements.forEach(slipbot => {
                     slipbot.style.left = `${parseFloat(slipbot.style.left) + e.movementX}px`;
@@ -122,16 +131,27 @@ function createImageElement(imageSrc, event) {
         e.preventDefault();
         rotation += Math.sign(e.deltaY) * 5;
         setTranslate(xOffset, yOffset, img);
+
+        if (img.src.toLowerCase().includes('truck')) {
+            attachedElements.forEach(slipbot => {
+                const center = getCenter(img);
+                const slipbotCenter = getCenter(slipbot);
+                const rotatedPoint = rotatePoint(slipbotCenter.x, slipbotCenter.y, center.x, center.y, Math.sign(e.deltaY) * 5);
+                slipbot.style.left = `${rotatedPoint.x - slipbot.offsetWidth / 2}px`;
+                slipbot.style.top = `${rotatedPoint.y - slipbot.offsetHeight / 2}px`;
+            });
+        }
     }
 }
 
-function toggleSlipbotImage(img) {
+function toggleSlipbotImage(img, rotation) {
     if (img.src.includes('Slipbot.png')) {
         img.src = 'SlipBot_Loaded.png';
     } else if (img.src.includes('SlipBot_Loaded.png')) {
         img.src = 'Slipbot.png';
     }
-    // Maintain the current rotation and position
+    img.style.width = '40px';
+    img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`;
     img.style.transform = `translate3d(${parseFloat(img.style.left)}px, ${parseFloat(img.style.top)}px, 0) rotate(${rotation}deg)`;
 }
 
@@ -150,7 +170,10 @@ function addBackgroundImage(file) {
         document.body.appendChild(img);
         backgroundImages.push(img);
         makeBackgroundDraggable(img);
-    }
+    };
+    reader.onerror = function() {
+        console.error("Error reading file");
+    };
     reader.readAsDataURL(file);
 }
 
@@ -158,21 +181,25 @@ function makeBackgroundDraggable(img) {
     let isDragging = false;
     let startX, startY;
 
-    img.addEventListener('mousedown', function(e) {
-        isDragging = true;
-        startX = e.clientX - img.offsetLeft;
-        startY = e.clientY - img.offsetTop;
-    });
-
-    document.addEventListener('mousemove', function(e) {
+    const mouseMoveHandler = function(e) {
         if (isDragging) {
             img.style.left = (e.clientX - startX) + 'px';
             img.style.top = (e.clientY - startY) + 'px';
         }
-    });
+    };
 
-    document.addEventListener('mouseup', function() {
+    const mouseUpHandler = function() {
         isDragging = false;
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    img.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        startX = e.clientX - img.offsetLeft;
+        startY = e.clientY - img.offsetTop;
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
     });
 }
 
