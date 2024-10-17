@@ -29,12 +29,12 @@ function addDraggableImage(imageSrc, event) {
     img.onload = () => {
         adjustImageSize(img, imageSrc);
         if (imageSrc.toLowerCase().includes('slipbot')) {
-            img.style.width = '40px'; // Scale slipbot to 40px width
-            img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`; // Maintain aspect ratio
+            img.style.width = '40px'; 
+            img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`; 
         }
         if (imageSrc.toLowerCase().includes('truck')) {
-            img.style.width = '50px'; // Scale truck to 80px width
-            img.style.height = `${(80 / img.naturalWidth) * img.naturalHeight}px`; // Maintain aspect ratio
+            img.style.width = '50px'; 
+            img.style.height = `${(50 / img.naturalWidth) * img.naturalHeight}px`; 
         }
     };
 
@@ -57,17 +57,12 @@ function createImageElement(imageSrc, event) {
     let rotation = 0;
     let attachedElements = new Set();
 
-    img.onload = () => {
-        // Images are assumed to be pre-scaled correctly
-        // No adjustments needed here
-    };
-
     img.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', stopDrag);
 
     function startDrag(e) {
-        if (e.button !== 0) return; // Only left mouse button
+        if (e.button !== 0) return; 
         e.preventDefault();
         isDragging = true;
         startX = e.clientX - img.offsetLeft;
@@ -164,9 +159,6 @@ function createImageElement(imageSrc, event) {
     draggableImages.push(dragImage);
     return dragImage;
 }
-
-
-    // Ensure the image maintains its aspect ratio
     img.onload = () => {
         const width = parseFloat(img.style.width);
         img.style.height = `${(width / img.naturalWidth) * img.naturalHeight}px`;
@@ -187,15 +179,10 @@ function toggleSlipbotImage(img) {
     img.onload = () => {
         adjustImageSize(img, img.src);
         const newRect = img.getBoundingClientRect();
-        
-        // Adjust position to maintain center
         const leftAdjust = (currentRect.width - newRect.width) / 2;
         const topAdjust = (currentRect.height - newRect.height) / 2;
-        
         img.style.left = `${parseFloat(img.style.left) + leftAdjust}px`;
         img.style.top = `${parseFloat(img.style.top) + topAdjust}px`;
-        
-        // Maintain rotation
         img.style.transform = `rotate(${currentRotation}deg)`;
     };
 }
