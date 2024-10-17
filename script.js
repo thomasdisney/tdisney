@@ -28,8 +28,8 @@ function addDraggableImage(imageSrc, event) {
             img.style.width = '40px';
             img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`;
             img.style.zIndex = 2;
-
-        img.style.opacity = 1;
+          img.style.opacity = 1;
+        }
     };
     document.body.appendChild(img);
     draggableImages.push({ img, isDragging: false });
