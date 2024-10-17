@@ -50,8 +50,6 @@ function createImageElement(imageSrc, event) {
     img.style.left = `${event.clientX}px`;
     img.style.top = `${event.clientY}px`;
     img.style.transformOrigin = 'center';
-    img.style.opacity = '0';
-    img.style.zIndex = imageSrc.toLowerCase().includes('slipbot') ? '10' : '5';
     document.body.appendChild(img);
 
     let isDragging = false;
@@ -60,22 +58,13 @@ function createImageElement(imageSrc, event) {
     let attachedElements = new Set();
 
     img.onload = () => {
-        img.style.opacity = '1';
-    };
-
-    img.onerror = () => {
-        console.error(`Failed to load image: ${imageSrc}`);
-        img.remove();
+        // Images are assumed to be pre-scaled correctly
+        // No adjustments needed here
     };
 
     img.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', stopDrag);
-
-    // Add touch event listeners
-    img.addEventListener('touchstart', handleTouchStart);
-    img.addEventListener('touchmove', handleTouchMove);
-    img.addEventListener('touchend', handleTouchEnd);
 
     function startDrag(e) {
         if (e.button !== 0) return; // Only left mouse button
@@ -103,9 +92,6 @@ function createImageElement(imageSrc, event) {
 
     function stopDrag() {
         isDragging = false;
-        if (imageSrc.toLowerCase().includes('truck')) {
-            detachImages();
-        }
     }
 
     img.addEventListener('wheel', (e) => {
@@ -172,10 +158,6 @@ function createImageElement(imageSrc, event) {
             dragImg.img.style.top = `${rotatedPoint.y - slipbotRect.height / 2}px`;
             dragImg.img.style.transform = `rotate(${rotation}deg)`;
         });
-    }
-
-    function detachImages() {
-        attachedElements.clear();
     }
 
     const dragImage = { img, isDragging: () => isDragging, setDragging: (value) => isDragging = value };
@@ -314,16 +296,3 @@ document.body.addEventListener('click', function(e) {
         selectBackgroundImage(e.target);
     }
 });
-
-// Implement touch event handlers
-function handleTouchStart(e) {
-    // Similar to mousedown logic
-}
-
-function handleTouchMove(e) {
-    // Similar to mousemove logic
-}
-
-function handleTouchEnd(e) {
-    // Similar to mouseup logic
-}
