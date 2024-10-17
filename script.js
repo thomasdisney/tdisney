@@ -28,7 +28,11 @@ function addDraggableImage(imageSrc, event) {
             img.style.width = '40px';
             img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`;
             img.style.zIndex = 2;
- 
+        } else if (imageSrc.toLowerCase().includes('truck')) {
+            img.style.width = '50px';
+            img.style.zIndex = 1;
+        }
+        img.style.opacity = 1;
     };
     document.body.appendChild(img);
     draggableImages.push({ img, isDragging: false });
@@ -217,6 +221,16 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
     const files = e.target.files;
     for (let i = 0; i < files.length; i++) {
         addBackgroundImage(files[i]);
+    }
+});
+
+document.addEventListener('paste', function(e) {
+    const items = e.clipboardData.items;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            const blob = item.getAsFile();
+            addBackgroundImage(blob);
+        }
     }
 });
 
