@@ -65,9 +65,9 @@ function makeImageDraggable(img) {
         if (currentDraggable === img) {
             currentDraggable = null; 
         } else {
-            currentDraggable = img; 
-            startX = e.clientX - img.offsetLeft;
-            startY = e.clientY - img.offsetTop;
+            currentDraggable = img; // Toggle on
+            startX = e.clientX - img.getBoundingClientRect().left;
+            startY = e.clientY - img.getBoundingClientRect().top;
 
             if (img.src.includes('truck')) {
                 draggableImages.forEach(({ img: slipbot }) => {
@@ -81,13 +81,15 @@ function makeImageDraggable(img) {
 
     document.addEventListener('mousemove', function(e) {
         if (currentDraggable) {
-            currentDraggable.style.left = (e.clientX - startX) + 'px';
-            currentDraggable.style.top = (e.clientY - startY) + 'px';
+            const newLeft = e.clientX - startX;
+            const newTop = e.clientY - startY;
+            currentDraggable.style.left = `${newLeft}px`;
+            currentDraggable.style.top = `${newTop}px`;
 
             if (currentDraggable.src.includes('truck') && currentDraggable.attachedSlipbots) {
                 currentDraggable.attachedSlipbots.forEach(({ slipbot, offsetX, offsetY }) => {
-                    slipbot.style.left = (e.clientX - startX + offsetX) + 'px';
-                    slipbot.style.top = (e.clientY - startY + offsetY) + 'px';
+                    slipbot.style.left = `${newLeft + offsetX}px`;
+                    slipbot.style.top = `${newTop + offsetY}px`;
                 });
             }
         }
