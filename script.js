@@ -28,10 +28,13 @@ function addDraggableImage(imageSrc, event) {
         if (imageSrc.toLowerCase().includes('slipbot')) {
             img.style.width = '40px'; 
             img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`; 
+            img.style.zIndex = 2; // Ensure Slipbots are above trucks
         } else if (imageSrc.toLowerCase().includes('truck')) {
             img.style.width = '50px'; 
             img.style.height = `${(50 / img.naturalWidth) * img.naturalHeight}px`; 
+            img.style.zIndex = 1; // Trucks have lower z-index
         }
+        img.style.opacity = 1; // Ensure no transparency
     };
 
     document.body.appendChild(img);
@@ -58,20 +61,26 @@ function createImageElement(imageSrc, event) {
 function makeImageDraggable(img) {
     let isDragging = false;
     let startX, startY;
-    let attachedSlipbots = [];
 
-    img.addEventListener('mousedown', function(e) {
-        if (e.button === 0) { // Left click
-            isDragging = !isDragging;
-            if (isDragging) {
-                startX = e.clientX - img.offsetLeft;
-                startY = e.clientY - img.offsetTop;
-                document.addEventListener('mousemove', mouseMoveHandler);
-                document.addEventListener('mouseup', mouseUpHandler);
-            } else {
-                document.removeEventListener('mousemove', mouseMoveHandler);
-                document.removeEventListener('mouseup', mouseUpHandler);
+    img.addEventListener('click', function(e) {
+        isDragging = !isDragging;
+        if (isDragging) {
+            startX = e.clientX - img.offsetLeft;
+            startY = e.clientY - img.offsetTop;
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
+
+            if (img.src.includes('truck')) {
+                // Attach overlapping Slipbots to the truck
+                draggableImages.forEach(({ img: slipbot }) => {
+                    if (slipbot.src.includes('slipbot') && checkOverlap(img, slipbot)) {
+                        attachSlipbotToTruck(slipbot, img);
+                    }
+                });
             }
+        } else {
+            document.removeEventListener('mousemove', mouseMoveHandler);
+            document.removeEventListener('mouseup', mouseUpHandler);
         }
     });
 
@@ -80,12 +89,10 @@ function makeImageDraggable(img) {
             img.style.left = (e.clientX - startX) + 'px';
             img.style.top = (e.clientY - startY) + 'px';
 
-            if (img.src.includes('truck')) {
-                // Check for overlapping Slipbots
-                draggableImages.forEach(({ img: slipbot }) => {
-                    if (slipbot.src.includes('slipbot') && checkOverlap(img, slipbot)) {
-                        attachSlipbotToTruck(slipbot, img);
-                    }
+            if (img.src.includes('truck') && img.attachedSlipbots) {
+                img.attachedSlipbots.forEach(({ slipbot, offsetX, offsetY }) => {
+                    slipbot.style.left = (e.clientX - startX + offsetX) + 'px';
+                    slipbot.style.top = (e.clientY - startY + offsetY) + 'px';
                 });
             }
         }
