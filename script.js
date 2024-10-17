@@ -28,10 +28,7 @@ function addDraggableImage(imageSrc, event) {
             img.style.width = '40px';
             img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`;
             img.style.zIndex = 2;
-        } else if (imageSrc.toLowerCase().includes('truck')) {
-            img.style.width = '50px';
-            img.style.zIndex = 1;
-        }
+
         img.style.opacity = 1;
     };
     document.body.appendChild(img);
@@ -55,7 +52,6 @@ let currentDraggable = null;
 
 function makeImageDraggable(img) {
     let startX, startY, initialLeft, initialTop;
-
     img.addEventListener('click', function(e) {
         e.stopPropagation();
         if (currentDraggable === img) {
@@ -63,8 +59,8 @@ function makeImageDraggable(img) {
         } else {
             currentDraggable = img;
             const rect = img.getBoundingClientRect();
-            startX = e.clientX - rect.left;
-            startY = e.clientY - rect.top;
+            startX = e.clientX;
+            startY = e.clientY;
             initialLeft = rect.left;
             initialTop = rect.top;
             if (img.src.includes('truck')) {
@@ -72,11 +68,17 @@ function makeImageDraggable(img) {
             }
         }
     });
-
+    document.addEventListener('mousedown', function(e) {
+        if (currentDraggable) {
+            e.preventDefault();
+        }
+    });
     document.addEventListener('mousemove', function(e) {
         if (currentDraggable) {
-            const newLeft = e.clientX - startX;
-            const newTop = e.clientY - startY;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            const newLeft = initialLeft + dx;
+            const newTop = initialTop + dy;
             currentDraggable.style.left = `${newLeft}px`;
             currentDraggable.style.top = `${newTop}px`;
             if (currentDraggable.src.includes('truck') && currentDraggable.attachedSlipbots) {
@@ -87,11 +89,8 @@ function makeImageDraggable(img) {
             }
         }
     });
-
-    document.addEventListener('click', function(e) {
-        if (currentDraggable && e.target !== currentDraggable) {
-            currentDraggable = null;
-        }
+    document.addEventListener('mouseup', function(e) {
+        currentDraggable = null;
     });
 }
 
@@ -127,7 +126,6 @@ function makeImageRotatable(img) {
             });
         }
     });
-
     img.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         if (img.src.includes('Slipbot.png') || img.src.includes('SlipBot_Loaded.png')) {
@@ -221,16 +219,6 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
     const files = e.target.files;
     for (let i = 0; i < files.length; i++) {
         addBackgroundImage(files[i]);
-    }
-});
-
-document.addEventListener('paste', function(e) {
-    const items = e.clipboardData.items;
-    for (const item of items) {
-        if (item.type.startsWith('image/')) {
-            const blob = item.getAsFile();
-            addBackgroundImage(blob);
-        }
     }
 });
 
