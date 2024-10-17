@@ -32,6 +32,10 @@ function addDraggableImage(imageSrc, event) {
             img.style.width = '40px'; // Scale slipbot to 40px width
             img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`; // Maintain aspect ratio
         }
+        if (imageSrc.toLowerCase().includes('truck')) {
+            img.style.width = '50px'; // Scale truck to 80px width
+            img.style.height = `${(80 / img.naturalWidth) * img.naturalHeight}px`; // Maintain aspect ratio
+        }
     };
 
     setupImageEventListeners(img, imageSrc, state, attachedElements);
@@ -46,6 +50,8 @@ function createImageElement(imageSrc, event) {
     img.style.left = `${event.clientX}px`;
     img.style.top = `${event.clientY}px`;
     img.style.transformOrigin = 'center';
+    img.style.opacity = '0';
+    img.style.zIndex = imageSrc.toLowerCase().includes('slipbot') ? '10' : '5';
     document.body.appendChild(img);
 
     let isDragging = false;
@@ -54,12 +60,22 @@ function createImageElement(imageSrc, event) {
     let attachedElements = new Set();
 
     img.onload = () => {
-        adjustImageSize(img, imageSrc);
+        img.style.opacity = '1';
+    };
+
+    img.onerror = () => {
+        console.error(`Failed to load image: ${imageSrc}`);
+        img.remove();
     };
 
     img.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', stopDrag);
+
+    // Add touch event listeners
+    img.addEventListener('touchstart', handleTouchStart);
+    img.addEventListener('touchmove', handleTouchMove);
+    img.addEventListener('touchend', handleTouchEnd);
 
     function startDrag(e) {
         if (e.button !== 0) return; // Only left mouse button
@@ -95,12 +111,16 @@ function createImageElement(imageSrc, event) {
     img.addEventListener('wheel', (e) => {
         e.preventDefault();
         rotation += Math.sign(e.deltaY) * 5;
-        img.style.transform = `rotate(${rotation}deg)`;
+        updateTransform();
         
         if (imageSrc.toLowerCase().includes('truck')) {
-            rotateAttachedElements(rotation);
+            rotateAttachedElements();
         }
     });
+
+    function updateTransform() {
+        img.style.transform = `rotate(${rotation}deg)`;
+    }
 
     img.addEventListener('contextmenu', (e) => {
         e.preventDefault();
@@ -111,11 +131,11 @@ function createImageElement(imageSrc, event) {
 
     function attachOverlappingImages() {
         draggableImages.forEach(dragImg => {
-            if (dragImg.img !== img && checkOverlap(img, dragImg.img)) {
-                const rect = img.getBoundingClientRect();
-                const dragRect = dragImg.img.getBoundingClientRect();
-                dragImg.relativeX = dragRect.left - rect.left;
-                dragImg.relativeY = dragRect.top - rect.top;
+            if (dragImg.img !== img && dragImg.img.src.toLowerCase().includes('slipbot') && checkOverlap(img, dragImg.img)) {
+                const truckRect = img.getBoundingClientRect();
+                const slipbotRect = dragImg.img.getBoundingClientRect();
+                dragImg.relativeX = slipbotRect.left - truckRect.left;
+                dragImg.relativeY = slipbotRect.top - truckRect.top;
                 attachedElements.add(dragImg);
             }
         });
@@ -128,28 +148,29 @@ function createImageElement(imageSrc, event) {
         });
     }
 
-    function rotateAttachedElements(angle) {
-        const imgRect = img.getBoundingClientRect();
-        const imgCenter = {
-            x: imgRect.left + imgRect.width / 2,
-            y: imgRect.top + imgRect.height / 2
+    function rotateAttachedElements() {
+        const truckRect = img.getBoundingClientRect();
+        const truckCenter = {
+            x: truckRect.left + truckRect.width / 2,
+            y: truckRect.top + truckRect.height / 2
         };
 
         attachedElements.forEach(dragImg => {
-            const dragRect = dragImg.img.getBoundingClientRect();
-            const dragCenter = {
-                x: dragRect.left + dragRect.width / 2,
-                y: dragRect.top + dragRect.height / 2
+            const slipbotRect = dragImg.img.getBoundingClientRect();
+            const slipbotCenter = {
+                x: slipbotRect.left + slipbotRect.width / 2,
+                y: slipbotRect.top + slipbotRect.height / 2
             };
 
             const rotatedPoint = rotatePoint(
-                dragCenter.x, dragCenter.y,
-                imgCenter.x, imgCenter.y,
-                angle
+                slipbotCenter.x, slipbotCenter.y,
+                truckCenter.x, truckCenter.y,
+                rotation
             );
 
-            dragImg.img.style.left = `${rotatedPoint.x - dragRect.width / 2}px`;
-            dragImg.img.style.top = `${rotatedPoint.y - dragRect.height / 2}px`;
+            dragImg.img.style.left = `${rotatedPoint.x - slipbotRect.width / 2}px`;
+            dragImg.img.style.top = `${rotatedPoint.y - slipbotRect.height / 2}px`;
+            dragImg.img.style.transform = `rotate(${rotation}deg)`;
         });
     }
 
@@ -162,14 +183,11 @@ function createImageElement(imageSrc, event) {
     return dragImage;
 }
 
-function adjustImageSize(img, imageSrc) {
-    if (imageSrc.toLowerCase().includes('slipbot') || imageSrc.toLowerCase().includes('truck')) {
-        img.style.width = '40px';
-        img.style.height = 'auto';
-    }
+
     // Ensure the image maintains its aspect ratio
     img.onload = () => {
-        img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`;
+        const width = parseFloat(img.style.width);
+        img.style.height = `${(width / img.naturalWidth) * img.naturalHeight}px`;
     };
 }
 
@@ -296,3 +314,16 @@ document.body.addEventListener('click', function(e) {
         selectBackgroundImage(e.target);
     }
 });
+
+// Implement touch event handlers
+function handleTouchStart(e) {
+    // Similar to mousedown logic
+}
+
+function handleTouchMove(e) {
+    // Similar to mousemove logic
+}
+
+function handleTouchEnd(e) {
+    // Similar to mouseup logic
+}
