@@ -51,6 +51,7 @@ function createImageElement(imageSrc, event) {
     let isDragging = false;
     let startX, startY;
     let rotation = 0;
+    let attachedElements = new Set();
 
     img.onload = () => {
         adjustImageSize(img, imageSrc);
@@ -66,6 +67,9 @@ function createImageElement(imageSrc, event) {
         isDragging = true;
         startX = e.clientX - img.offsetLeft;
         startY = e.clientY - img.offsetTop;
+        if (imageSrc.toLowerCase().includes('truck')) {
+            attachOverlappingImages();
+        }
     }
 
     function drag(e) {
@@ -75,34 +79,98 @@ function createImageElement(imageSrc, event) {
         const top = e.clientY - startY;
         img.style.left = `${left}px`;
         img.style.top = `${top}px`;
+        
+        if (imageSrc.toLowerCase().includes('truck')) {
+            moveAttachedElements(left, top);
+        }
     }
 
     function stopDrag() {
         isDragging = false;
+        if (imageSrc.toLowerCase().includes('truck')) {
+            detachImages();
+        }
     }
 
     img.addEventListener('wheel', (e) => {
         e.preventDefault();
         rotation += Math.sign(e.deltaY) * 5;
         img.style.transform = `rotate(${rotation}deg)`;
+        
+        if (imageSrc.toLowerCase().includes('truck')) {
+            rotateAttachedElements(rotation);
+        }
     });
 
     img.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        toggleSlipbotImage(img);
+        if (imageSrc.toLowerCase().includes('slipbot')) {
+            toggleSlipbotImage(img);
+        }
     });
 
-    return img;
+    function attachOverlappingImages() {
+        draggableImages.forEach(dragImg => {
+            if (dragImg.img !== img && checkOverlap(img, dragImg.img)) {
+                const rect = img.getBoundingClientRect();
+                const dragRect = dragImg.img.getBoundingClientRect();
+                dragImg.relativeX = dragRect.left - rect.left;
+                dragImg.relativeY = dragRect.top - rect.top;
+                attachedElements.add(dragImg);
+            }
+        });
+    }
+
+    function moveAttachedElements(left, top) {
+        attachedElements.forEach(dragImg => {
+            dragImg.img.style.left = `${left + dragImg.relativeX}px`;
+            dragImg.img.style.top = `${top + dragImg.relativeY}px`;
+        });
+    }
+
+    function rotateAttachedElements(angle) {
+        const imgRect = img.getBoundingClientRect();
+        const imgCenter = {
+            x: imgRect.left + imgRect.width / 2,
+            y: imgRect.top + imgRect.height / 2
+        };
+
+        attachedElements.forEach(dragImg => {
+            const dragRect = dragImg.img.getBoundingClientRect();
+            const dragCenter = {
+                x: dragRect.left + dragRect.width / 2,
+                y: dragRect.top + dragRect.height / 2
+            };
+
+            const rotatedPoint = rotatePoint(
+                dragCenter.x, dragCenter.y,
+                imgCenter.x, imgCenter.y,
+                angle
+            );
+
+            dragImg.img.style.left = `${rotatedPoint.x - dragRect.width / 2}px`;
+            dragImg.img.style.top = `${rotatedPoint.y - dragRect.height / 2}px`;
+        });
+    }
+
+    function detachImages() {
+        attachedElements.clear();
+    }
+
+    const dragImage = { img, isDragging: () => isDragging, setDragging: (value) => isDragging = value };
+    draggableImages.push(dragImage);
+    return dragImage;
 }
 
 function adjustImageSize(img, imageSrc) {
-    if (imageSrc.toLowerCase().includes('slipbot')) {
+    if (imageSrc.toLowerCase().includes('slipbot') || imageSrc.toLowerCase().includes('truck')) {
         img.style.width = '40px';
         img.style.height = 'auto';
-    } else if (imageSrc.toLowerCase().includes('truck')) {
-        img.style.width = '200px'; // Adjust this value as needed
-        img.style.height = 'auto';
     }
+    // Ensure the image maintains its aspect ratio
+    img.onload = () => {
+        img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`;
+    };
 }
 
 function toggleSlipbotImage(img) {
