@@ -25,12 +25,10 @@ function addDraggableImage(imageSrc, event) {
     const img = createImageElement(imageSrc, event);
 
     img.onload = () => {
-        adjustImageSize(img, imageSrc);
         if (imageSrc.toLowerCase().includes('slipbot')) {
             img.style.width = '40px'; 
             img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`; 
-        }
-        if (imageSrc.toLowerCase().includes('truck')) {
+        } else if (imageSrc.toLowerCase().includes('truck')) {
             img.style.width = '50px'; 
             img.style.height = `${(50 / img.naturalWidth) * img.naturalHeight}px`; 
         }
@@ -41,7 +39,7 @@ function addDraggableImage(imageSrc, event) {
     draggableImages.push({ img, isDragging: false });
 
     makeImageDraggable(img);
-    makeImageRotatable(img); // Add rotation functionality
+    makeImageRotatable(img);
 }
 
 function createImageElement(imageSrc, event) {
@@ -60,19 +58,36 @@ function createImageElement(imageSrc, event) {
 function makeImageDraggable(img) {
     let isDragging = false;
     let startX, startY;
+    let attachedSlipbots = [];
 
     img.addEventListener('mousedown', function(e) {
-        isDragging = true;
-        startX = e.clientX - img.offsetLeft;
-        startY = e.clientY - img.offsetTop;
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
+        if (e.button === 0) { // Left click
+            isDragging = !isDragging;
+            if (isDragging) {
+                startX = e.clientX - img.offsetLeft;
+                startY = e.clientY - img.offsetTop;
+                document.addEventListener('mousemove', mouseMoveHandler);
+                document.addEventListener('mouseup', mouseUpHandler);
+            } else {
+                document.removeEventListener('mousemove', mouseMoveHandler);
+                document.removeEventListener('mouseup', mouseUpHandler);
+            }
+        }
     });
 
     function mouseMoveHandler(e) {
         if (isDragging) {
             img.style.left = (e.clientX - startX) + 'px';
             img.style.top = (e.clientY - startY) + 'px';
+
+            if (img.src.includes('truck')) {
+                // Check for overlapping Slipbots
+                draggableImages.forEach(({ img: slipbot }) => {
+                    if (slipbot.src.includes('slipbot') && checkOverlap(img, slipbot)) {
+                        attachSlipbotToTruck(slipbot, img);
+                    }
+                });
+            }
         }
     }
 
@@ -83,15 +98,47 @@ function makeImageDraggable(img) {
     }
 }
 
+function attachSlipbotToTruck(slipbot, truck) {
+    const truckRect = truck.getBoundingClientRect();
+    const slipbotRect = slipbot.getBoundingClientRect();
+
+    // Calculate relative position
+    const offsetX = slipbotRect.left - truckRect.left;
+    const offsetY = slipbotRect.top - truckRect.top;
+
+    // Attach slipbot to truck
+    slipbot.style.position = 'absolute';
+    slipbot.style.left = `${offsetX}px`;
+    slipbot.style.top = `${offsetY}px`;
+
+    // Add slipbot to truck's attached list
+    if (!truck.attachedSlipbots) {
+        truck.attachedSlipbots = [];
+    }
+    truck.attachedSlipbots.push({ slipbot, offsetX, offsetY });
+}
+
 function makeImageRotatable(img) {
     img.addEventListener('wheel', function(e) {
         e.preventDefault();
         const currentRotation = getRotation(img);
         const newRotation = currentRotation + (e.deltaY > 0 ? 10 : -10);
         img.style.transform = `rotate(${newRotation}deg)`;
+
+        // Rotate attached slipbots if the image is a truck
+        if (img.attachedSlipbots) {
+            img.attachedSlipbots.forEach(({ slipbot, offsetX, offsetY }) => {
+                const center = getCenter(img);
+                const rotatedPoint = rotatePoint(center.x + offsetX, center.y + offsetY, center.x, center.y, newRotation - currentRotation);
+                slipbot.style.left = `${rotatedPoint.x}px`;
+                slipbot.style.top = `${rotatedPoint.y}px`;
+                slipbot.style.transform = `rotate(${newRotation}deg)`;
+            });
+        }
     });
 
-    img.addEventListener('click', function() {
+    img.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
         if (img.src.includes('Slipbot.png') || img.src.includes('SlipBot_Loaded.png')) {
             toggleSlipbotImage(img);
         }
