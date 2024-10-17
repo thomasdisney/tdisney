@@ -28,13 +28,13 @@ function addDraggableImage(imageSrc, event) {
         if (imageSrc.toLowerCase().includes('slipbot')) {
             img.style.width = '40px'; 
             img.style.height = `${(40 / img.naturalWidth) * img.naturalHeight}px`; 
-            img.style.zIndex = 2; // Ensure Slipbots are above trucks
+            img.style.zIndex = 2; 
         } else if (imageSrc.toLowerCase().includes('truck')) {
-            img.style.width = '50px'; 
-            img.style.height = `${(50 / img.naturalWidth) * img.naturalHeight}px`; 
-            img.style.zIndex = 1; // Trucks have lower z-index
+            img.style.width = '60px'; 
+            img.style.height = `${(60 / img.naturalWidth) * img.naturalHeight}px`; 
+            img.style.zIndex = 1; 
         }
-        img.style.opacity = 1; // Ensure no transparency
+        img.style.opacity = 1; 
     };
 
     document.body.appendChild(img);
@@ -53,8 +53,6 @@ function createImageElement(imageSrc, event) {
     img.style.left = `${event.clientX}px`;
     img.style.top = `${event.clientY}px`;
     img.style.transformOrigin = 'center';
-
-    // Return the image element
     return img;
 }
 
@@ -65,14 +63,13 @@ function makeImageDraggable(img) {
 
     img.addEventListener('click', function(e) {
         if (currentDraggable === img) {
-            currentDraggable = null; // Toggle off
+            currentDraggable = null; 
         } else {
-            currentDraggable = img; // Toggle on
+            currentDraggable = img; 
             startX = e.clientX - img.offsetLeft;
             startY = e.clientY - img.offsetTop;
 
             if (img.src.includes('truck')) {
-                // Attach overlapping Slipbots to the truck
                 draggableImages.forEach(({ img: slipbot }) => {
                     if (slipbot.src.includes('slipbot') && checkOverlap(img, slipbot)) {
                         attachSlipbotToTruck(slipbot, img);
@@ -98,7 +95,7 @@ function makeImageDraggable(img) {
 
     document.addEventListener('click', function(e) {
         if (currentDraggable && e.target !== currentDraggable) {
-            currentDraggable = null; // Deselect if clicking outside the current draggable
+            currentDraggable = null; 
         }
     });
 }
@@ -106,17 +103,13 @@ function makeImageDraggable(img) {
 function attachSlipbotToTruck(slipbot, truck) {
     const truckRect = truck.getBoundingClientRect();
     const slipbotRect = slipbot.getBoundingClientRect();
-
-    // Calculate relative position
     const offsetX = slipbotRect.left - truckRect.left;
     const offsetY = slipbotRect.top - truckRect.top;
 
-    // Attach slipbot to truck
     slipbot.style.position = 'absolute';
     slipbot.style.left = `${offsetX}px`;
     slipbot.style.top = `${offsetY}px`;
 
-    // Add slipbot to truck's attached list
     if (!truck.attachedSlipbots) {
         truck.attachedSlipbots = [];
     }
@@ -130,7 +123,6 @@ function makeImageRotatable(img) {
         const newRotation = currentRotation + (e.deltaY > 0 ? 10 : -10);
         img.style.transform = `rotate(${newRotation}deg)`;
 
-        // Rotate attached slipbots if the image is a truck
         if (img.attachedSlipbots) {
             const center = getCenter(img);
             img.attachedSlipbots.forEach(({ slipbot, offsetX, offsetY }) => {
