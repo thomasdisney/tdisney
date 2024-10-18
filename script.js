@@ -19,6 +19,9 @@ const checkOverlap = (elem1, elem2) => {
              rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 };
 
+// Add this at the beginning of the file
+let draggableElements = new Set();
+
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
@@ -101,6 +104,8 @@ function addDraggableImage(imageSrc, event) {
         }
     }
 
+    draggableElements.add({ img, isDragging });
+
     if (imageSrc === 'Slipbot.png') {
         state.offsetX = event.clientX - parseFloat(img.style.left);
         state.offsetY = event.clientY - parseFloat(img.style.top);
@@ -111,6 +116,11 @@ function addDraggableImage(imageSrc, event) {
 
         img.addEventListener('click', function(e) {
             isDragging = !isDragging;
+            draggableElements.forEach(el => {
+                if (el.img === img) {
+                    el.isDragging = isDragging;
+                }
+            });
             if (isDragging) {
                 state.offsetX = e.clientX - parseFloat(img.style.left);
                 state.offsetY = e.clientY - parseFloat(img.style.top);
@@ -126,6 +136,7 @@ function addDraggableImage(imageSrc, event) {
 
         img.addEventListener('wheel', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const delta = e.deltaY > 0 ? -15 : 15; // Adjust rotation speed as needed
             rotateDeg = (rotateDeg + delta + 360) % 360;
             rotateElement(img, rotateDeg);
@@ -158,8 +169,9 @@ function addDraggableImage(imageSrc, event) {
 
         img.addEventListener('wheel', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const prevRotateDeg = rotateDeg;
-            const delta = e.deltaY > 0 ? -15 : 15; // Adjust rotation speed as needed
+            const delta = e.deltaY > 0 ? -12 : 12; // Reduced rotation speed by 20%
             rotateDeg = (rotateDeg + delta + 360) % 360;
             const deltaRotate = rotateDeg - prevRotateDeg;
             
@@ -282,3 +294,20 @@ document.body.addEventListener('click', function(e) {
         selectBackgroundImage(e.target);
     }
 });
+
+// Add this at the end of the file
+document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('draggable')) {
+        draggableElements.forEach(el => {
+            el.isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        });
+    }
+});
+
+document.addEventListener('wheel', function(e) {
+    if (!e.target.classList.contains('draggable')) {
+        e.preventDefault();
+    }
+}, { passive: false });
