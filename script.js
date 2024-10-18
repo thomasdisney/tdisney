@@ -138,7 +138,7 @@ function addDraggableImage(imageSrc, event) {
             e.preventDefault();
             e.stopPropagation();
             const delta = e.deltaY > 0 ? -15 : 15; // Adjust rotation speed as needed
-            rotateDeg = (rotateDeg + delta + 360) % 360;
+            rotateDeg = biasedRotation(rotateDeg, delta);
             rotateElement(img, rotateDeg);
         });
 
@@ -171,8 +171,8 @@ function addDraggableImage(imageSrc, event) {
             e.preventDefault();
             e.stopPropagation();
             const prevRotateDeg = rotateDeg;
-            const delta = e.deltaY > 0 ? -12 : 12; // Reduced rotation speed by 20%
-            rotateDeg = (rotateDeg + delta + 360) % 360;
+            const delta = e.deltaY > 0 ? -15 : 15; // Adjust rotation speed as needed
+            rotateDeg = biasedRotation(rotateDeg, delta);
             const deltaRotate = rotateDeg - prevRotateDeg;
             
             rotateElement(img, rotateDeg);
@@ -187,6 +187,17 @@ function addDraggableImage(imageSrc, event) {
             });
         });
     }
+}
+
+function biasedRotation(currentRotation, delta) {
+    const newRotation = (currentRotation + delta + 360) % 360;
+    const nearestQuadrant = Math.round(newRotation / 90) * 90;
+    
+    if (Math.abs(newRotation - nearestQuadrant) < 5) {
+        return nearestQuadrant;
+    }
+    
+    return newRotation;
 }
 
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
