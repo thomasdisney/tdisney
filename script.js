@@ -53,14 +53,47 @@ function createImageElement(imageSrc, event) {
 let currentDraggable = null;
 
 function makeImageDraggable(img) {
-    let isDraggable = false;
-    let offsetX, offsetY;
+    let isDragging = false;
+    let startX, startY;
+
+    function startDragging(e) {
+        isDragging = true;
+        startX = e.clientX - img.offsetLeft;
+        startY = e.clientY - img.offsetTop;
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', stopDragging);
+    }
+
+    function onDrag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        let newX = e.clientX - startX;
+        let newY = e.clientY - startY;
+        img.style.left = `${newX}px`;
+        img.style.top = `${newY}px`;
+
+        if (img.src.includes('truck') && img.attachedSlipbots) {
+            img.attachedSlipbots.forEach(({ slipbot, offsetX, offsetY }) => {
+                slipbot.style.left = `${newX + offsetX}px`;
+                slipbot.style.top = `${newY + offsetY}px`;
+            });
+        }
+    }
+
+    function stopDragging() {
+        isDragging = false;
+        document.removeEventListener('mousemove', onDrag);
+        document.removeEventListener('mouseup', stopDragging);
+        if (img.src.includes('truck')) {
+            attachOverlappingSlipbots(img);
+        }
+    }
 
     img.addEventListener('click', function(e) {
         e.stopPropagation();
-        isDraggable = !isDraggable;
+        isDragging = !isDragging;
         
-        if (isDraggable) {
+        if (isDragging) {
             currentDraggable = img;
             const rect = img.getBoundingClientRect();
             offsetX = e.clientX - rect.left;
@@ -73,30 +106,7 @@ function makeImageDraggable(img) {
         }
     });
 
-    document.addEventListener('mousemove', function(e) {
-        if (isDraggable && currentDraggable === img) {
-            const newX = e.clientX - offsetX;
-            const newY = e.clientY - offsetY;
-            
-            img.style.left = `${newX}px`;
-            img.style.top = `${newY}px`;
-
-            if (img.src.includes('truck') && img.attachedSlipbots) {
-                img.attachedSlipbots.forEach(({ slipbot, offsetX, offsetY }) => {
-                    slipbot.style.left = `${newX + offsetX}px`;
-                    slipbot.style.top = `${newY + offsetY}px`;
-                });
-            }
-        }
-    });
-
-    document.addEventListener('mouseup', function() {
-        if (isDraggable && currentDraggable === img) {
-            if (img.src.includes('truck')) {
-                attachOverlappingSlipbots(img);
-            }
-        }
-    });
+    img.addEventListener('mousedown', startDragging);
 }
 
 function attachOverlappingSlipbots(truck) {
