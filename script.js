@@ -138,7 +138,7 @@ function addDraggableImage(imageSrc, event) {
             e.preventDefault();
             e.stopPropagation();
             const delta = e.deltaY > 0 ? -15 : 15; // Adjust rotation speed as needed
-            rotateDeg = biasedRotation(rotateDeg, delta);
+            rotateDeg = (rotateDeg + delta + 360) % 360;
             rotateElement(img, rotateDeg);
         });
 
@@ -172,7 +172,7 @@ function addDraggableImage(imageSrc, event) {
             e.stopPropagation();
             const prevRotateDeg = rotateDeg;
             const delta = e.deltaY > 0 ? -15 : 15; // Adjust rotation speed as needed
-            rotateDeg = biasedRotation(rotateDeg, delta);
+            rotateDeg = (rotateDeg + delta + 360) % 360;
             const deltaRotate = rotateDeg - prevRotateDeg;
             
             rotateElement(img, rotateDeg);
