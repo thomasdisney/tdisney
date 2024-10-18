@@ -34,7 +34,7 @@ function addDraggableImage(imageSrc, event) {
         }
     };
     document.body.appendChild(img);
-    draggableImages.push({ img, isDragging: false });
+    draggableImages.push({ img, isDragging: true }); // Set isDragging to true
     makeImageDraggable(img);
     makeImageRotatable(img);
 }
@@ -54,20 +54,33 @@ let currentDraggable = null;
 
 function makeImageDraggable(img) {
     let startX, startY, initialLeft, initialTop;
+    let isDraggable = true; // Initialize as true
+
+    img.style.cursor = 'none'; // Set initial cursor style
+
     img.addEventListener('click', function(e) {
         e.stopPropagation();
-        currentDraggable = img;
-        const rect = img.getBoundingClientRect();
-        startX = e.clientX;
-        startY = e.clientY;
-        initialLeft = rect.left;
-        initialTop = rect.top;
-        if (img.src.includes('truck')) {
-            attachOverlappingSlipbots(img);
+        isDraggable = !isDraggable;
+        
+        if (isDraggable) {
+            currentDraggable = img;
+            const rect = img.getBoundingClientRect();
+            startX = e.clientX;
+            startY = e.clientY;
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            if (img.src.includes('truck')) {
+                attachOverlappingSlipbots(img);
+            }
+            img.style.cursor = 'none';
+        } else {
+            currentDraggable = null;
+            img.style.cursor = 'none';
         }
     });
+
     document.addEventListener('mousemove', function(e) {
-        if (currentDraggable) {
+        if (currentDraggable && isDraggable) {
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
             const newLeft = initialLeft + dx;
@@ -82,6 +95,7 @@ function makeImageDraggable(img) {
             }
         }
     });
+
     document.addEventListener('mouseup', function() {
         if (currentDraggable && currentDraggable.src.includes('truck')) {
             attachOverlappingSlipbots(currentDraggable);
