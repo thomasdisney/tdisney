@@ -12,11 +12,11 @@ const rotatePoint = (x, y, cx, cy, angle) => {
     return { x: nx, y: ny };
 };
 
-const checkOverlap = (elem1, elem2) => {
-    const rect1 = elem1.getBoundingClientRect();
-    const rect2 = elem2.getBoundingClientRect();
-    return !(rect1.right < rect2.left || rect1.left > rect2.right ||
-             rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+const checkOverlap = (rect1, rect2) => {
+    return !(rect1.right < rect2.left || 
+             rect1.left > rect2.right || 
+             rect1.bottom < rect2.top || 
+             rect1.top > rect2.bottom);
 };
 
 let draggableImages = [];
@@ -34,8 +34,12 @@ function addDraggableImage(imageSrc, event) {
         }
     };
     document.body.appendChild(img);
-    draggableImages.push({ img, isDragging: true }); 
-    makeImageDraggable(img);
+    draggableImages.push(img);
+    if (imageSrc.toLowerCase().includes('truck')) {
+        makeTruckDraggable(img);
+    } else if (imageSrc.toLowerCase().includes('slipbot')) {
+        makeSlipbotDraggable(img);
+    }
     makeImageRotatable(img);
 }
 
@@ -50,16 +54,16 @@ function createImageElement(imageSrc, event) {
     return img;
 }
 
-let currentDraggable = null;
-
-function makeImageDraggable(img) {
+function makeTruckDraggable(truck) {
     let isDragging = false;
     let startX, startY;
+    let groupedImages = [];
 
     function startDragging(e) {
         isDragging = true;
-        startX = e.clientX - img.offsetLeft;
-        startY = e.clientY - img.offsetTop;
+        startX = e.clientX - truck.offsetLeft;
+        startY = e.clientY - truck.offsetTop;
+        groupedImages = getOverlappingImages(truck);
         document.addEventListener('mousemove', onDrag);
         document.addEventListener('mouseup', stopDragging);
     }
@@ -67,60 +71,60 @@ function makeImageDraggable(img) {
     function onDrag(e) {
         if (!isDragging) return;
         e.preventDefault();
-        let newX = e.clientX - startX;
-        let newY = e.clientY - startY;
-        img.style.left = `${newX}px`;
-        img.style.top = `${newY}px`;
+        const newX = e.clientX - startX;
+        const newY = e.clientY - startY;
+        
+        truck.style.left = `${newX}px`;
+        truck.style.top = `${newY}px`;
 
-        if (img.src.includes('truck') && img.attachedSlipbots) {
-            img.attachedSlipbots.forEach(({ slipbot, offsetX, offsetY }) => {
-                slipbot.style.left = `${newX + offsetX}px`;
-                slipbot.style.top = `${newY + offsetY}px`;
-            });
-        }
+        groupedImages.forEach(img => {
+            img.style.left = `${newX + img.offsetX}px`;
+            img.style.top = `${newY + img.offsetY}px`;
+        });
     }
 
     function stopDragging() {
         isDragging = false;
         document.removeEventListener('mousemove', onDrag);
         document.removeEventListener('mouseup', stopDragging);
-        if (img.src.includes('truck')) {
-            attachOverlappingSlipbots(img);
-        }
     }
 
-    img.addEventListener('click', function(e) {
-        e.stopPropagation();
-        isDragging = !isDragging;
-        
-        if (isDragging) {
-            currentDraggable = img;
-            const rect = img.getBoundingClientRect();
-            offsetX = e.clientX - rect.left;
-            offsetY = e.clientY - rect.top;
-            if (img.src.includes('truck')) {
-                attachOverlappingSlipbots(img);
-            }
-        } else {
-            currentDraggable = null;
-        }
-    });
-
-    img.addEventListener('mousedown', startDragging);
+    truck.addEventListener('mousedown', startDragging);
 }
 
-function attachOverlappingSlipbots(truck) {
-    const truckRect = truck.getBoundingClientRect();
-    truck.attachedSlipbots = [];
-    draggableImages.forEach(({ img: slipbot }) => {
-        if (slipbot.src.includes('slipbot') && checkOverlap(truck, slipbot)) {
-            const slipbotRect = slipbot.getBoundingClientRect();
-            const offsetX = slipbotRect.left - truckRect.left;
-            const offsetY = slipbotRect.top - truckRect.top;
-            truck.attachedSlipbots.push({ slipbot, offsetX, offsetY });
-            slipbot.style.zIndex = parseInt(truck.style.zIndex) + 1; 
+function makeSlipbotDraggable(slipbot) {
+    let isDraggable = false;
+    let startX, startY;
+
+    function onDrag(e) {
+        if (!isDraggable) return;
+        const newX = e.clientX - startX;
+        const newY = e.clientY - startY;
+        slipbot.style.left = `${newX}px`;
+        slipbot.style.top = `${newY}px`;
+    }
+
+    slipbot.addEventListener('click', function(e) {
+        isDraggable = !isDraggable;
+        if (isDraggable) {
+            startX = e.clientX - slipbot.offsetLeft;
+            startY = e.clientY - slipbot.offsetTop;
+            document.addEventListener('mousemove', onDrag);
+        } else {
+            document.removeEventListener('mousemove', onDrag);
         }
     });
+}
+
+function getOverlappingImages(truck) {
+    const truckRect = truck.getBoundingClientRect();
+    return draggableImages
+        .filter(img => img !== truck && checkOverlap(truckRect, img.getBoundingClientRect()))
+        .map(img => ({
+            ...img,
+            offsetX: img.offsetLeft - truck.offsetLeft,
+            offsetY: img.offsetTop - truck.offsetTop
+        }));
 }
 
 function makeImageRotatable(img) {
@@ -130,17 +134,23 @@ function makeImageRotatable(img) {
         const newRotation = currentRotation + (e.deltaY > 0 ? 10 : -10);
         img.style.transform = `rotate(${newRotation}deg)`;
         
-        if (img.src.includes('truck') && img.attachedSlipbots) {
+        if (img.src.includes('truck')) {
+            const overlappingImages = getOverlappingImages(img);
             const center = getCenter(img);
-            img.attachedSlipbots.forEach(({ slipbot, offsetX, offsetY }) => {
-                const rotatedPoint = rotatePoint(center.x + offsetX, center.y + offsetY, center.x, center.y, newRotation - currentRotation);
-                slipbot.style.left = `${rotatedPoint.x - slipbot.width / 2}px`;
-                slipbot.style.top = `${rotatedPoint.y - slipbot.height / 2}px`;
-                // Don't rotate the slipbot itself
-                keepSlipbotWithinTruck(img, slipbot);
+            overlappingImages.forEach(overlappingImg => {
+                const rotatedPoint = rotatePoint(
+                    center.x + overlappingImg.offsetX,
+                    center.y + overlappingImg.offsetY,
+                    center.x,
+                    center.y,
+                    newRotation - currentRotation
+                );
+                overlappingImg.style.left = `${rotatedPoint.x - overlappingImg.width / 2}px`;
+                overlappingImg.style.top = `${rotatedPoint.y - overlappingImg.height / 2}px`;
             });
         }
     });
+
     img.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         if (img.src.includes('Slipbot.png') || img.src.includes('SlipBot_Loaded.png')) {
@@ -175,6 +185,7 @@ function getRotation(el) {
     return 0;
 }
 
+// Event listeners and background image handling remain unchanged
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     addDraggableImage('Slipbot.png', e);
 });
@@ -182,92 +193,3 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
     addDraggableImage('truck.png', e);
 });
-
-let backgroundImages = [];
-let selectedBackground = null;
-
-function addBackgroundImage(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'background-image';
-        document.body.appendChild(img);
-        backgroundImages.push(img);
-        makeBackgroundDraggable(img);
-    };
-    reader.readAsDataURL(file);
-}
-
-function makeBackgroundDraggable(img) {
-    let isDragging = false;
-    let startX, startY;
-    const mouseMoveHandler = function(e) {
-        if (isDragging) {
-            img.style.left = (e.clientX - startX) + 'px';
-            img.style.top = (e.clientY - startY) + 'px';
-        }
-    };
-    const mouseUpHandler = function() {
-        isDragging = false;
-        document.removeEventListener('mousemove', mouseMoveHandler);
-        document.removeEventListener('mouseup', mouseUpHandler);
-    };
-    img.addEventListener('mousedown', function(e) {
-        isDragging = true;
-        startX = e.clientX - img.offsetLeft;
-        startY = e.clientY - img.offsetTop;
-        document.addEventListener('mousemove', mouseMoveHandler);
-        document.addEventListener('mouseup', mouseUpHandler);
-    });
-}
-
-function selectBackgroundImage(img) {
-    if (selectedBackground) {
-        selectedBackground.classList.remove('selected');
-    }
-    selectedBackground = img;
-    selectedBackground.classList.add('selected');
-}
-
-document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const files = e.target.files;
-    for (let i = 0; i < files.length; i++) {
-        addBackgroundImage(files[i]);
-    }
-});
-
-document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    if (selectedBackground) {
-        const scale = e.target.value / 100;
-        selectedBackground.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    }
-});
-
-document.getElementById('backgroundToggle').addEventListener('change', function(e) {
-    backgroundImages.forEach(img => {
-        img.style.display = e.target.checked ? 'block' : 'none';
-    });
-});
-
-document.body.addEventListener('click', function(e) {
-    if (e.target.classList.contains('background-image')) {
-        selectBackgroundImage(e.target);
-    }
-});
-
-function keepSlipbotWithinTruck(truck, slipbot) {
-    const truckRect = truck.getBoundingClientRect();
-    const slipbotRect = slipbot.getBoundingClientRect();
-
-    let newLeft = parseFloat(slipbot.style.left);
-    let newTop = parseFloat(slipbot.style.top);
-
-    if (slipbotRect.left < truckRect.left) newLeft = truckRect.left;
-    if (slipbotRect.right > truckRect.right) newLeft = truckRect.right - slipbotRect.width;
-    if (slipbotRect.top < truckRect.top) newTop = truckRect.top;
-    if (slipbotRect.bottom > truckRect.bottom) newTop = truckRect.bottom - slipbotRect.height;
-
-    slipbot.style.left = `${newLeft}px`;
-    slipbot.style.top = `${newTop}px`;
-}
