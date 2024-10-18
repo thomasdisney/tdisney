@@ -78,8 +78,8 @@ function makeTruckDraggable(truck) {
         truck.style.top = `${newY}px`;
 
         groupedImages.forEach(img => {
-            img.style.left = `${newX + img.offsetX}px`;
-            img.style.top = `${newY + img.offsetY}px`;
+            img.element.style.left = `${newX + img.offsetX}px`;
+            img.element.style.top = `${newY + img.offsetY}px`;
         });
     }
 
@@ -87,6 +87,8 @@ function makeTruckDraggable(truck) {
         isDragging = false;
         document.removeEventListener('mousemove', onDrag);
         document.removeEventListener('mouseup', stopDragging);
+        // Update grouped images when dragging stops
+        groupedImages = getOverlappingImages(truck);
     }
 
     truck.addEventListener('mousedown', startDragging);
@@ -119,9 +121,9 @@ function makeSlipbotDraggable(slipbot) {
 function getOverlappingImages(truck) {
     const truckRect = truck.getBoundingClientRect();
     return draggableImages
-        .filter(img => img !== truck && checkOverlap(truckRect, img.getBoundingClientRect()))
+        .filter(img => img !== truck && img.src.includes('slipbot') && checkOverlap(truckRect, img.getBoundingClientRect()))
         .map(img => ({
-            ...img,
+            element: img,
             offsetX: img.offsetLeft - truck.offsetLeft,
             offsetY: img.offsetTop - truck.offsetTop
         }));
