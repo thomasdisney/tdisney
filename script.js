@@ -33,8 +33,7 @@ function addDraggableImage(imageSrc, event) {
 
     let isDragging = imageSrc === 'Slipbot.png', 
         rotateDeg = 0,
-        isImageLoaded = false,
-        isMirrored = false;
+        isImageLoaded = false;
 
     const state = {
         offsetX: 0,
@@ -74,12 +73,7 @@ function addDraggableImage(imageSrc, event) {
     }
 
     function rotateElement(el, angle) {
-        el.style.transform = `rotate(${angle}deg) scaleY(${isMirrored ? -1 : 1})`;
-    }
-
-    function mirrorElement(el) {
-        isMirrored = !isMirrored;
-        el.style.transform = `rotate(${rotateDeg}deg) scaleY(${isMirrored ? -1 : 1})`;
+        el.style.transform = `rotate(${angle}deg)`;
     }
 
     function onMouseMove(e) {
@@ -188,16 +182,6 @@ function addDraggableImage(imageSrc, event) {
     }
 }
 
-function biasedRotation(currentRotation, delta) {
-    const newRotation = (currentRotation + delta + 360) % 360;
-    const nearestQuadrant = Math.round(newRotation / 90) * 90;
-    
-    if (Math.abs(newRotation - nearestQuadrant) < 5) {
-        return nearestQuadrant;
-    }
-    
-    return newRotation;
-}
 
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     addDraggableImage('Slipbot.png', e);
