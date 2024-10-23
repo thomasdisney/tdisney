@@ -20,10 +20,13 @@
             <span class="control-link" id="addtrlrBtn">[add trailer]</span>
             <label for="backgroundUpload" class="control-link">[upload layout]</label>
             <input type="file" id="backgroundUpload" accept="image/*" multiple>
-            <label class="toggle-switch">
-                <input type="checkbox" id="backgroundToggle" checked>
-                <span class="slider"></span>
-            </label>
+            <div class="toggle-container">
+                <label class="switch">
+                    <input type="checkbox" id="backgroundToggle">
+                    <span class="slider"></span>
+                </label>
+                <label for="backgroundToggle">Enable Background Manipulation</label>
+            </div>
             <input type="range" id="scaleBackground" min="10" max="200" value="100">
         </div>
     </div>
