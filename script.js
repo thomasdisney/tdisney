@@ -21,6 +21,11 @@ const checkOverlap = (elem1, elem2) => {
 
 let draggableElements = new Set();
 
+function updateCursorStyle(img, isDragging) {
+    img.style.cursor = isDragging ? 'none' : 'crosshair';
+    document.body.style.cursor = isDragging ? 'none' : 'auto';
+}
+
 function toggleDragging(img, state, onMouseMove, onMouseUp) {
     const el = Array.from(draggableElements).find(el => el.img === img);
     if (el) {
@@ -118,6 +123,8 @@ function addDraggableImage(imageSrc, event) {
 
     draggableElements.add({ img, isDragging });
 
+    img.style.cursor = 'crosshair';  
+
     if (imageSrc === 'Slipbot.png') {
         state.offsetX = event.clientX - parseFloat(img.style.left);
         state.offsetY = event.clientY - parseFloat(img.style.top);
@@ -152,6 +159,7 @@ function addDraggableImage(imageSrc, event) {
         img.addEventListener('mousedown', function(e) {
             if (e.button !== 0) return;
             isDragging = true;
+            updateCursorStyle(img, isDragging);
             state.offsetX = e.clientX - parseFloat(img.style.left);
             state.offsetY = e.clientY - parseFloat(img.style.top);
             state.startX = e.clientX;
@@ -181,6 +189,11 @@ function addDraggableImage(imageSrc, event) {
                 el.style.top = `${rotated.y - el.offsetHeight / 2}px`;
                 rotateElement(el, rotateDeg);
             });
+        });
+
+        img.addEventListener('mouseup', function() {
+            isDragging = false;
+            updateCursorStyle(img, isDragging);
         });
     }
 }
@@ -302,4 +315,7 @@ document.addEventListener('click', function(e) {
             }
         });
     }
+    document.body.style.cursor = 'crosshair';
 });
+
+document.body.style.cursor = 'crosshair';
