@@ -21,6 +21,25 @@ const checkOverlap = (elem1, elem2) => {
 
 let draggableElements = new Set();
 
+function toggleDragging(img, state, onMouseMove, onMouseUp) {
+    const el = Array.from(draggableElements).find(el => el.img === img);
+    if (el) {
+        el.isDragging = !el.isDragging;
+        if (el.isDragging) {
+            state.offsetX = event.clientX - parseFloat(img.style.left);
+            state.offsetY = event.clientY - parseFloat(img.style.top);
+            state.lastX = event.clientX;
+            state.lastY = event.clientY;
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        } else {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+        updateCursorStyle(img, el.isDragging);
+    }
+}
+
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
     img.src = imageSrc;
@@ -108,23 +127,7 @@ function addDraggableImage(imageSrc, event) {
         document.addEventListener('mouseup', onMouseUp);
 
         img.addEventListener('click', function(e) {
-            isDragging = !isDragging;
-            draggableElements.forEach(el => {
-                if (el.img === img) {
-                    el.isDragging = isDragging;
-                }
-            });
-            if (isDragging) {
-                state.offsetX = e.clientX - parseFloat(img.style.left);
-                state.offsetY = e.clientY - parseFloat(img.style.top);
-                state.lastX = e.clientX;
-                state.lastY = e.clientY;
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            } else {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
+            toggleDragging(img, state, onMouseMove, onMouseUp);
         });
 
         img.addEventListener('wheel', function(e) {
@@ -292,23 +295,11 @@ document.body.addEventListener('click', function(e) {
 document.addEventListener('click', function(e) {
     const clickedOnDraggable = e.target.classList.contains('draggable');
     
-    draggableElements.forEach(el => {
-        if (!clickedOnDraggable || el.img !== e.target) {
-            el.isDragging = false;
-            el.img.style.cursor = 'grab';
-        }
-    });
-
-    if (clickedOnDraggable) {
-        const clickedElement = Array.from(draggableElements).find(el => el.img === e.target);
-        if (clickedElement) {
-            clickedElement.isDragging = !clickedElement.isDragging;
-        }
-    }
-
-    if (!Array.from(draggableElements).some(el => el.isDragging)) {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
+    if (!clickedOnDraggable) {
+        draggableElements.forEach(el => {
+            if (el.isDragging) {
+                toggleDragging(el.img, el.state, el.onMouseMove, el.onMouseUp);
+            }
+        });
     }
 });
-
