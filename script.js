@@ -19,7 +19,6 @@ const checkOverlap = (elem1, elem2) => {
              rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 };
 
-// Add this at the beginning of the file
 let draggableElements = new Set();
 
 function addDraggableImage(imageSrc, event) {
@@ -137,7 +136,7 @@ function addDraggableImage(imageSrc, event) {
         img.addEventListener('wheel', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const delta = e.deltaY > 0 ? -15 : 15; // Adjust rotation speed as needed
+            const delta = e.deltaY > 0 ? -15 : 15; 
             rotateDeg = (rotateDeg + delta + 360) % 360;
             rotateElement(img, rotateDeg);
         });
@@ -171,7 +170,7 @@ function addDraggableImage(imageSrc, event) {
             e.preventDefault();
             e.stopPropagation();
             const prevRotateDeg = rotateDeg;
-            const delta = e.deltaY > 0 ? -15 : 15; // Adjust rotation speed as needed
+            const delta = e.deltaY > 0 ? -15 : 15; 
             rotateDeg = (rotateDeg + delta + 360) % 360;
             const deltaRotate = rotateDeg - prevRotateDeg;
             
@@ -306,19 +305,26 @@ document.body.addEventListener('click', function(e) {
     }
 });
 
-// Add this at the end of the file
 document.addEventListener('click', function(e) {
-    if (!e.target.classList.contains('draggable')) {
-        draggableElements.forEach(el => {
+    const clickedOnDraggable = e.target.classList.contains('draggable');
+    
+    draggableElements.forEach(el => {
+        if (!clickedOnDraggable || el.img !== e.target) {
             el.isDragging = false;
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        });
+            el.img.style.cursor = 'grab';
+        }
+    });
+
+    if (clickedOnDraggable) {
+        const clickedElement = Array.from(draggableElements).find(el => el.img === e.target);
+        if (clickedElement) {
+            clickedElement.isDragging = !clickedElement.isDragging;
+        }
+    }
+
+    if (!Array.from(draggableElements).some(el => el.isDragging)) {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
     }
 });
 
-document.addEventListener('wheel', function(e) {
-    if (!e.target.classList.contains('draggable')) {
-        e.preventDefault();
-    }
-}, { passive: false });
