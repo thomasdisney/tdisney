@@ -184,7 +184,13 @@ function addDraggableImage(imageSrc, event) {
 
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
-            img.src = img.src.includes('truck_side.png') ? 'truck_side2.png' : 'truck_side.png';
+            if (img.src.includes('truck_side.png')) {
+                img.src = 'truck_side2.png';
+                img.style.left = `${parseFloat(img.style.left) - 60}px`;
+            } else {
+                img.src = 'truck_side.png';
+                img.style.left = `${parseFloat(img.style.left) + 60}px`;
+            }
         });
     }
 }
