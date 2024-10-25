@@ -184,12 +184,7 @@ function addDraggableImage(imageSrc, event) {
 
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
-            const currentSrc = img.src;
-            if (currentSrc.includes('truck_side.png')) {
-                img.src = currentSrc.replace('truck_side.png', 'truck_side2.png');
-            } else {
-                img.src = currentSrc.replace('truck_side2.png', 'truck_side.png');
-            }
+            img.src = img.src.includes('truck_side.png') ? 'truck_side2.png' : 'truck_side.png';
         });
     }
 }
