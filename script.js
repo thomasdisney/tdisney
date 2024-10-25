@@ -200,6 +200,17 @@ function addDraggableImage(imageSrc, event) {
             isDragging = false;
             updateCursorStyle(img, isDragging);
         });
+
+        img.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            if (isDragging) {
+                if (img.src.includes('truck.png')) {
+                    img.src = 'Truck_reverse.png';
+                } else {
+                    img.src = 'truck.png';
+                }
+            }
+        });
     }
 }
 
