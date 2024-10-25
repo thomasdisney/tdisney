@@ -1,59 +1,69 @@
 :root {
-  --text-color: #333;
-  --background-color: #fff;
-  --border-color: #e0e0e0;
-  --accent-color: #3498db;
+  --primary-text: #1A1A1A;
+  --highlight-blue: #4169FF;
+  --background: #FFFFFF;
+  --secondary-text: #424242;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
   font-family: 'Inter', sans-serif;
-  line-height: 1.6;
-  color: var(--text-color);
-  background-color: var(--background-color);
-  margin: 0;
-  padding: 0;
+  background-color: var(--background);
+  color: var(--primary-text);
+  line-height: 1.2;
 }
 
-header {
-  border-bottom: 1px solid var(--border-color);
-  padding: 1rem 2rem;
-}
-
-h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-main {
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 2rem;
 }
 
-.controls {
-  max-width: 300px;
+h1 {
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 3rem;
+  letter-spacing: -0.02em;
 }
 
-button {
-  background-color: var(--accent-color);
+.controls-panel {
+  background: #F8F8F8;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 400px;
+}
+
+.control-btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: var(--highlight-blue);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
+  border-radius: 8px;
   font-size: 1rem;
-  border-radius: 4px;
+  font-weight: 600;
   cursor: pointer;
-  margin-bottom: 1rem;
+  transition: background-color 0.2s ease;
 }
 
-input[type="file"],
-input[type="range"] {
-  margin-bottom: 1rem;
-  width: 100%;
+.control-btn:hover {
+  background-color: #3551CC;
 }
 
 .toggle-container {
   display: flex;
   align-items: center;
-  margin-bottom: 1rem;
+  gap: 1rem;
 }
 
 .switch {
@@ -61,7 +71,6 @@ input[type="range"] {
   display: inline-block;
   width: 60px;
   height: 34px;
-  margin-right: 1rem;
 }
 
 .switch input {
@@ -77,7 +86,7 @@ input[type="range"] {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--border-color);
+  background-color: #ccc;
   transition: .4s;
   border-radius: 34px;
 }
@@ -95,9 +104,14 @@ input[type="range"] {
 }
 
 input:checked + .slider {
-  background-color: var(--accent-color);
+  background-color: var(--highlight-blue);
 }
 
 input:checked + .slider:before {
   transform: translateX(26px);
+}
+
+.toggle-label {
+  font-size: 1rem;
+  color: var(--secondary-text);
 }
