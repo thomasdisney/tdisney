@@ -74,9 +74,9 @@ function addDraggableImage(imageSrc, event) {
     };
 
     img.onload = function() {
-        if (imageSrc === 'truck.png') {
-            img.style.width = `${this.width}px`;
-            img.style.height = 'auto';
+        if (imageSrc === 'truck_side.png') {
+            img.style.width = `auto`;
+            img.style.height = '${this.width}px';
         } else {
             img.style.width = '40px';
             img.style.height = 'auto';
@@ -119,7 +119,7 @@ function addDraggableImage(imageSrc, event) {
     }
 
     function onMouseUp() {
-        if (imageSrc === 'truck.png') {
+        if (imageSrc === 'truck_side.png') {
             isDragging = false;
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
@@ -160,7 +160,7 @@ function addDraggableImage(imageSrc, event) {
                 isImageLoaded = false;
             }
         });
-    } else if (imageSrc === 'truck.png') {
+    } else if (imageSrc === 'truck_side.png') {
         img.addEventListener('mousedown', function(e) {
             if (e.button !== 0) return;
             isDragging = true;
@@ -184,10 +184,10 @@ function addDraggableImage(imageSrc, event) {
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             if (isDragging) {
-                if (img.src.includes('truck.png')) {
-                    img.src = 'Truck_reverse.png';
+                if (img.src.includes('truck_side.png')) {
+                    img.src = 'truck_side2.png';
                 } else {
-                    img.src = 'truck.png';
+                    img.src = 'truck_side.png';
                 }
             }
         });
@@ -200,10 +200,10 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 });
 
 document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
-    addDraggableImage('truck.png', e);
+    addDraggableImage('truck_side.png', e);
 });
 
-let backgroundImages = [];
+let backgroundImages = [];          
 let selectedBackground = null;
 
 let backgroundImage = null;
