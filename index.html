@@ -4,41 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SlipBot Simulator</title>
-    <meta property="og:title" content="tdisney.com">
-    <meta property="og:description" content="SlipBot Workflow Simulator">
-    <meta property="og:image" content="https://thomasdisney.github.io/thumbnail.jpg">
-    <meta property="og:url" content="https://thomasdisney.github.io">
-    <meta name="twitter:card" content="summary_large_image">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>SlipBot Simulator</h1>
-        </header>
-        <main>
-            <section class="controls">
-                <div class="button-group">
-                    <button id="addBotBtn">Add SlipBot</button>
-                    <button id="addtrlrBtn">Add Trailer</button>
-                </div>
-                <div class="file-upload">
-                    <label for="backgroundUpload">Upload Layout</label>
-                    <input type="file" id="backgroundUpload" accept="image/*" multiple>
-                </div>
-                <div class="toggle-container">
-                    <label class="switch">
-                        <input type="checkbox" id="backgroundToggle">
-                        <span class="slider"></span>
-                    </label>
-                    <span>Enable Background Manipulation</span>
-                </div>
-                <input type="range" id="scaleBackground" min="10" max="200" value="100">
-            </section>
-        </main>
-    </div>
+    <header>
+        <h1>SlipBot Simulator</h1>
+    </header>
+    <main>
+        <section class="controls">
+            <button id="addBotBtn">Add SlipBot</button>
+            <button id="addtrlrBtn">Add Trailer</button>
+            <input type="file" id="backgroundUpload" accept="image/*" multiple>
+            <div class="toggle-container">
+                <label class="switch">
+                    <input type="checkbox" id="backgroundToggle">
+                    <span class="slider"></span>
+                </label>
+                <span>Enable Background Manipulation</span>
+            </div>
+            <input type="range" id="scaleBackground" min="10" max="200" value="100">
+        </section>
+    </main>
     <script src="script.js"></script>
 </body>
 </html>
