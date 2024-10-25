@@ -217,6 +217,8 @@ let selectedBackground = null;
 
 let backgroundImage = null;
 let backgroundScale = 1;
+let isDraggingBackground = false;
+let lastMouseX, lastMouseY;
 
 function addBackgroundImage(file) {
     const reader = new FileReader();
@@ -229,56 +231,41 @@ function addBackgroundImage(file) {
         backgroundImage.classList.add('background-image');
         backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
         document.getElementById('simulator-area').appendChild(backgroundImage);
+        makeBackgroundDraggable(backgroundImage);
     };
     reader.readAsDataURL(file);
 }
 
 function makeBackgroundDraggable(img) {
-    let isDragging = false;
-    let startX, startY, startLeft, startTop;
-
-    img.addEventListener('mousedown', function(e) {
-        if (document.getElementById('backgroundToggle').checked) {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = img.offsetLeft;
-            startTop = img.offsetTop;
-            e.preventDefault();
-        }
-    });
-
-    document.addEventListener('mousemove', function(e) {
-        if (isDragging && document.getElementById('backgroundToggle').checked) {
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            img.style.left = `${startLeft + dx}px`;
-            img.style.top = `${startTop + dy}px`;
-        }
-    });
-
-    document.addEventListener('mouseup', function() {
-        isDragging = false;
-    });
-
-    img.addEventListener('dblclick', function(e) {
-        if (document.getElementById('backgroundToggle').checked) {
-            const currentRotation = parseInt(img.dataset.rotation) || 0;
-            const newRotation = (currentRotation + 90) % 360;
-            img.style.transform = `translate(-50%, -50%) scale(${img.dataset.scale}) rotate(${newRotation}deg)`;
-            img.dataset.rotation = newRotation;
-            e.preventDefault();
-        }
-    });
+    img.addEventListener('mousedown', startDraggingBackground);
+    document.addEventListener('mousemove', dragBackground);
+    document.addEventListener('mouseup', stopDraggingBackground);
 }
 
-function selectBackgroundImage(img) {
-    if (selectedBackground) {
-        selectedBackground.classList.remove('selected');
+function startDraggingBackground(e) {
+    if (document.getElementById('backgroundToggle').checked) {
+        isDraggingBackground = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        e.preventDefault();
     }
-    selectedBackground = img;
-    selectedBackground.classList.add('selected');
-    document.getElementById('scaleBackground').value = selectedBackground.dataset.scale * 100;
+}
+
+function dragBackground(e) {
+    if (isDraggingBackground && document.getElementById('backgroundToggle').checked) {
+        const dx = e.clientX - lastMouseX;
+        const dy = e.clientY - lastMouseY;
+        const currentTransform = new DOMMatrix(backgroundImage.style.transform);
+        const newX = currentTransform.e + dx;
+        const newY = currentTransform.f + dy;
+        backgroundImage.style.transform = `translate(${newX}px, ${newY}px) scale(${backgroundScale})`;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    }
+}
+
+function stopDraggingBackground() {
+    isDraggingBackground = false;
 }
 
 document.getElementById('backgroundUpload').addEventListener('change', function(e) {
@@ -287,21 +274,21 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
     }
 });
 
-document.getElementById('scaleBackground').addEventListener('input', function(e) {
-    if (selectedBackground && document.getElementById('backgroundToggle').checked) {
-        const scale = e.target.value / 100;
-        selectedBackground.dataset.scale = scale;
-        const rotation = selectedBackground.dataset.rotation || 0;
-        selectedBackground.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`;
+document.getElementById('simulator-area').addEventListener('wheel', function(e) {
+    if (backgroundImage && document.getElementById('backgroundToggle').checked) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        backgroundScale *= delta;
+        backgroundScale = Math.max(0.1, Math.min(5, backgroundScale)); // Limit scale between 0.1 and 5
+        const currentTransform = new DOMMatrix(backgroundImage.style.transform);
+        backgroundImage.style.transform = `translate(${currentTransform.e}px, ${currentTransform.f}px) scale(${backgroundScale})`;
     }
 });
 
 document.getElementById('backgroundToggle').addEventListener('change', function(e) {
-    const isEnabled = e.target.checked;
-    backgroundImages.forEach(img => {
-        img.style.pointerEvents = isEnabled ? 'auto' : 'none';
-        img.style.boxShadow = isEnabled ? '' : 'none';
-    });
+    if (backgroundImage) {
+        backgroundImage.style.pointerEvents = e.target.checked ? 'auto' : 'none';
+    }
 });
 
 document.body.addEventListener('click', function(e) {
@@ -324,13 +311,3 @@ document.addEventListener('click', function(e) {
 });
 
 document.body.style.cursor = 'crosshair';
-
-document.getElementById('simulator-area').addEventListener('wheel', function(e) {
-    if (backgroundImage && document.getElementById('backgroundToggle').checked) {
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? 0.9 : 1.1;
-        backgroundScale *= delta;
-        backgroundScale = Math.max(0.1, Math.min(5, backgroundScale)); // Limit scale between 0.1 and 5
-        backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
-    }
-});
