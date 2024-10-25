@@ -26,15 +26,15 @@ function updateCursorStyle(img, isDragging) {
     document.body.style.cursor = isDragging ? 'none' : 'auto';
 }
 
-function toggleDragging(img, state, onMouseMove, onMouseUp) {
+function toggleDragging(img, state, onMouseMove, onMouseUp, e) {
     const el = Array.from(draggableElements).find(el => el.img === img);
     if (el) {
         el.isDragging = !el.isDragging;
         if (el.isDragging) {
-            state.offsetX = event.clientX - parseFloat(img.style.left);
-            state.offsetY = event.clientY - parseFloat(img.style.top);
-            state.lastX = event.clientX;
-            state.lastY = event.clientY;
+            state.offsetX = e.clientX - parseFloat(img.style.left);
+            state.offsetY = e.clientY - parseFloat(img.style.top);
+            state.lastX = e.clientX;
+            state.lastY = e.clientY;
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
         } else {
@@ -118,7 +118,7 @@ function addDraggableImage(imageSrc, event) {
         state.lastY = e.clientY;
     }
 
-    function onMouseUp() {
+    function onMouseUp() {          
         if (imageSrc === 'truck_side.png') {
             isDragging = false;
             document.removeEventListener('mousemove', onMouseMove);
@@ -139,7 +139,8 @@ function addDraggableImage(imageSrc, event) {
         document.addEventListener('mouseup', onMouseUp);
 
         img.addEventListener('click', function(e) {
-            toggleDragging(img, state, onMouseMove, onMouseUp);
+            e.stopPropagation(); 
+            toggleDragging(img, state, onMouseMove, onMouseUp, e);
         });
 
         img.addEventListener('wheel', function(e) {
@@ -294,11 +295,25 @@ document.addEventListener('click', function(e) {
     if (!clickedOnDraggable) {
         draggableElements.forEach(el => {
             if (el.isDragging) {
-                toggleDragging(el.img, el.state, el.onMouseMove, el.onMouseUp);
+                document.removeEventListener('mousemove', el.onMouseMove);
+                document.removeEventListener('mouseup', el.onMouseUp);
+                el.isDragging = false;
+                updateCursorStyle(el.img, false);
             }
         });
     }
     document.body.style.cursor = 'crosshair';
+});
+
+document.addEventListener('mouseleave', function() {
+    draggableElements.forEach(el => {
+        if (el.isDragging) {
+            document.removeEventListener('mousemove', el.onMouseMove);
+            document.removeEventListener('mouseup', el.onMouseUp);
+            el.isDragging = false;
+            updateCursorStyle(el.img, false);
+        }
+    });
 });
 
 document.body.style.cursor = 'crosshair';
