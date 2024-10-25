@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SlipBot Simulator</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SlipBot Simulator</title><link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <main class="container">
         <h1>SlipBot Simulator</h1>
         
         <div class="controls-panel">
-            <button class="control-btn">Add SlipBot</button>
-            <button class="control-btn">Add Trailer</button>
+            <button id="addBotBtn" class="control-btn">Add SlipBot</button>
+            <button id="addtrlrBtn" class="control-btn">Add Trailer</button>
             
             <div class="toggle-container">
                 <label class="switch">
-                    <input type="checkbox">
+                    <input type="checkbox" id="backgroundToggle">
                     <span class="slider"></span>
                 </label>
                 <span class="toggle-label">Enable Background Manipulation</span>
             </div>
+            <input type="file" id="backgroundUpload" accept="image/*" multiple style="display: none;">
+            <input type="range" id="scaleBackground" min="10" max="200" value="100">
         </div>
     </main>
+    <script src="script.js"></script>
 </body>
 </html>
