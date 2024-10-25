@@ -4,24 +4,21 @@
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SlipBot Simulator</title><link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <main class="container">
+    <header class="controls-panel">
         <h1>SlipBot Simulator</h1>
-        
-        <div class="controls-panel">
-            <button id="addBotBtn" class="control-btn">Add SlipBot</button>
-            <button id="addtrlrBtn" class="control-btn">Add Trailer</button>
-            
-            <div class="toggle-container">
-                <label class="switch">
-                    <input type="checkbox" id="backgroundToggle">
-                    <span class="slider"></span>
-                </label>
-                <span class="toggle-label">Enable Background Manipulation</span>
-            </div>
-            <input type="file" id="backgroundUpload" accept="image/*" multiple style="display: none;">
-            <input type="range" id="scaleBackground" min="10" max="200" value="100">
+        <button id="addBotBtn" class="control-btn">Add SlipBot</button>
+        <button id="addtrlrBtn" class="control-btn">Add Trailer</button>
+        <div class="toggle-container">
+            <label class="switch">
+                <input type="checkbox" id="backgroundToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label">BG Manipulation</span>
         </div>
-    </main>
+        <input type="file" id="backgroundUpload" accept="image/*" multiple>
+        <input type="range" id="scaleBackground" min="10" max="200" value="100">
+    </header>
+    <main id="simulator-area"></main>
     <script src="script.js"></script>
 </body>
 </html>

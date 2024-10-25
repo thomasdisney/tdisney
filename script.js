@@ -50,10 +50,15 @@ function addDraggableImage(imageSrc, event) {
     img.src = imageSrc;
     img.classList.add('draggable');
     img.style.position = 'absolute';
-    img.style.left = `${event.clientX}px`;
-    img.style.top = `${event.clientY}px`;
+    
+    const simulatorArea = document.getElementById('simulator-area');
+    const rect = simulatorArea.getBoundingClientRect();
+    
+    img.style.left = `${event.clientX - rect.left}px`;
+    img.style.top = `${event.clientY - rect.top}px`;
+    
     img.style.transformOrigin = 'center';
-    document.body.appendChild(img);
+    simulatorArea.appendChild(img);
 
     let isDragging = imageSrc === 'Slipbot.png', 
         rotateDeg = 0,
@@ -319,3 +324,4 @@ document.addEventListener('click', function(e) {
 });
 
 document.body.style.cursor = 'crosshair';
+
