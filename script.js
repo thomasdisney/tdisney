@@ -215,19 +215,20 @@ document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
 let backgroundImages = [];
 let selectedBackground = null;
 
+let backgroundImage = null;
+let backgroundScale = 1;
+
 function addBackgroundImage(file) {
     const reader = new FileReader();
     reader.onload = function(e) {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.classList.add('background-image');
-        img.style.display = 'block';
-        img.dataset.scale = 1;
-        img.dataset.rotation = 0;
-        document.body.appendChild(img);
-        backgroundImages.push(img);
-        selectBackgroundImage(img);
-        makeBackgroundDraggable(img);
+        if (backgroundImage) {
+            backgroundImage.remove();
+        }
+        backgroundImage = document.createElement('img');
+        backgroundImage.src = e.target.result;
+        backgroundImage.classList.add('background-image');
+        backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
+        document.getElementById('simulator-area').appendChild(backgroundImage);
     };
     reader.readAsDataURL(file);
 }
@@ -281,9 +282,8 @@ function selectBackgroundImage(img) {
 }
 
 document.getElementById('backgroundUpload').addEventListener('change', function(e) {
-    const files = e.target.files;
-    for (let i = 0; i < files.length; i++) {
-        addBackgroundImage(files[i]);
+    if (e.target.files.length > 0) {
+        addBackgroundImage(e.target.files[0]);
     }
 });
 
@@ -325,3 +325,12 @@ document.addEventListener('click', function(e) {
 
 document.body.style.cursor = 'crosshair';
 
+document.getElementById('simulator-area').addEventListener('wheel', function(e) {
+    if (backgroundImage && document.getElementById('backgroundToggle').checked) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        backgroundScale *= delta;
+        backgroundScale = Math.max(0.1, Math.min(5, backgroundScale)); // Limit scale between 0.1 and 5
+        backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
+    }
+});
