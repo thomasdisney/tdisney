@@ -176,26 +176,6 @@ function addDraggableImage(imageSrc, event) {
             document.addEventListener('mouseup', onMouseUp);
         });
 
-        img.addEventListener('wheel', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const prevRotateDeg = rotateDeg;
-            const delta = e.deltaY > 0 ? -15 : 15; 
-            rotateDeg = (rotateDeg + delta + 360) % 360;
-            const deltaRotate = rotateDeg - prevRotateDeg;
-            
-            rotateElement(img, rotateDeg);
-            
-            const center = getCenter(img);
-            attachedElements.forEach(el => {
-                const elCenter = getCenter(el);
-                const rotated = rotatePoint(elCenter.x, elCenter.y, center.x, center.y, deltaRotate);
-                el.style.left = `${rotated.x - el.offsetWidth / 2}px`;
-                el.style.top = `${rotated.y - el.offsetHeight / 2}px`;
-                rotateElement(el, rotateDeg);
-            });
-        });
-
         img.addEventListener('mouseup', function() {
             isDragging = false;
             updateCursorStyle(img, isDragging);
