@@ -126,7 +126,7 @@ function addDraggableImage(imageSrc, event) {
         }
     }
 
-    draggableElements.add({ img, isDragging });
+    draggableElements.add({ img, isDragging, state, onMouseMove, onMouseUp });
 
     img.style.cursor = 'crosshair';  
 
