@@ -18,6 +18,9 @@ body {
   background-color: var(--background);
   color: var(--primary-text);
   line-height: 1.2;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;  /* Prevent scrolling */
 }
 
 .controls-panel {
@@ -112,7 +115,7 @@ input:checked + .slider:before {
 
 
 .background-image {
-  position: absolute;
+  position: fixed;  /* Change from absolute to fixed */
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -122,7 +125,7 @@ input:checked + .slider:before {
 }
 
 .draggable {
-  position: absolute;
+  position: fixed;  /* Change from absolute to fixed */
   cursor: move;
   z-index: 1;
 }     
@@ -160,10 +163,3 @@ input:checked + .slider:before {
   width: 40px;  
 }     
 
-#simulator-area {
-  position: relative;
-  width: 100vw;
-  height: calc(100vh - 60px); /* Adjust based on your header height */
-  overflow: hidden;
-  background-color: #f5f5f5;
-}
