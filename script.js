@@ -149,17 +149,19 @@ function addDraggableImage(imageSrc, event) {
     }
 }
 
-document.getElementById('addBotBtn').addEventListener('click', function(e) {
-    addDraggableImage('Slipbot.png', e);
-});
+const simulatorArea = document.getElementById('simulator-area');
 
-document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
-    addDraggableImage('truck_side.png', e);
-});
+document.getElementById('addBotBtn').addEventListener('click', (e) => 
+    simulatorArea.appendChild(addDraggableImage('Slipbot.png', e))
+);
 
-document.getElementById('addForkliftBtn').addEventListener('click', function(e) {
-    addDraggableImage('forklift.png', e);
-});
+document.getElementById('addtrlrBtn').addEventListener('click', (e) => 
+    simulatorArea.appendChild(addDraggableImage('truck_side.png', e))
+);
+
+document.getElementById('addForkliftBtn').addEventListener('click', (e) => 
+    simulatorArea.appendChild(addDraggableImage('forklift.png', e))
+);
 
 let backgroundImage = null;
 let backgroundScale = 1;
