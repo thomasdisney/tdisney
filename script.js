@@ -50,9 +50,6 @@ function addDraggableImage(imageSrc, event) {
     img.style.opacity = '0'; // Start invisible
     img.src = imageSrc;
     img.classList.add('draggable');
-    if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
-        img.classList.add('truck-image');
-    }
     if (imageSrc === 'forklift.png') {
         img.classList.add('forklift-image');
     }
@@ -67,7 +64,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.transformOrigin = 'center';
     
     img.onload = function() {
-        img.style.opacity = '1'; // Show image once loaded
+        img.style.opacity = '1'; 
     };
     
     simulatorArea.appendChild(img);
