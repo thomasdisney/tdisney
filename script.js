@@ -292,30 +292,6 @@ let backgroundScale = 1;
 let isDraggingBackground = false;
 let lastMouseX, lastMouseY;
 
-function makeBackgroundDraggable(img) {
-    // Only add event listeners if toggle is checked
-    function updateEventListeners() {
-        if (document.getElementById('backgroundToggle').checked) {
-            img.addEventListener('mousedown', startDraggingBackground);
-            document.addEventListener('mousemove', dragBackground);
-            document.addEventListener('mouseup', stopDraggingBackground);
-            img.style.pointerEvents = 'auto';  // Enable interactions
-        } else {
-            img.removeEventListener('mousedown', startDraggingBackground);
-            document.removeEventListener('mousemove', dragBackground);
-            document.removeEventListener('mouseup', stopDraggingBackground);
-            img.style.pointerEvents = 'none';   // Disable interactions
-            isDraggingBackground = false;       // Stop any ongoing drag
-        }
-    }
-
-    // Initial setup
-    updateEventListeners();
-
-    // Update listeners when toggle changes
-    document.getElementById('backgroundToggle').addEventListener('change', updateEventListeners);
-}
-
 function startDraggingBackground(e) {
     if (document.getElementById('backgroundToggle').checked) {
         isDraggingBackground = true;
@@ -420,7 +396,8 @@ function addBackgroundImage(file) {
         backgroundImage = document.createElement('img');
         backgroundImage.src = e.target.result;
         backgroundImage.classList.add('background-image');
-        backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
+        // Initialize with explicit pixel values for transform
+        backgroundImage.style.transform = `translate(0px, 0px) scale(${backgroundScale})`;
         backgroundImage.style.opacity = '0';
         document.body.appendChild(backgroundImage);
         
@@ -473,4 +450,32 @@ function handleAttachments(movingElement) {
             }
         }
     });
+}
+
+function makeBackgroundDraggable(img) {
+    // Initialize transform values if they don't exist
+    if (!img.style.transform) {
+        img.style.transform = `translate(0px, 0px) scale(${backgroundScale})`;
+    }
+
+    function updateEventListeners() {
+        if (document.getElementById('backgroundToggle').checked) {
+            img.addEventListener('mousedown', startDraggingBackground);
+            document.addEventListener('mousemove', dragBackground);
+            document.addEventListener('mouseup', stopDraggingBackground);
+            img.style.pointerEvents = 'auto';  // Enable interactions
+        } else {
+            img.removeEventListener('mousedown', startDraggingBackground);
+            document.removeEventListener('mousemove', dragBackground);
+            document.removeEventListener('mouseup', stopDraggingBackground);
+            img.style.pointerEvents = 'none';   // Disable interactions
+            isDraggingBackground = false;       // Stop any ongoing drag
+        }
+    }
+
+    // Initial setup
+    updateEventListeners();
+
+    // Update listeners when toggle changes
+    document.getElementById('backgroundToggle').addEventListener('change', updateEventListeners);
 }
