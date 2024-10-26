@@ -64,9 +64,12 @@ function addDraggableImage(imageSrc, event) {
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
         img.classList.add('bot-image');
     }
+    
+    // Set initial position - adjust the Y offset (400 pushes it lower)
+    const yOffset = 100; // This will position it 100px from top
     img.style.position = 'absolute';    
     img.style.left = `${event.clientX}px`;
-    img.style.top = `${event.clientY}px`;
+    img.style.top = `${yOffset}px`;  // Use absolute position from top
     img.style.transformOrigin = 'center';
     
     img.onload = function() {
