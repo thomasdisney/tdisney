@@ -54,24 +54,19 @@ function addDraggableImage(imageSrc, event) {
         img.classList.add('forklift-image');
     } else if (imageSrc === 'truckside.png' || imageSrc === 'truckside2.png') {
         img.classList.add('truck-image');
+    } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
+        img.classList.add('bot-image');
     }
-    img.style.position = 'absolute';
-    
-    const simulatorArea = document.getElementById('simulator-area');
-    const rect = simulatorArea.getBoundingClientRect();
-    
+    img.style.position = 'absolute';    
     img.style.left = `${event.clientX - rect.left}px`;
     img.style.top = `${event.clientY - rect.top}px`;
-    
     img.style.transformOrigin = 'center';
     
     img.onload = function() {
         img.style.opacity = '1'; 
     };
     
-    simulatorArea.appendChild(img);
-
-    let isDragging = false,
+    let isDragging = True,
         rotateDeg = 0,
         isImageLoaded = false;
 
@@ -83,10 +78,15 @@ function addDraggableImage(imageSrc, event) {
         lastX: 0,
         lastY: 0
     };
-
+    
     img.addEventListener('click', function(e) {
         e.stopPropagation(); 
-        toggleDragging(img, state, onMouseMove, onMouseUp, e);
+        if (isDragging) {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+        updateCursorStyle(img, isDragging);
     });
 
     img.addEventListener('wheel', function(e) {

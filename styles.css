@@ -23,7 +23,7 @@ body {
 .controls-panel {
   display: flex;
   align-items: center;
-  background: #F8F8F8;
+  background: #c3c3c3;
   padding: 0.5rem;
   gap: 1rem;
 }
@@ -110,11 +110,6 @@ input:checked + .slider:before {
   font-size: 0.8rem;
 }
 
-#simulator-area {
-  height: calc(100vh - 50px);
-  position: relative;
-  overflow: hidden;
-}
 
 .background-image {
   position: absolute;
@@ -130,8 +125,6 @@ input:checked + .slider:before {
   position: absolute;
   cursor: move;
   z-index: 1;
-  max-height: auto;
-  width: 40px;
 }     
 
   
@@ -153,11 +146,16 @@ input:checked + .slider:before {
 }
 
 .forklift-image {
-  max-height: 40px;
+  max-height: 30px;
   width: auto;
 }
 
 .truck-image {
   max-height: 40px;
   width: auto;  
+}     
+
+.bot-image {
+  max-height: auto;
+  width: 40px;  
 }     
