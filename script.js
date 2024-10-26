@@ -290,9 +290,27 @@ let isDraggingBackground = false;
 let lastMouseX, lastMouseY;
 
 function makeBackgroundDraggable(img) {
-    img.addEventListener('mousedown', startDraggingBackground);
-    document.addEventListener('mousemove', dragBackground);
-    document.addEventListener('mouseup', stopDraggingBackground);
+    // Only add event listeners if toggle is checked
+    function updateEventListeners() {
+        if (document.getElementById('backgroundToggle').checked) {
+            img.addEventListener('mousedown', startDraggingBackground);
+            document.addEventListener('mousemove', dragBackground);
+            document.addEventListener('mouseup', stopDraggingBackground);
+            img.style.pointerEvents = 'auto';  // Enable interactions
+        } else {
+            img.removeEventListener('mousedown', startDraggingBackground);
+            document.removeEventListener('mousemove', dragBackground);
+            document.removeEventListener('mouseup', stopDraggingBackground);
+            img.style.pointerEvents = 'none';   // Disable interactions
+            isDraggingBackground = false;       // Stop any ongoing drag
+        }
+    }
+
+    // Initial setup
+    updateEventListeners();
+
+    // Update listeners when toggle changes
+    document.getElementById('backgroundToggle').addEventListener('change', updateEventListeners);
 }
 
 function startDraggingBackground(e) {
@@ -329,18 +347,32 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
 
 document.body.addEventListener('wheel', function(e) {
     if (backgroundImage && document.getElementById('backgroundToggle').checked) {
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? 0.9 : 1.1;
-        backgroundScale *= delta;
-        backgroundScale = Math.max(0.1, Math.min(5, backgroundScale));
-        const currentTransform = new DOMMatrix(backgroundImage.style.transform);
-        backgroundImage.style.transform = `translate(${currentTransform.e}px, ${currentTransform.f}px) scale(${backgroundScale})`;
+        const target = e.target;
+        // Only handle wheel if directly on background or if background toggle is on
+        if (target === backgroundImage || target === document.body) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            backgroundScale *= delta;
+            backgroundScale = Math.max(0.1, Math.min(5, backgroundScale));
+            const currentTransform = new DOMMatrix(backgroundImage.style.transform);
+            backgroundImage.style.transform = `translate(${currentTransform.e}px, ${currentTransform.f}px) scale(${backgroundScale})`;
+        }
     }
 });
 
 document.getElementById('backgroundToggle').addEventListener('change', function(e) {
     if (backgroundImage) {
-        backgroundImage.style.pointerEvents = e.target.checked ? 'auto' : 'none';
+        if (e.target.checked) {
+            backgroundImage.style.pointerEvents = 'auto';
+            makeBackgroundDraggable(backgroundImage);
+        } else {
+            backgroundImage.style.pointerEvents = 'none';
+            isDraggingBackground = false;  // Stop any ongoing drag
+            // Remove event listeners
+            backgroundImage.removeEventListener('mousedown', startDraggingBackground);
+            document.removeEventListener('mousemove', dragBackground);
+            document.removeEventListener('mouseup', stopDraggingBackground);
+        }
     }
 });
 
