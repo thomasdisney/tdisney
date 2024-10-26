@@ -111,16 +111,20 @@ function addDraggableImage(imageSrc, event) {
     }
     img.addEventListener('mousedown', function(e) {
         if (e.button !== 0) return;
+        e.preventDefault(); // Add this line
         updateZIndex(img);
         isDragging = true;
         updateCursorStyle(img, isDragging);
-        state.offsetX = e.clientX - parseFloat(img.style.left);
-        state.offsetY = e.clientY - parseFloat(img.style.top);
+        
+        // Update these calculations
+        state.offsetX = e.clientX - parseFloat(img.style.left || 0);
+        state.offsetY = e.clientY - parseFloat(img.style.top || 0);
         state.startX = e.clientX;
         state.startY = e.clientY;
         state.lastX = e.clientX;
         state.lastY = e.clientY;
-        updateAttachedElements(img);
+        
+        // Add these specific event listeners
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
     });
@@ -164,7 +168,11 @@ function addDraggableImage(imageSrc, event) {
         }
     });
 
-    draggableElements.add({ img, isDragging, state, onMouseMove, onMouseUp });
+    draggableElements.add({ 
+        img, 
+        isDragging: false, 
+        state 
+    });
 
     if (imageSrc === 'truck_side.png') {
         img.addEventListener('contextmenu', function(e) {
@@ -220,8 +228,8 @@ function onMouseUp() {
     if (el) {
         el.isDragging = false;
         updateCursorStyle(el.img, false);
-        document.removeEventListener('mousemove', el.onMouseMove);
-        document.removeEventListener('mouseup', el.onMouseUp);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
     }
 }
 
@@ -291,8 +299,8 @@ document.addEventListener('click', function(e) {
     if (!clickedOnDraggable) {
         draggableElements.forEach(el => {
             if (el.isDragging) {
-                document.removeEventListener('mousemove', el.onMouseMove);
-                document.removeEventListener('mouseup', el.onMouseUp);
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
                 el.isDragging = false;
                 updateCursorStyle(el.img, false);
             }

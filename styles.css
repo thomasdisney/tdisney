@@ -115,7 +115,7 @@ input:checked + .slider:before {
 
 
 .background-image {
-  position: fixed;  /* Change from absolute to fixed */
+  position: fixed;  
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -125,7 +125,7 @@ input:checked + .slider:before {
 }
 
 .draggable {
-  position: fixed;  /* Change from absolute to fixed */
+  position: fixed;  
   cursor: move;
   z-index: 1;
 }     
@@ -149,7 +149,7 @@ input:checked + .slider:before {
 }
 
 .forklift-image {
-  max-height: 30px;
+  max-height: 35px;
   width: auto;
 }
 
