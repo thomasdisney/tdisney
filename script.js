@@ -22,6 +22,13 @@ const checkOverlap = (elem1, elem2) => {
 let draggableElements = new Set();
 let maxZIndex = 1;
 
+// Add constants for z-index layers
+const Z_INDEX_LAYERS = {
+    TRUCK: 10,
+    FORKLIFT: 20,
+    BOT: 30
+};
+
 function updateCursorStyle(img, isDragging) {
     img.style.cursor = isDragging ? 'none' : 'crosshair';
     document.body.style.cursor = isDragging ? 'none' : 'auto';
@@ -124,6 +131,19 @@ function addDraggableImage(imageSrc, event) {
                     const newY = moveEvent.clientY - el.state.offsetY;
                     el.img.style.left = `${newX}px`;
                     el.img.style.top = `${newY}px`;
+
+                    // Move attached elements
+                    draggableElements.forEach(attachedEl => {
+                        if (attachedEl.img.dataset.attachedTo === img.id) {
+                            const relX = parseFloat(attachedEl.img.dataset.relativeX);
+                            const relY = parseFloat(attachedEl.img.dataset.relativeY);
+                            attachedEl.img.style.left = `${newX + relX}px`;
+                            attachedEl.img.style.top = `${newY + relY}px`;
+                        }
+                    });
+
+                    // Check for new attachments
+                    handleAttachments(el.img);
                 }
             };
             
@@ -208,8 +228,18 @@ function updateAttachedElements(img) {
 }
 
 function updateZIndex(img) {
-    maxZIndex++;
-    img.style.zIndex = maxZIndex;
+    // Set base z-index based on image type
+    let baseZ;
+    if (img.src.includes('truck_side')) {
+        baseZ = Z_INDEX_LAYERS.TRUCK;
+    } else if (img.src.includes('forklift')) {
+        baseZ = Z_INDEX_LAYERS.FORKLIFT;
+    } else if (img.src.includes('Slipbot')) {
+        baseZ = Z_INDEX_LAYERS.BOT;
+    }
+    
+    img.style.zIndex = baseZ;
+    maxZIndex = Math.max(maxZIndex, baseZ);
 }
 
 function rotateElement(element, degrees) {
@@ -230,7 +260,7 @@ function onMouseMove(e) {
         const newX = e.clientX - el.state.offsetX;
         const newY = e.clientY - el.state.offsetY;
         el.img.style.left = `${newX}px`;
-        el.img.style.top = `${newY}px`;
+        el.img.style.top = `${newY}px`;         
     }
 }
 
@@ -369,3 +399,31 @@ document.getElementById('addtrlrBtn').addEventListener('click', (e) =>
 document.getElementById('addForkliftBtn').addEventListener('click', (e) => 
     document.body.appendChild(addDraggableImage('forklift.png', e))
 );
+
+// Add function to check and handle attachments
+function handleAttachments(movingElement) {
+    const movingRect = movingElement.getBoundingClientRect();
+    
+    // Only check for attachments if the moving element is a truck
+    if (!movingElement.src.includes('truck_side')) {
+        return;
+    }
+
+    // Find all overlapping elements with higher z-index
+    draggableElements.forEach(el => {
+        if (el.img !== movingElement && 
+            parseInt(el.img.style.zIndex) > parseInt(movingElement.style.zIndex)) {
+            
+            if (checkOverlap(movingElement, el.img)) {
+                // Calculate relative position to truck
+                const relX = parseFloat(el.img.style.left) - parseFloat(movingElement.style.left);
+                const relY = parseFloat(el.img.style.top) - parseFloat(movingElement.style.top);
+                
+                // Store the relative position on the element
+                el.img.dataset.relativeX = relX;
+                el.img.dataset.relativeY = relY;
+                el.img.dataset.attachedTo = movingElement.id;
+            }
+        }
+    });
+}
