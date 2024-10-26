@@ -130,8 +130,8 @@ input:checked + .slider:before {
   position: absolute;
   cursor: move;
   z-index: 1;
-  max-height: 40px;
-  width: auto;
+  max-height: auto;
+  width: 40px;
 }     
 
   
@@ -153,11 +153,11 @@ input:checked + .slider:before {
 }
 
 .forklift-image {
-  max-height: 80px;
+  max-height: 40px;
   width: auto;
 }
 
 .truck-image {
   max-height: 40px;
-  width: auto;
+  width: auto;  
 }     

@@ -71,7 +71,7 @@ function addDraggableImage(imageSrc, event) {
     
     simulatorArea.appendChild(img);
 
-    let isDragging = imageSrc === 'Slipbot.png' || imageSrc === 'forklift.png', 
+    let isDragging = false,
         rotateDeg = 0,
         isImageLoaded = false;
 
@@ -128,25 +128,13 @@ function addDraggableImage(imageSrc, event) {
         updateCursorStyle(img, isDragging);
     });
 
-    img.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        const currentLeft = parseInt(img.style.left);
-        const currentSrc = img.src;
-        
-        if (currentSrc.endsWith('truck_side.png')) {
-            img.style.left = (currentLeft - 60) + 'px';
-            img.src = 'truck_side2.png';
-        } else {
-            img.style.left = (currentLeft + 60) + 'px';
-            img.src = 'truck_side.png';
-        }
-    });
+
 
     draggableElements.add({ img, isDragging, state, onMouseMove, onMouseUp });
 
     img.style.cursor = 'crosshair';  
 
-    if (imageSrc === 'Slipbot.png' || imageSrc === 'forklift.png') {
+    if (imageSrc === 'Slipbot.png' || imageSrc === 'slipbot_loaded.png') {
         state.offsetX = event.clientX - parseFloat(img.style.left);
         state.offsetY = event.clientY - parseFloat(img.style.top);
         state.lastX = event.clientX;
