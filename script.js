@@ -185,14 +185,15 @@ function addDraggableImage(imageSrc, event) {
 
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
-            const currentLeft = parseFloat(img.style.left);
+            const currentLeft = parseInt(img.style.left);
+            const currentSrc = img.src;
             
-            if (img.src.endsWith('truck_side.png')) {
+            if (currentSrc.endsWith('truck_side.png')) {
+                img.style.left = (currentLeft - 60) + 'px';
                 img.src = 'truck_side2.png';
-                img.style.left = `${currentLeft - 60}px`;
             } else {
+                img.style.left = (currentLeft + 60) + 'px';
                 img.src = 'truck_side.png';
-                img.style.left = `${currentLeft + 60}px`;
             }
         });
     }
