@@ -76,7 +76,10 @@ function addDraggableImage(imageSrc, event) {
     img.onload = function() {
         if (imageSrc === 'truck_side.png') {
             img.style.width = `auto`;
-            img.style.height = '${this.width}px';
+            img.style.height = `${this.width}px`;
+        } else if (imageSrc === 'forklift.png') {
+            img.style.width = '30px';
+            img.style.height = 'auto';
         } else {
             img.style.width = '40px';
             img.style.height = 'auto';
