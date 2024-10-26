@@ -60,7 +60,7 @@ function addDraggableImage(imageSrc, event) {
     img.style.transformOrigin = 'center';
     simulatorArea.appendChild(img);
 
-    let isDragging = imageSrc === 'Slipbot.png', 
+    let isDragging = imageSrc === 'Slipbot.png' || imageSrc === 'forklift.png', 
         rotateDeg = 0,
         isImageLoaded = false;
 
@@ -130,7 +130,7 @@ function addDraggableImage(imageSrc, event) {
 
     img.style.cursor = 'crosshair';  
 
-    if (imageSrc === 'Slipbot.png') {
+    if (imageSrc === 'Slipbot.png' || imageSrc === 'forklift.png') {
         state.offsetX = event.clientX - parseFloat(img.style.left);
         state.offsetY = event.clientY - parseFloat(img.style.top);
         state.lastX = event.clientX;
@@ -150,17 +150,18 @@ function addDraggableImage(imageSrc, event) {
             rotateDeg = (rotateDeg + delta + 360) % 360;
             rotateElement(img, rotateDeg);
         });
-
-        img.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            if (!isImageLoaded) {
-                img.src = 'SlipBot_Loaded.png';
-                isImageLoaded = true;
-            } else {
-                img.src = 'Slipbot.png';
-                isImageLoaded = false;
-            }
-        });
+        if (imageSrc === 'Slipbot.png') {
+            img.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                if (!isImageLoaded) {
+                    img.src = 'SlipBot_Loaded.png';
+                    isImageLoaded = true;
+                } else {
+                    img.src = 'Slipbot.png';
+                    isImageLoaded = false;
+                }
+            });
+        }
     } else if (imageSrc === 'truck_side.png') {
         img.addEventListener('mousedown', function(e) {
             if (e.button !== 0) return;
@@ -184,12 +185,14 @@ function addDraggableImage(imageSrc, event) {
 
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
-            if (img.src.includes('truck_side.png')) {
+            const currentLeft = parseFloat(img.style.left);
+            
+            if (img.src.endsWith('truck_side.png')) {
                 img.src = 'truck_side2.png';
-                img.style.left = `${parseFloat(img.style.left) - 60}px`;
+                img.style.left = `${currentLeft - 60}px`;
             } else {
                 img.src = 'truck_side.png';
-                img.style.left = `${parseFloat(img.style.left) + 60}px`;
+                img.style.left = `${currentLeft + 60}px`;
             }
         });
     }
@@ -202,6 +205,10 @@ document.getElementById('addBotBtn').addEventListener('click', function(e) {
 
 document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
     addDraggableImage('truck_side.png', e);
+});
+
+document.getElementById('addForkliftBtn').addEventListener('click', function(e) {
+    addDraggableImage('forklift.png', e);
 });
 
 let backgroundImages = [];          
