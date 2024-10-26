@@ -159,3 +159,11 @@ input:checked + .slider:before {
   max-height: auto;
   width: 40px;  
 }     
+
+#simulator-area {
+  position: relative;
+  width: 100vw;
+  height: calc(100vh - 60px); /* Adjust based on your header height */
+  overflow: hidden;
+  background-color: #f5f5f5;
+}

@@ -20,6 +20,7 @@ const checkOverlap = (elem1, elem2) => {
 };
 
 let draggableElements = new Set();
+let maxZIndex = 1;
 
 function updateCursorStyle(img, isDragging) {
     img.style.cursor = isDragging ? 'none' : 'crosshair';
@@ -110,6 +111,7 @@ function addDraggableImage(imageSrc, event) {
     }
     img.addEventListener('mousedown', function(e) {
         if (e.button !== 0) return;
+        updateZIndex(img);
         isDragging = true;
         updateCursorStyle(img, isDragging);
         state.offsetX = e.clientX - parseFloat(img.style.left);
@@ -128,7 +130,40 @@ function addDraggableImage(imageSrc, event) {
         updateCursorStyle(img, isDragging);
     });
 
+    // Add these event listeners
+    img.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        img.dispatchEvent(mouseEvent);
+    });
 
+    img.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        document.dispatchEvent(mouseEvent);
+    });
+
+    img.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        const mouseEvent = new MouseEvent('mouseup');
+        document.dispatchEvent(mouseEvent);
+    });
+
+    img.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+        if (confirm('Delete this element?')) {
+            draggableElements.delete(Array.from(draggableElements).find(el => el.img === img));
+            img.remove();
+        }
+    });
 
     draggableElements.add({ img, isDragging, state, onMouseMove, onMouseUp });
 
@@ -150,6 +185,7 @@ function addDraggableImage(imageSrc, event) {
 }
 
 const simulatorArea = document.getElementById('simulator-area');
+const rect = simulatorArea.getBoundingClientRect();
 
 document.getElementById('addBotBtn').addEventListener('click', (e) => 
     simulatorArea.appendChild(addDraggableImage('Slipbot.png', e))
@@ -178,8 +214,15 @@ function addBackgroundImage(file) {
         backgroundImage.src = e.target.result;
         backgroundImage.classList.add('background-image');
         backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
+        backgroundImage.style.opacity = '0';
         document.getElementById('simulator-area').appendChild(backgroundImage);
-        makeBackgroundDraggable(backgroundImage);
+        
+        // Fade in the background
+        backgroundImage.onload = function() {
+            backgroundImage.style.transition = 'opacity 0.3s ease';
+            backgroundImage.style.opacity = '1';
+            makeBackgroundDraggable(backgroundImage);
+        };
     };
     reader.readAsDataURL(file);
 }
@@ -267,3 +310,41 @@ document.addEventListener('mouseleave', function() {
 });
 
 document.body.style.cursor = 'crosshair';
+
+function onMouseMove(e) {
+    const el = Array.from(draggableElements).find(el => el.isDragging);
+    if (el) {
+        const newX = e.clientX - el.state.offsetX;
+        const newY = e.clientY - el.state.offsetY;
+        el.img.style.left = `${newX}px`;
+        el.img.style.top = `${newY}px`;
+        el.state.lastX = e.clientX;
+        el.state.lastY = e.clientY;
+    }
+}
+
+function onMouseUp() {
+    const el = Array.from(draggableElements).find(el => el.isDragging);
+    if (el) {
+        el.isDragging = false;
+        updateCursorStyle(el.img, false);
+        document.removeEventListener('mousemove', el.onMouseMove);
+        document.removeEventListener('mouseup', el.onMouseUp);
+    }
+}
+
+function rotateElement(element, degrees) {
+    element.style.transform = `rotate(${degrees}deg)`;
+}
+
+function updateAttachedElements(img) {
+    // This function can be used to update any elements that should move
+    // together with the dragged element. For now, it can be empty:
+    return;
+}
+
+function updateZIndex(img) {
+    maxZIndex++;
+    img.style.zIndex = maxZIndex;
+}
+
