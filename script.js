@@ -47,11 +47,13 @@ function toggleDragging(img, state, onMouseMove, onMouseUp, e) {
 
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
-    img.style.opacity = '0'; // Start invisible
+    img.style.opacity = '0'; 
     img.src = imageSrc;
     img.classList.add('draggable');
     if (imageSrc === 'forklift.png') {
         img.classList.add('forklift-image');
+    } else if (imageSrc === 'truckside.png' || imageSrc === 'truckside2.png') {
+        img.classList.add('truck-image');
     }
     img.style.position = 'absolute';
     
@@ -187,7 +189,6 @@ function addDraggableImage(imageSrc, event) {
         });
     }
 }
-
 
 document.getElementById('addBotBtn').addEventListener('click', function(e) {
     addDraggableImage('Slipbot.png', e);

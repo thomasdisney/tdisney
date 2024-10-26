@@ -152,8 +152,12 @@ input:checked + .slider:before {
   background-color: #3551CC;
 }
 
-
 .forklift-image {
   max-height: 80px;
   width: auto;
 }
+
+.truck-image {
+  max-height: 40px;
+  width: auto;
+}     
