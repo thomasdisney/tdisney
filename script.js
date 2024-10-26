@@ -22,7 +22,6 @@ const checkOverlap = (elem1, elem2) => {
 let draggableElements = new Set();
 let maxZIndex = 1;
 
-// Add constants for z-index layers
 const Z_INDEX_LAYERS = {
     TRUCK: 10,
     FORKLIFT: 20,
@@ -125,6 +124,11 @@ function addDraggableImage(imageSrc, event) {
             el.state.offsetX = e.clientX - parseFloat(img.style.left);
             el.state.offsetY = e.clientY - parseFloat(img.style.top);
             
+            // Only check for attachments if this is a truck
+            if (img.src.includes('truck_side')) {
+                handleAttachments(img);
+            }
+            
             const moveHandler = (moveEvent) => {
                 if (el.isDragging) {
                     const newX = moveEvent.clientX - el.state.offsetX;
@@ -132,24 +136,31 @@ function addDraggableImage(imageSrc, event) {
                     el.img.style.left = `${newX}px`;
                     el.img.style.top = `${newY}px`;
 
-                    // Move attached elements
-                    draggableElements.forEach(attachedEl => {
-                        if (attachedEl.img.dataset.attachedTo === img.id) {
-                            const relX = parseFloat(attachedEl.img.dataset.relativeX);
-                            const relY = parseFloat(attachedEl.img.dataset.relativeY);
-                            attachedEl.img.style.left = `${newX + relX}px`;
-                            attachedEl.img.style.top = `${newY + relY}px`;
-                        }
-                    });
-
-                    // Check for new attachments
-                    handleAttachments(el.img);
+                    // Only move attached elements if this is a truck
+                    if (img.src.includes('truck_side')) {
+                        draggableElements.forEach(attachedEl => {
+                            if (attachedEl.img.dataset.attachedTo === img.id) {
+                                const relX = parseFloat(attachedEl.img.dataset.relativeX);
+                                const relY = parseFloat(attachedEl.img.dataset.relativeY);
+                                attachedEl.img.style.left = `${newX + relX}px`;
+                                attachedEl.img.style.top = `${newY + relY}px`;
+                            }
+                        });
+                    }
                 }
             };
             
             const upHandler = () => {
                 el.isDragging = false;
                 updateCursorStyle(el.img, false);
+                
+                // Clear all attachments when dragging stops
+                draggableElements.forEach(el => {
+                    delete el.img.dataset.relativeX;
+                    delete el.img.dataset.relativeY;
+                    delete el.img.dataset.attachedTo;
+                });
+                
                 document.removeEventListener('mousemove', moveHandler);
                 document.removeEventListener('mouseup', upHandler);
             };
@@ -228,7 +239,6 @@ function updateAttachedElements(img) {
 }
 
 function updateZIndex(img) {
-    // Set base z-index based on image type
     let baseZ;
     if (img.src.includes('truck_side')) {
         baseZ = Z_INDEX_LAYERS.TRUCK;
@@ -400,26 +410,28 @@ document.getElementById('addForkliftBtn').addEventListener('click', (e) =>
     document.body.appendChild(addDraggableImage('forklift.png', e))
 );
 
-// Add function to check and handle attachments
 function handleAttachments(movingElement) {
-    const movingRect = movingElement.getBoundingClientRect();
-    
-    // Only check for attachments if the moving element is a truck
+    // Only proceed if this is a truck
     if (!movingElement.src.includes('truck_side')) {
         return;
     }
 
-    // Find all overlapping elements with higher z-index
+    // Clear all existing attachments first
+    draggableElements.forEach(el => {
+        delete el.img.dataset.relativeX;
+        delete el.img.dataset.relativeY;
+        delete el.img.dataset.attachedTo;
+    });
+
+    // Find new overlapping elements with higher z-index
     draggableElements.forEach(el => {
         if (el.img !== movingElement && 
             parseInt(el.img.style.zIndex) > parseInt(movingElement.style.zIndex)) {
             
             if (checkOverlap(movingElement, el.img)) {
-                // Calculate relative position to truck
                 const relX = parseFloat(el.img.style.left) - parseFloat(movingElement.style.left);
                 const relY = parseFloat(el.img.style.top) - parseFloat(movingElement.style.top);
                 
-                // Store the relative position on the element
                 el.img.dataset.relativeX = relX;
                 el.img.dataset.relativeY = relY;
                 el.img.dataset.attachedTo = movingElement.id;
