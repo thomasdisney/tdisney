@@ -471,21 +471,65 @@ function handleAttachments(movingElement) {
 function makeBackgroundDraggable(img) {
     // Initialize transform values if they don't exist
     if (!img.style.transform) {
-        img.style.transform = `translate(0px, 0px) scale(${backgroundScale})`;
+        img.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
     }
 
-    function updateEventListeners() {
+    // Create bound event handlers to maintain context
+    const boundStartDrag = (e) => {
         if (document.getElementById('backgroundToggle').checked) {
-            img.addEventListener('mousedown', startDraggingBackground);
-            document.addEventListener('mousemove', dragBackground);
-            document.addEventListener('mouseup', stopDraggingBackground);
-            img.style.pointerEvents = 'auto';  // Enable interactions
+            isDraggingBackground = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            e.preventDefault();
+            console.log('Started dragging background'); // Debug log
+        }
+    };
+
+    const boundDrag = (e) => {
+        if (isDraggingBackground && document.getElementById('backgroundToggle').checked) {
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            
+            // Update stored position
+            const currentX = parseFloat(backgroundImage.dataset.translateX || 0);
+            const currentY = parseFloat(backgroundImage.dataset.translateY || 0);
+            const newX = currentX + dx;
+            const newY = currentY + dy;
+            
+            // Store new position
+            backgroundImage.dataset.translateX = newX;
+            backgroundImage.dataset.translateY = newY;
+            
+            // Apply transform
+            backgroundImage.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
+            
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            console.log('Dragging background', newX, newY); // Debug log
+        }
+    };
+
+    const boundStopDrag = () => {
+        if (isDraggingBackground) {
+            isDraggingBackground = false;
+            console.log('Stopped dragging background'); // Debug log
+        }
+    };
+
+    function updateEventListeners() {
+        // Remove old listeners first
+        img.removeEventListener('mousedown', boundStartDrag);
+        document.removeEventListener('mousemove', boundDrag);
+        document.removeEventListener('mouseup', boundStopDrag);
+
+        if (document.getElementById('backgroundToggle').checked) {
+            img.addEventListener('mousedown', boundStartDrag);
+            document.addEventListener('mousemove', boundDrag);
+            document.addEventListener('mouseup', boundStopDrag);
+            img.style.pointerEvents = 'auto';
         } else {
-            img.removeEventListener('mousedown', startDraggingBackground);
-            document.removeEventListener('mousemove', dragBackground);
-            document.removeEventListener('mouseup', stopDraggingBackground);
-            img.style.pointerEvents = 'none';   // Disable interactions
-            isDraggingBackground = false;       // Stop any ongoing drag
+            img.style.pointerEvents = 'none';
+            isDraggingBackground = false;
         }
     }
 
