@@ -47,8 +47,15 @@ function toggleDragging(img, state, onMouseMove, onMouseUp, e) {
 
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
+    img.style.opacity = '0'; // Start invisible
     img.src = imageSrc;
     img.classList.add('draggable');
+    if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
+        img.classList.add('truck-image');
+    }
+    if (imageSrc === 'forklift.png') {
+        img.classList.add('forklift-image');
+    }
     img.style.position = 'absolute';
     
     const simulatorArea = document.getElementById('simulator-area');
@@ -58,6 +65,11 @@ function addDraggableImage(imageSrc, event) {
     img.style.top = `${event.clientY - rect.top}px`;
     
     img.style.transformOrigin = 'center';
+    
+    img.onload = function() {
+        img.style.opacity = '1'; // Show image once loaded
+    };
+    
     simulatorArea.appendChild(img);
 
     let isDragging = imageSrc === 'Slipbot.png' || imageSrc === 'forklift.png', 
@@ -73,61 +85,63 @@ function addDraggableImage(imageSrc, event) {
         lastY: 0
     };
 
-    img.onload = function() {
-        if (imageSrc === 'truck_side.png') {
-            img.style.width = `auto`;
-            img.style.height = `${this.width}px`;
-        } else if (imageSrc === 'forklift.png') {
-            img.style.width = '30px';
-            img.style.height = 'auto';
-        } else {
-            img.style.width = '40px';
-            img.style.height = 'auto';
-        }
-    };
+    img.addEventListener('click', function(e) {
+        e.stopPropagation(); 
+        toggleDragging(img, state, onMouseMove, onMouseUp, e);
+    });
 
-    let attachedElements = new Set();
-
-    function updateAttachedElements(rootEl) {
-        attachedElements.clear();
-        document.querySelectorAll('img.draggable').forEach(el => {
-            if (el !== rootEl && checkOverlap(rootEl, el)) {
-                attachedElements.add(el);
+    img.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const delta = e.deltaY > 0 ? -15 : 15; 
+        rotateDeg = (rotateDeg + delta + 360) % 360;
+        rotateElement(img, rotateDeg);
+    });
+    if (imageSrc === 'Slipbot.png') {
+        img.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            if (!isImageLoaded) {
+                img.src = 'SlipBot_Loaded.png';
+                isImageLoaded = true;
+            } else {
+                img.src = 'Slipbot.png';
+                isImageLoaded = false;
             }
         });
     }
-
-    function moveElement(el, dx, dy) {
-        const left = parseFloat(el.style.left) + dx;
-        const top = parseFloat(el.style.top) + dy;
-        el.style.left = `${left}px`;
-        el.style.top = `${top}px`;
-    }
-
-    function rotateElement(el, angle) {
-        el.style.transform = `rotate(${angle}deg)`;
-    }
-
-    function onMouseMove(e) {
-        if (!isDragging) return;
-
-        const dx = e.clientX - state.lastX;
-        const dy = e.clientY - state.lastY;
-
-        moveElement(img, dx, dy);
-        attachedElements.forEach(el => moveElement(el, dx, dy));
-
+    img.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        isDragging = true;
+        updateCursorStyle(img, isDragging);
+        state.offsetX = e.clientX - parseFloat(img.style.left);
+        state.offsetY = e.clientY - parseFloat(img.style.top);
+        state.startX = e.clientX;
+        state.startY = e.clientY;
         state.lastX = e.clientX;
         state.lastY = e.clientY;
-    }
+        updateAttachedElements(img);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    });
 
-    function onMouseUp() {          
-        if (imageSrc === 'truck_side.png') {
-            isDragging = false;
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
+    img.addEventListener('mouseup', function() {
+        isDragging = false;
+        updateCursorStyle(img, isDragging);
+    });
+
+    img.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        const currentLeft = parseInt(img.style.left);
+        const currentSrc = img.src;
+        
+        if (currentSrc.endsWith('truck_side.png')) {
+            img.style.left = (currentLeft - 60) + 'px';
+            img.src = 'truck_side2.png';
+        } else {
+            img.style.left = (currentLeft + 60) + 'px';
+            img.src = 'truck_side.png';
         }
-    }
+    });
 
     draggableElements.add({ img, isDragging, state, onMouseMove, onMouseUp });
 
@@ -140,31 +154,6 @@ function addDraggableImage(imageSrc, event) {
         state.lastY = event.clientY;
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
-
-        img.addEventListener('click', function(e) {
-            e.stopPropagation(); 
-            toggleDragging(img, state, onMouseMove, onMouseUp, e);
-        });
-
-        img.addEventListener('wheel', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const delta = e.deltaY > 0 ? -15 : 15; 
-            rotateDeg = (rotateDeg + delta + 360) % 360;
-            rotateElement(img, rotateDeg);
-        });
-        if (imageSrc === 'Slipbot.png') {
-            img.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                if (!isImageLoaded) {
-                    img.src = 'SlipBot_Loaded.png';
-                    isImageLoaded = true;
-                } else {
-                    img.src = 'Slipbot.png';
-                    isImageLoaded = false;
-                }
-            });
-        }
     } else if (imageSrc === 'truck_side.png') {
         img.addEventListener('mousedown', function(e) {
             if (e.button !== 0) return;

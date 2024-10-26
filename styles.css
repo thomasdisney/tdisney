@@ -130,8 +130,11 @@ input:checked + .slider:before {
   position: absolute;
   cursor: move;
   z-index: 1;
-}
+  max-height: 40px;
+  width: auto;
+}     
 
+  
 .custom-file-upload {
   display: inline-block;
   padding: 0.5rem;
@@ -147,4 +150,14 @@ input:checked + .slider:before {
 
 .custom-file-upload:hover {
   background-color: #3551CC;
+}
+
+.truck-image {
+  max-height: 80px;
+  width: auto;
+}
+
+.forklift-image {
+  max-height: 80px;
+  width: auto;
 }
