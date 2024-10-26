@@ -73,7 +73,9 @@ function addDraggableImage(imageSrc, event) {
         startX: 0,
         startY: 0,
         lastX: 0,
-        lastY: 0
+        lastY: 0,
+        rotateDeg: 0,
+        isImageLoaded: false
     };
     
     img.addEventListener('click', function(e) {
@@ -90,18 +92,18 @@ function addDraggableImage(imageSrc, event) {
         e.preventDefault();
         e.stopPropagation();
         const delta = e.deltaY > 0 ? -15 : 15; 
-        rotateDeg = (rotateDeg + delta + 360) % 360;
-        rotateElement(img, rotateDeg);
+        state.rotateDeg = (state.rotateDeg + delta + 360) % 360;
+        rotateElement(img, state.rotateDeg);
     });
     if (imageSrc === 'Slipbot.png') {
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
-            if (!isImageLoaded) {
+            if (!state.isImageLoaded) {
                 img.src = 'SlipBot_Loaded.png';
-                isImageLoaded = true;
+                state.isImageLoaded = true;
             } else {
                 img.src = 'Slipbot.png';
-                isImageLoaded = false;
+                state.isImageLoaded = false;
             }
         });
     }
@@ -115,8 +117,25 @@ function addDraggableImage(imageSrc, event) {
             el.isDragging = true;
             el.state.offsetX = e.clientX - parseFloat(img.style.left);
             el.state.offsetY = e.clientY - parseFloat(img.style.top);
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
+            
+            const moveHandler = (moveEvent) => {
+                if (el.isDragging) {
+                    const newX = moveEvent.clientX - el.state.offsetX;
+                    const newY = moveEvent.clientY - el.state.offsetY;
+                    el.img.style.left = `${newX}px`;
+                    el.img.style.top = `${newY}px`;
+                }
+            };
+            
+            const upHandler = () => {
+                el.isDragging = false;
+                updateCursorStyle(el.img, false);
+                document.removeEventListener('mousemove', moveHandler);
+                document.removeEventListener('mouseup', upHandler);
+            };
+            
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('mouseup', upHandler);
         }
         updateCursorStyle(img, true);
     });
@@ -163,9 +182,7 @@ function addDraggableImage(imageSrc, event) {
     draggableElements.add({
         img,
         isDragging: false,
-        state,
-        onMouseMove,
-        onMouseUp
+        state
     });
 
     if (imageSrc === 'truck_side.png') {
@@ -201,8 +218,10 @@ function rotateElement(element, degrees) {
     const newCenter = getCenter(element);
     const dx = newCenter.x - center.x;
     const dy = newCenter.y - center.y;
-    element.style.left = `${parseFloat(element.style.left) - dx}px`;
-    element.style.top = `${parseFloat(element.style.top) - dy}px`;
+    const currentLeft = parseFloat(element.style.left) || 0;
+    const currentTop = parseFloat(element.style.top) || 0;
+    element.style.left = `${currentLeft - dx}px`;
+    element.style.top = `${currentTop - dy}px`;
 }
 
 function onMouseMove(e) {
