@@ -66,7 +66,7 @@ function addDraggableImage(imageSrc, event) {
         img.style.opacity = '1'; 
     };
     
-    let isDragging = True,
+    let isDragging = false,
         rotateDeg = 0,
         isImageLoaded = false;
 
@@ -132,36 +132,7 @@ function addDraggableImage(imageSrc, event) {
 
     draggableElements.add({ img, isDragging, state, onMouseMove, onMouseUp });
 
-    img.style.cursor = 'crosshair';  
-
-    if (imageSrc === 'Slipbot.png' || imageSrc === 'slipbot_loaded.png') {
-        state.offsetX = event.clientX - parseFloat(img.style.left);
-        state.offsetY = event.clientY - parseFloat(img.style.top);
-        state.lastX = event.clientX;
-        state.lastY = event.clientY;
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-    } else if (imageSrc === 'truck_side.png') {
-        img.addEventListener('mousedown', function(e) {
-            if (e.button !== 0) return;
-            isDragging = true;
-            updateCursorStyle(img, isDragging);
-            state.offsetX = e.clientX - parseFloat(img.style.left);
-            state.offsetY = e.clientY - parseFloat(img.style.top);
-            state.startX = e.clientX;
-            state.startY = e.clientY;
-            state.lastX = e.clientX;
-            state.lastY = e.clientY;
-            updateAttachedElements(img);
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-        });
-
-        img.addEventListener('mouseup', function() {
-            isDragging = false;
-            updateCursorStyle(img, isDragging);
-        });
-
+    if (imageSrc === 'truck_side.png') {
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             const currentLeft = parseInt(img.style.left);
@@ -189,9 +160,6 @@ document.getElementById('addtrlrBtn').addEventListener('click', function(e) {
 document.getElementById('addForkliftBtn').addEventListener('click', function(e) {
     addDraggableImage('forklift.png', e);
 });
-
-let backgroundImages = [];          
-let selectedBackground = null;
 
 let backgroundImage = null;
 let backgroundScale = 1;
@@ -266,12 +234,6 @@ document.getElementById('simulator-area').addEventListener('wheel', function(e) 
 document.getElementById('backgroundToggle').addEventListener('change', function(e) {
     if (backgroundImage) {
         backgroundImage.style.pointerEvents = e.target.checked ? 'auto' : 'none';
-    }
-});
-
-document.body.addEventListener('click', function(e) {
-    if (e.target.classList.contains('background-image')) {
-        selectBackgroundImage(e.target);
     }
 });
 
