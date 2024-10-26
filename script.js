@@ -305,10 +305,20 @@ function dragBackground(e) {
     if (isDraggingBackground && document.getElementById('backgroundToggle').checked) {
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
-        const currentTransform = new DOMMatrix(backgroundImage.style.transform);
-        const newX = currentTransform.e + dx;
-        const newY = currentTransform.f + dy;
-        backgroundImage.style.transform = `translate(${newX}px, ${newY}px) scale(${backgroundScale})`;
+        
+        // Update stored position
+        const currentX = parseFloat(backgroundImage.dataset.translateX || 0);
+        const currentY = parseFloat(backgroundImage.dataset.translateY || 0);
+        const newX = currentX + dx;
+        const newY = currentY + dy;
+        
+        // Store new position
+        backgroundImage.dataset.translateX = newX;
+        backgroundImage.dataset.translateY = newY;
+        
+        // Apply transform with both translation and scale
+        backgroundImage.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
+        
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
     }
@@ -327,14 +337,16 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
 document.body.addEventListener('wheel', function(e) {
     if (backgroundImage && document.getElementById('backgroundToggle').checked) {
         const target = e.target;
-        // Only handle wheel if directly on background or if background toggle is on
         if (target === backgroundImage || target === document.body) {
             e.preventDefault();
             const delta = e.deltaY > 0 ? 0.9 : 1.1;
             backgroundScale *= delta;
             backgroundScale = Math.max(0.1, Math.min(5, backgroundScale));
-            const currentTransform = new DOMMatrix(backgroundImage.style.transform);
-            backgroundImage.style.transform = `translate(${currentTransform.e}px, ${currentTransform.f}px) scale(${backgroundScale})`;
+            
+            // Keep current translation while updating scale
+            const translateX = backgroundImage.dataset.translateX || 0;
+            const translateY = backgroundImage.dataset.translateY || 0;
+            backgroundImage.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${backgroundScale})`;
         }
     }
 });
@@ -396,10 +408,14 @@ function addBackgroundImage(file) {
         backgroundImage = document.createElement('img');
         backgroundImage.src = e.target.result;
         backgroundImage.classList.add('background-image');
-        // Initialize with explicit pixel values for transform
-        backgroundImage.style.transform = `translate(0px, 0px) scale(${backgroundScale})`;
+        // Start with centered position
+        backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
         backgroundImage.style.opacity = '0';
         document.body.appendChild(backgroundImage);
+        
+        // Track position separately from transform
+        backgroundImage.dataset.translateX = '0';
+        backgroundImage.dataset.translateY = '0';
         
         backgroundImage.onload = function() {
             backgroundImage.style.transition = 'opacity 0.3s ease';
