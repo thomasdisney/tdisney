@@ -125,9 +125,12 @@ input:checked + .slider:before {
 }
 
 .draggable {
-  position: fixed;  
+  position: fixed;
   cursor: move;
   z-index: 1;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: none;
 }     
 
   

@@ -67,10 +67,6 @@ function addDraggableImage(imageSrc, event) {
         img.style.opacity = '1'; 
     };
     
-    let isDragging = false,
-        rotateDeg = 0,
-        isImageLoaded = false;
-
     const state = {
         offsetX: 0,
         offsetY: 0,
@@ -111,22 +107,18 @@ function addDraggableImage(imageSrc, event) {
     }
     img.addEventListener('mousedown', function(e) {
         if (e.button !== 0) return;
-        e.preventDefault(); // Add this line
+        e.preventDefault();
         updateZIndex(img);
-        isDragging = true;
-        updateCursorStyle(img, isDragging);
         
-        // Update these calculations
-        state.offsetX = e.clientX - parseFloat(img.style.left || 0);
-        state.offsetY = e.clientY - parseFloat(img.style.top || 0);
-        state.startX = e.clientX;
-        state.startY = e.clientY;
-        state.lastX = e.clientX;
-        state.lastY = e.clientY;
-        
-        // Add these specific event listeners
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        const el = Array.from(draggableElements).find(el => el.img === img);
+        if (el) {
+            el.isDragging = true;
+            el.state.offsetX = e.clientX - parseFloat(img.style.left);
+            el.state.offsetY = e.clientY - parseFloat(img.style.top);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+        updateCursorStyle(img, true);
     });
 
     img.addEventListener('mouseup', function() {
@@ -168,10 +160,12 @@ function addDraggableImage(imageSrc, event) {
         }
     });
 
-    draggableElements.add({ 
-        img, 
-        isDragging: false, 
-        state 
+    draggableElements.add({
+        img,
+        isDragging: false,
+        state,
+        onMouseMove,
+        onMouseUp
     });
 
     if (imageSrc === 'truck_side.png') {
@@ -218,8 +212,6 @@ function onMouseMove(e) {
         const newY = e.clientY - el.state.offsetY;
         el.img.style.left = `${newX}px`;
         el.img.style.top = `${newY}px`;
-        el.state.lastX = e.clientX;
-        el.state.lastY = e.clientY;
     }
 }
 
