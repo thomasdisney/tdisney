@@ -481,7 +481,11 @@ function makeBackgroundDraggable(img) {
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
             e.preventDefault();
-            console.log('Started dragging background'); // Debug log
+            
+            // Add move and up listeners when dragging starts
+            document.addEventListener('mousemove', boundDrag);
+            document.addEventListener('mouseup', boundStopDrag);
+            console.log('Started dragging background');
         }
     };
 
@@ -491,42 +495,42 @@ function makeBackgroundDraggable(img) {
             const dy = e.clientY - lastMouseY;
             
             // Update stored position
-            const currentX = parseFloat(backgroundImage.dataset.translateX || 0);
-            const currentY = parseFloat(backgroundImage.dataset.translateY || 0);
+            const currentX = parseFloat(img.dataset.translateX || 0);
+            const currentY = parseFloat(img.dataset.translateY || 0);
             const newX = currentX + dx;
             const newY = currentY + dy;
             
             // Store new position
-            backgroundImage.dataset.translateX = newX;
-            backgroundImage.dataset.translateY = newY;
+            img.dataset.translateX = newX;
+            img.dataset.translateY = newY;
             
             // Apply transform
-            backgroundImage.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
+            img.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
             
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
-            console.log('Dragging background', newX, newY); // Debug log
+            console.log('Dragging background', newX, newY);
         }
     };
 
     const boundStopDrag = () => {
         if (isDraggingBackground) {
             isDraggingBackground = false;
-            console.log('Stopped dragging background'); // Debug log
+            // Remove move and up listeners when dragging stops
+            document.removeEventListener('mousemove', boundDrag);
+            document.removeEventListener('mouseup', boundStopDrag);
+            console.log('Stopped dragging background');
         }
     };
 
     function updateEventListeners() {
-        // Remove old listeners first
+        // Only need to handle mousedown listener
         img.removeEventListener('mousedown', boundStartDrag);
-        document.removeEventListener('mousemove', boundDrag);
-        document.removeEventListener('mouseup', boundStopDrag);
 
         if (document.getElementById('backgroundToggle').checked) {
             img.addEventListener('mousedown', boundStartDrag);
-            document.addEventListener('mousemove', boundDrag);
-            document.addEventListener('mouseup', boundStopDrag);
             img.style.pointerEvents = 'auto';
+            img.style.cursor = 'move';  // Add cursor style
         } else {
             img.style.pointerEvents = 'none';
             isDraggingBackground = false;
