@@ -65,11 +65,10 @@ function addDraggableImage(imageSrc, event) {
         img.classList.add('bot-image');
     }
     
-    // Set initial position - adjust the Y offset (400 pushes it lower)
-    const yOffset = 100; // This will position it 100px from top
+    const yOffset = 100; 
     img.style.position = 'absolute';    
     img.style.left = `${event.clientX}px`;
-    img.style.top = `${yOffset}px`;  // Use absolute position from top
+    img.style.top = `${yOffset}px`;  
     img.style.transformOrigin = 'center';
     
     img.onload = function() {
@@ -127,7 +126,6 @@ function addDraggableImage(imageSrc, event) {
             el.state.offsetX = e.clientX - parseFloat(img.style.left);
             el.state.offsetY = e.clientY - parseFloat(img.style.top);
             
-            // Only check for attachments if this is a truck
             if (img.src.includes('truck_side')) {
                 handleAttachments(img);
             }
@@ -139,7 +137,6 @@ function addDraggableImage(imageSrc, event) {
                     el.img.style.left = `${newX}px`;
                     el.img.style.top = `${newY}px`;
 
-                    // Only move attached elements if this is a truck
                     if (img.src.includes('truck_side')) {
                         draggableElements.forEach(attachedEl => {
                             if (attachedEl.img.dataset.attachedTo === img.id) {
@@ -157,7 +154,6 @@ function addDraggableImage(imageSrc, event) {
                 el.isDragging = false;
                 updateCursorStyle(el.img, false);
                 
-                // Clear all attachments when dragging stops
                 draggableElements.forEach(el => {
                     delete el.img.dataset.relativeX;
                     delete el.img.dataset.relativeY;
@@ -306,17 +302,14 @@ function dragBackground(e) {
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
         
-        // Update stored position
         const currentX = parseFloat(backgroundImage.dataset.translateX || 0);
         const currentY = parseFloat(backgroundImage.dataset.translateY || 0);
         const newX = currentX + dx;
         const newY = currentY + dy;
         
-        // Store new position
         backgroundImage.dataset.translateX = newX;
         backgroundImage.dataset.translateY = newY;
         
-        // Apply transform with both translation and scale
         backgroundImage.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
         
         lastMouseX = e.clientX;
@@ -343,7 +336,6 @@ document.body.addEventListener('wheel', function(e) {
             backgroundScale *= delta;
             backgroundScale = Math.max(0.1, Math.min(5, backgroundScale));
             
-            // Keep current translation while updating scale
             const translateX = backgroundImage.dataset.translateX || 0;
             const translateY = backgroundImage.dataset.translateY || 0;
             backgroundImage.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${backgroundScale})`;
@@ -351,18 +343,19 @@ document.body.addEventListener('wheel', function(e) {
     }
 });
 
-document.getElementById('backgroundToggle').addEventListener('change', function(e) {
+let backgroundToggle = document.getElementById('backgroundToggle');
+
+backgroundToggle.addEventListener('change', function(e) {
     if (backgroundImage) {
         if (e.target.checked) {
             backgroundImage.style.pointerEvents = 'auto';
-            makeBackgroundDraggable(backgroundImage);
+            backgroundImage.style.cursor = 'move';
+            backgroundImage.style.zIndex = '1';
         } else {
             backgroundImage.style.pointerEvents = 'none';
-            isDraggingBackground = false;  // Stop any ongoing drag
-            // Remove event listeners
-            backgroundImage.removeEventListener('mousedown', startDraggingBackground);
-            document.removeEventListener('mousemove', dragBackground);
-            document.removeEventListener('mouseup', stopDraggingBackground);
+            backgroundImage.style.cursor = 'default';
+            backgroundImage.style.zIndex = '-1';
+            isDraggingBackground = false;
         }
     }
 });
@@ -408,12 +401,10 @@ function addBackgroundImage(file) {
         backgroundImage = document.createElement('img');
         backgroundImage.src = e.target.result;
         backgroundImage.classList.add('background-image');
-        // Start with centered position
         backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
         backgroundImage.style.opacity = '0';
         document.body.appendChild(backgroundImage);
         
-        // Track position separately from transform
         backgroundImage.dataset.translateX = '0';
         backgroundImage.dataset.translateY = '0';
         
@@ -439,19 +430,16 @@ document.getElementById('addForkliftBtn').addEventListener('click', (e) =>
 );
 
 function handleAttachments(movingElement) {
-    // Only proceed if this is a truck
     if (!movingElement.src.includes('truck_side')) {
         return;
     }
 
-    // Clear all existing attachments first
     draggableElements.forEach(el => {
         delete el.img.dataset.relativeX;
         delete el.img.dataset.relativeY;
         delete el.img.dataset.attachedTo;
     });
 
-    // Find new overlapping elements with higher z-index
     draggableElements.forEach(el => {
         if (el.img !== movingElement && 
             parseInt(el.img.style.zIndex) > parseInt(movingElement.style.zIndex)) {
@@ -469,12 +457,20 @@ function handleAttachments(movingElement) {
 }
 
 function makeBackgroundDraggable(img) {
-    // Initialize transform values if they don't exist
     if (!img.style.transform) {
         img.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
     }
 
-    // Create bound event handlers to maintain context
+    if (backgroundToggle.checked) {
+        img.style.pointerEvents = 'auto';
+        img.style.cursor = 'move';
+        img.style.zIndex = '1';
+    } else {
+        img.style.pointerEvents = 'none';
+        img.style.cursor = 'default';
+        img.style.zIndex = '-1';
+    }
+
     const boundStartDrag = (e) => {
         if (document.getElementById('backgroundToggle').checked) {
             isDraggingBackground = true;
@@ -482,7 +478,6 @@ function makeBackgroundDraggable(img) {
             lastMouseY = e.clientY;
             e.preventDefault();
             
-            // Add move and up listeners when dragging starts
             document.addEventListener('mousemove', boundDrag);
             document.addEventListener('mouseup', boundStopDrag);
             console.log('Started dragging background');
@@ -494,17 +489,14 @@ function makeBackgroundDraggable(img) {
             const dx = e.clientX - lastMouseX;
             const dy = e.clientY - lastMouseY;
             
-            // Update stored position
             const currentX = parseFloat(img.dataset.translateX || 0);
             const currentY = parseFloat(img.dataset.translateY || 0);
             const newX = currentX + dx;
             const newY = currentY + dy;
             
-            // Store new position
             img.dataset.translateX = newX;
             img.dataset.translateY = newY;
             
-            // Apply transform
             img.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
             
             lastMouseX = e.clientX;
@@ -516,7 +508,6 @@ function makeBackgroundDraggable(img) {
     const boundStopDrag = () => {
         if (isDraggingBackground) {
             isDraggingBackground = false;
-            // Remove move and up listeners when dragging stops
             document.removeEventListener('mousemove', boundDrag);
             document.removeEventListener('mouseup', boundStopDrag);
             console.log('Stopped dragging background');
@@ -524,22 +515,19 @@ function makeBackgroundDraggable(img) {
     };
 
     function updateEventListeners() {
-        // Only need to handle mousedown listener
         img.removeEventListener('mousedown', boundStartDrag);
 
         if (document.getElementById('backgroundToggle').checked) {
             img.addEventListener('mousedown', boundStartDrag);
             img.style.pointerEvents = 'auto';
-            img.style.cursor = 'move';  // Add cursor style
+            img.style.cursor = 'move';  
         } else {
             img.style.pointerEvents = 'none';
             isDraggingBackground = false;
         }
     }
 
-    // Initial setup
     updateEventListeners();
 
-    // Update listeners when toggle changes
     document.getElementById('backgroundToggle').addEventListener('change', updateEventListeners);
 }
