@@ -57,10 +57,12 @@ function addDraggableImage(imageSrc, event) {
     img.style.opacity = '0';
     img.src = imageSrc;
     img.classList.add('draggable');
- if (imageSrc === 'forklift.png' || imageSrc === 'stuff.png') {
+ if (imageSrc === 'forklift.png') {
         img.classList.add('forklift-image');
     } else if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
         img.classList.add('truck-image');
+      } else if (imageSrc === 'stuff.png') {
+        img.classList.add('stuff-image');
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
         img.classList.add('bot-image');
     }
