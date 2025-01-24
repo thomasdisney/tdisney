@@ -54,27 +54,26 @@ function toggleDragging(img, state, onMouseMove, onMouseUp, e) {
 
 function addDraggableImage(imageSrc, event) {
     const img = document.createElement('img');
-    img.style.opacity = '0'; 
+    img.style.opacity = '0';
     img.src = imageSrc;
     img.classList.add('draggable');
     if (imageSrc === 'forklift.png') {
         img.classList.add('forklift-image');
-    } else if (imageSrc === 'truckside.png' || imageSrc === 'truckside2.png') {
+    } else if (imageSrc === 'stuff.png') {
+        img.classList.add('stuff-image');
+    } else if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
         img.classList.add('truck-image');
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
         img.classList.add('bot-image');
     }
-    
-    const yOffset = 100; 
-    img.style.position = 'absolute';    
+    const yOffset = 100;
+    img.style.position = 'absolute';
     img.style.left = `${event.clientX}px`;
-    img.style.top = `${yOffset}px`;  
+    img.style.top = `${yOffset}px`;
     img.style.transformOrigin = 'center';
-    
     img.onload = function() {
-        img.style.opacity = '1'; 
+        img.style.opacity = '1';
     };
-    
     const state = {
         offsetX: 0,
         offsetY: 0,
@@ -85,9 +84,8 @@ function addDraggableImage(imageSrc, event) {
         rotateDeg: 0,
         isImageLoaded: false
     };
-    
     img.addEventListener('click', function(e) {
-        e.stopPropagation(); 
+        e.stopPropagation();
         if (isDragging) {
             isDragging = false;
             document.removeEventListener('mousemove', onMouseMove);
@@ -95,11 +93,10 @@ function addDraggableImage(imageSrc, event) {
         }
         updateCursorStyle(img, isDragging);
     });
-
     img.addEventListener('wheel', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        const delta = e.deltaY > 0 ? -15 : 15; 
+        const delta = e.deltaY > 0 ? -15 : 15;
         state.rotateDeg = (state.rotateDeg + delta + 360) % 360;
         rotateElement(img, state.rotateDeg);
     });
@@ -119,24 +116,20 @@ function addDraggableImage(imageSrc, event) {
         if (e.button !== 0) return;
         e.preventDefault();
         updateZIndex(img);
-        
         const el = Array.from(draggableElements).find(el => el.img === img);
         if (el) {
             el.isDragging = true;
             el.state.offsetX = e.clientX - parseFloat(img.style.left);
             el.state.offsetY = e.clientY - parseFloat(img.style.top);
-            
             if (img.src.includes('truck_side')) {
                 handleAttachments(img);
             }
-            
             const moveHandler = (moveEvent) => {
                 if (el.isDragging) {
                     const newX = moveEvent.clientX - el.state.offsetX;
                     const newY = moveEvent.clientY - el.state.offsetY;
                     el.img.style.left = `${newX}px`;
                     el.img.style.top = `${newY}px`;
-
                     if (img.src.includes('truck_side')) {
                         draggableElements.forEach(attachedEl => {
                             if (attachedEl.img.dataset.attachedTo === img.id) {
@@ -149,32 +142,26 @@ function addDraggableImage(imageSrc, event) {
                     }
                 }
             };
-            
             const upHandler = () => {
                 el.isDragging = false;
                 updateCursorStyle(el.img, false);
-                
                 draggableElements.forEach(el => {
                     delete el.img.dataset.relativeX;
                     delete el.img.dataset.relativeY;
                     delete el.img.dataset.attachedTo;
                 });
-                
                 document.removeEventListener('mousemove', moveHandler);
                 document.removeEventListener('mouseup', upHandler);
             };
-            
             document.addEventListener('mousemove', moveHandler);
             document.addEventListener('mouseup', upHandler);
         }
         updateCursorStyle(img, true);
     });
-
     img.addEventListener('mouseup', function() {
         isDragging = false;
         updateCursorStyle(img, isDragging);
     });
-
     img.addEventListener('touchstart', function(e) {
         e.preventDefault();
         const touch = e.touches[0];
@@ -184,7 +171,6 @@ function addDraggableImage(imageSrc, event) {
         });
         img.dispatchEvent(mouseEvent);
     });
-
     img.addEventListener('touchmove', function(e) {
         e.preventDefault();
         const touch = e.touches[0];
@@ -194,13 +180,11 @@ function addDraggableImage(imageSrc, event) {
         });
         document.dispatchEvent(mouseEvent);
     });
-
     img.addEventListener('touchend', function(e) {
         e.preventDefault();
         const mouseEvent = new MouseEvent('mouseup');
         document.dispatchEvent(mouseEvent);
     });
-
     img.addEventListener('dblclick', function(e) {
         e.preventDefault();
         if (confirm('Delete this element?')) {
@@ -208,19 +192,16 @@ function addDraggableImage(imageSrc, event) {
             img.remove();
         }
     });
-
     draggableElements.add({
         img,
         isDragging: false,
         state
     });
-
     if (imageSrc === 'truck_side.png') {
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             const currentLeft = parseInt(img.style.left);
             const currentSrc = img.src;
-            
             if (currentSrc.endsWith('truck_side.png')) {
                 img.style.left = (currentLeft - 60) + 'px';
                 img.src = 'truck_side2.png';
@@ -241,12 +222,11 @@ function updateZIndex(img) {
     let baseZ;
     if (img.src.includes('truck_side')) {
         baseZ = Z_INDEX_LAYERS.TRUCK;
-    } else if (img.src.includes('forklift')) {
+    } else if (img.src.includes('forklift') || img.src.includes('stuff')) {
         baseZ = Z_INDEX_LAYERS.FORKLIFT;
     } else if (img.src.includes('Slipbot')) {
         baseZ = Z_INDEX_LAYERS.BOT;
     }
-    
     img.style.zIndex = baseZ;
     maxZIndex = Math.max(maxZIndex, baseZ);
 }
@@ -269,7 +249,7 @@ function onMouseMove(e) {
         const newX = e.clientX - el.state.offsetX;
         const newY = e.clientY - el.state.offsetY;
         el.img.style.left = `${newX}px`;
-        el.img.style.top = `${newY}px`;         
+        el.img.style.top = `${newY}px`;
     }
 }
 
@@ -301,17 +281,13 @@ function dragBackground(e) {
     if (isDraggingBackground && document.getElementById('backgroundToggle').checked) {
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
-        
         const currentX = parseFloat(backgroundImage.dataset.translateX || 0);
         const currentY = parseFloat(backgroundImage.dataset.translateY || 0);
         const newX = currentX + dx;
         const newY = currentY + dy;
-        
         backgroundImage.dataset.translateX = newX;
         backgroundImage.dataset.translateY = newY;
-        
         backgroundImage.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
-        
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
     }
@@ -335,7 +311,6 @@ document.body.addEventListener('wheel', function(e) {
             const delta = e.deltaY > 0 ? 0.9 : 1.1;
             backgroundScale *= delta;
             backgroundScale = Math.max(0.1, Math.min(5, backgroundScale));
-            
             const translateX = backgroundImage.dataset.translateX || 0;
             const translateY = backgroundImage.dataset.translateY || 0;
             backgroundImage.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${backgroundScale})`;
@@ -344,7 +319,6 @@ document.body.addEventListener('wheel', function(e) {
 });
 
 let backgroundToggle = document.getElementById('backgroundToggle');
-
 backgroundToggle.addEventListener('change', function(e) {
     if (backgroundImage) {
         if (e.target.checked) {
@@ -362,7 +336,6 @@ backgroundToggle.addEventListener('change', function(e) {
 
 document.addEventListener('click', function(e) {
     const clickedOnDraggable = e.target.classList.contains('draggable');
-    
     if (!clickedOnDraggable) {
         draggableElements.forEach(el => {
             if (el.isDragging) {
@@ -404,10 +377,8 @@ function addBackgroundImage(file) {
         backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
         backgroundImage.style.opacity = '0';
         document.body.appendChild(backgroundImage);
-        
         backgroundImage.dataset.translateX = '0';
         backgroundImage.dataset.translateY = '0';
-        
         backgroundImage.onload = function() {
             backgroundImage.style.transition = 'opacity 0.3s ease';
             backgroundImage.style.opacity = '1';
@@ -417,15 +388,15 @@ function addBackgroundImage(file) {
     reader.readAsDataURL(file);
 }
 
-document.getElementById('addBotBtn').addEventListener('click', (e) => 
+document.getElementById('addBotBtn').addEventListener('click', (e) =>
     document.body.appendChild(addDraggableImage('Slipbot.png', e))
 );
 
-document.getElementById('addtrlrBtn').addEventListener('click', (e) => 
+document.getElementById('addtrlrBtn').addEventListener('click', (e) =>
     document.body.appendChild(addDraggableImage('truck_side.png', e))
 );
 
-document.getElementById('addForkliftBtn').addEventListener('click', (e) => 
+document.getElementById('addForkliftBtn').addEventListener('click', (e) =>
     document.body.appendChild(addDraggableImage('forklift.png', e))
 );
 
@@ -433,21 +404,17 @@ function handleAttachments(movingElement) {
     if (!movingElement.src.includes('truck_side')) {
         return;
     }
-
     draggableElements.forEach(el => {
         delete el.img.dataset.relativeX;
         delete el.img.dataset.relativeY;
         delete el.img.dataset.attachedTo;
     });
-
     draggableElements.forEach(el => {
-        if (el.img !== movingElement && 
+        if (el.img !== movingElement &&
             parseInt(el.img.style.zIndex) > parseInt(movingElement.style.zIndex)) {
-            
             if (checkOverlap(movingElement, el.img)) {
                 const relX = parseFloat(el.img.style.left) - parseFloat(movingElement.style.left);
                 const relY = parseFloat(el.img.style.top) - parseFloat(movingElement.style.top);
-                
                 el.img.dataset.relativeX = relX;
                 el.img.dataset.relativeY = relY;
                 el.img.dataset.attachedTo = movingElement.id;
@@ -460,7 +427,6 @@ function makeBackgroundDraggable(img) {
     if (!img.style.transform) {
         img.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
     }
-
     if (backgroundToggle.checked) {
         img.style.pointerEvents = 'auto';
         img.style.cursor = 'move';
@@ -470,64 +436,53 @@ function makeBackgroundDraggable(img) {
         img.style.cursor = 'default';
         img.style.zIndex = '-1';
     }
-
     const boundStartDrag = (e) => {
         if (document.getElementById('backgroundToggle').checked) {
             isDraggingBackground = true;
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
             e.preventDefault();
-            
             document.addEventListener('mousemove', boundDrag);
             document.addEventListener('mouseup', boundStopDrag);
-            console.log('Started dragging background');
         }
     };
-
     const boundDrag = (e) => {
         if (isDraggingBackground && document.getElementById('backgroundToggle').checked) {
             const dx = e.clientX - lastMouseX;
             const dy = e.clientY - lastMouseY;
-            
             const currentX = parseFloat(img.dataset.translateX || 0);
             const currentY = parseFloat(img.dataset.translateY || 0);
             const newX = currentX + dx;
             const newY = currentY + dy;
-            
             img.dataset.translateX = newX;
             img.dataset.translateY = newY;
-            
             img.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
-            
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
-            console.log('Dragging background', newX, newY);
         }
     };
-
     const boundStopDrag = () => {
         if (isDraggingBackground) {
             isDraggingBackground = false;
             document.removeEventListener('mousemove', boundDrag);
             document.removeEventListener('mouseup', boundStopDrag);
-            console.log('Stopped dragging background');
         }
     };
-
     function updateEventListeners() {
         img.removeEventListener('mousedown', boundStartDrag);
-
         if (document.getElementById('backgroundToggle').checked) {
             img.addEventListener('mousedown', boundStartDrag);
             img.style.pointerEvents = 'auto';
-            img.style.cursor = 'move';  
+            img.style.cursor = 'move';
         } else {
             img.style.pointerEvents = 'none';
             isDraggingBackground = false;
         }
     }
-
     updateEventListeners();
-
     document.getElementById('backgroundToggle').addEventListener('change', updateEventListeners);
 }
+
+document.getElementById('addStuffBtn').addEventListener('click', (e) =>
+    document.body.appendChild(addDraggableImage('stuff.png', e))
+);
