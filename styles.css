@@ -163,6 +163,11 @@ input:checked + .slider:before {
 
 .bot-image {
   max-height: auto;
-  width: 40px;  
+  width: 35px;  
 }     
+
+.stuff-image {
+  max-height: 30px;
+  width: auto;  
+}   
 
