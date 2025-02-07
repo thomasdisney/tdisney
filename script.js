@@ -25,7 +25,8 @@ let maxZIndex = 1;
 const Z_INDEX_LAYERS = {
     TRUCK: 10,
     FORKLIFT: 20,
-    BOT: 30
+    BOT: 30,
+    STUFF: 40
 };
 
 function updateCursorStyle(img, isDragging) {
@@ -224,6 +225,8 @@ function updateZIndex(img) {
         baseZ = Z_INDEX_LAYERS.TRUCK;
     } else if (img.src.includes('forklift') || img.src.includes('stuff')) {
         baseZ = Z_INDEX_LAYERS.FORKLIFT;
+    } else if (img.src.includes('stuff') || img.src.includes('stuff')) {
+        baseZ = Z_INDEX_LAYERS.STUFF;
     } else if (img.src.includes('Slipbot')) {
         baseZ = Z_INDEX_LAYERS.BOT;
     }
