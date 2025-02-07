@@ -157,7 +157,7 @@ input:checked + .slider:before {
 }
 
 .truck-image {
-  max-height: 40px;
+  max-height: 45px;
   width: auto;  
 }     
 
