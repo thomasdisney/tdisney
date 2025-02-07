@@ -31,7 +31,7 @@ const Z_INDEX_LAYERS = {
 
 function updateCursorStyle(img, isDragging) {
     img.style.cursor = isDragging ? 'none' : 'crosshair';
-    document.body.style.cursor = isDragging ? 'none' : 'auto';
+    document.body.style.cursor = isDragging ? 'none' : 'crosshair';
 }
 
 function toggleDragging(img, state, onMouseMove, onMouseUp, e) {
@@ -326,11 +326,11 @@ backgroundToggle.addEventListener('change', function(e) {
     if (backgroundImage) {
         if (e.target.checked) {
             backgroundImage.style.pointerEvents = 'auto';
-            backgroundImage.style.cursor = 'move';
+            backgroundImage.style.cursor = 'crosshair';
             backgroundImage.style.zIndex = '1';
         } else {
             backgroundImage.style.pointerEvents = 'none';
-            backgroundImage.style.cursor = 'default';
+            backgroundImage.style.cursor = 'crosshair';
             backgroundImage.style.zIndex = '-1';
             isDraggingBackground = false;
         }
@@ -432,11 +432,11 @@ function makeBackgroundDraggable(img) {
     }
     if (backgroundToggle.checked) {
         img.style.pointerEvents = 'auto';
-        img.style.cursor = 'move';
+        img.style.cursor = 'crosshair';
         img.style.zIndex = '1';
     } else {
         img.style.pointerEvents = 'none';
-        img.style.cursor = 'default';
+        img.style.cursor = 'crosshair';
         img.style.zIndex = '-1';
     }
     const boundStartDrag = (e) => {
@@ -476,7 +476,7 @@ function makeBackgroundDraggable(img) {
         if (document.getElementById('backgroundToggle').checked) {
             img.addEventListener('mousedown', boundStartDrag);
             img.style.pointerEvents = 'auto';
-            img.style.cursor = 'move';
+            img.style.cursor = 'crosshair';
         } else {
             img.style.pointerEvents = 'none';
             isDraggingBackground = false;
