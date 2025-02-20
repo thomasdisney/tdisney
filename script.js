@@ -62,13 +62,13 @@ function addDraggableImage(imageSrc, event) {
         img.classList.add('forklift-image');
     } else if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
         img.classList.add('truck-image');
-        img.dataset.scaleMultiplier = 10; 
+        img.dataset.scaleMultiplier = 8; 
     } else if (imageSrc === 'stuff.png') {
         img.classList.add('stuff-image');
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
         img.classList.add('bot-image');
         if (imageSrc === 'SlipBot_Loaded.png') {
-            img.dataset.scaleMultiplier = 0.12;
+            img.dataset.scaleMultiplier = 0.08;
         }
     }
     const yOffset = 100;
@@ -404,22 +404,16 @@ document.getElementById('addStuffBtn').addEventListener('click', e => document.b
 
 document.getElementById('helpBtn').addEventListener('click', () => {
     const helpText = `
-        <h2>Robot Simulator Help</h2>
-        <p>Welcome to the Robot Simulator! Here's how to use it:</p>
-        <ul>
-            <li><strong>Add Elements:</strong> Use the buttons to add trucks, forklifts, bots, or stuff.</li>
-            <li><strong>Move:</strong> Click and drag any element to move it.</li>
-            <li><strong>Rotate:</strong> Use the mouse wheel to rotate elements.</li>
-            <li><strong>Scale:</strong> Enable the background toggle and scroll to scale all elements.</li>
-            <li><strong>Delete:</strong> Double-click an element to remove it.</li>
-            <li><strong>Special Actions:</strong>
-                <ul>
-                    <li><strong>Truck:</strong> Right-click to switch between side views.</li>
-                    <li><strong>Bot:</strong> Right-click to toggle between loaded and unloaded states.</li>
-                </ul>
-            </li>
-            <li><strong>Background:</strong> Upload a background image and toggle its layer with the checkbox.</li>
-        </ul>
+        Here's how to use it:
+        - Add Elements: Use the buttons to add trucks, forklifts, bots, or stuff.
+        - Move: Click and drag any element to move it.
+        - Rotate: Use the mouse wheel to rotate elements.
+        - Scale: Enable the background toggle and scroll to scale all elements.
+        - Delete: Double-click an element to remove it.
+        - Special Actions:
+          - Truck: Right-click to switch between side views.
+          - Bot: Right-click to toggle between loaded and unloaded states.
+        - Background: Upload a background image and toggle its layer with the checkbox.
     `;
-    alert(helpText.replace(/<[^>]+>/g, ''));
+    alert(helpText.trim().replace(/\s+/g, ' ').replace(/ - /g, '\n- '));
 });
