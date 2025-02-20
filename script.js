@@ -68,7 +68,7 @@ function addDraggableImage(imageSrc, event) {
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
         img.classList.add('bot-image');
         if (imageSrc === 'SlipBot_Loaded.png') {
-            img.dataset.scaleMultiplier = 0.5; // Scale down SlipBot_Loaded to match Slipbot
+            img.dataset.scaleMultiplier = 0.9;
         }
     }
     const yOffset = 100;
