@@ -21,6 +21,7 @@ const checkOverlap = (elem1, elem2) => {
 
 let draggableElements = new Set();
 let maxZIndex = 1;
+let objectScale = 1; // Global scale factor for draggable objects
 
 const Z_INDEX_LAYERS = {
     TRUCK: 10,
@@ -58,11 +59,11 @@ function addDraggableImage(imageSrc, event) {
     img.style.opacity = '0';
     img.src = imageSrc;
     img.classList.add('draggable');
- if (imageSrc === 'forklift.png') {
+    if (imageSrc === 'forklift.png') {
         img.classList.add('forklift-image');
     } else if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
         img.classList.add('truck-image');
-      } else if (imageSrc === 'stuff.png') {
+    } else if (imageSrc === 'stuff.png') {
         img.classList.add('stuff-image');
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
         img.classList.add('bot-image');
@@ -72,7 +73,10 @@ function addDraggableImage(imageSrc, event) {
     img.style.left = `${event.clientX}px`;
     img.style.top = `${yOffset}px`;
     img.style.transformOrigin = 'center';
+    // Apply initial scale
     img.onload = function() {
+        img.style.width = `${img.naturalWidth * objectScale}px`;
+        img.style.height = `${img.naturalHeight * objectScale}px`;
         img.style.opacity = '1';
     };
     const state = {
@@ -111,6 +115,11 @@ function addDraggableImage(imageSrc, event) {
                 img.src = 'Slipbot.png';
                 state.isImageLoaded = false;
             }
+            // Reapply scale after changing source
+            img.onload = function() {
+                img.style.width = `${img.naturalWidth * objectScale}px`;
+                img.style.height = `${img.naturalHeight * objectScale}px`;
+            };
         });
     }
     img.addEventListener('mousedown', function(e) {
@@ -210,13 +219,14 @@ function addDraggableImage(imageSrc, event) {
                 img.style.left = (currentLeft + 60) + 'px';
                 img.src = 'truck_side.png';
             }
+            // Reapply scale after changing source
+            img.onload = function() {
+                img.style.width = `${img.naturalWidth * objectScale}px`;
+                img.style.height = `${img.naturalHeight * objectScale}px`;
+            };
         });
     }
     return img;
-}
-
-function updateAttachedElements(img) {
-    return;
 }
 
 function updateZIndex(img) {
@@ -225,7 +235,7 @@ function updateZIndex(img) {
         baseZ = Z_INDEX_LAYERS.TRUCK;
     } else if (img.src.includes('forklift') || img.src.includes('stuff')) {
         baseZ = Z_INDEX_LAYERS.FORKLIFT;
-    } else if (img.src.includes('stuff') || img.src.includes('stuff')) {
+    } else if (img.src.includes('stuff')) {
         baseZ = Z_INDEX_LAYERS.STUFF;
     } else if (img.src.includes('Slipbot')) {
         baseZ = Z_INDEX_LAYERS.BOT;
@@ -267,38 +277,6 @@ function onMouseUp() {
 }
 
 let backgroundImage = null;
-let backgroundScale = 1;
-let isDraggingBackground = false;
-let lastMouseX, lastMouseY;
-
-function startDraggingBackground(e) {
-    if (document.getElementById('backgroundToggle').checked) {
-        isDraggingBackground = true;
-        lastMouseX = e.clientX;
-        lastMouseY = e.clientY;
-        e.preventDefault();
-    }
-}
-
-function dragBackground(e) {
-    if (isDraggingBackground && document.getElementById('backgroundToggle').checked) {
-        const dx = e.clientX - lastMouseX;
-        const dy = e.clientY - lastMouseY;
-        const currentX = parseFloat(backgroundImage.dataset.translateX || 0);
-        const currentY = parseFloat(backgroundImage.dataset.translateY || 0);
-        const newX = currentX + dx;
-        const newY = currentY + dy;
-        backgroundImage.dataset.translateX = newX;
-        backgroundImage.dataset.translateY = newY;
-        backgroundImage.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
-        lastMouseX = e.clientX;
-        lastMouseY = e.clientY;
-    }
-}
-
-function stopDraggingBackground() {
-    isDraggingBackground = false;
-}
 
 document.getElementById('backgroundUpload').addEventListener('change', function(e) {
     if (e.target.files.length > 0) {
@@ -307,17 +285,31 @@ document.getElementById('backgroundUpload').addEventListener('change', function(
 });
 
 document.body.addEventListener('wheel', function(e) {
-    if (backgroundImage && document.getElementById('backgroundToggle').checked) {
-        const target = e.target;
-        if (target === backgroundImage || target === document.body) {
-            e.preventDefault();
-            const delta = e.deltaY > 0 ? 0.9 : 1.1;
-            backgroundScale *= delta;
-            backgroundScale = Math.max(0.1, Math.min(5, backgroundScale));
-            const translateX = backgroundImage.dataset.translateX || 0;
-            const translateY = backgroundImage.dataset.translateY || 0;
-            backgroundImage.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${backgroundScale})`;
-        }
+    e.preventDefault();
+    const toggle = document.getElementById('backgroundToggle').checked;
+    if (toggle) {
+        // Scale objects when toggle is on
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        objectScale *= delta;
+        objectScale = Math.max(0.1, Math.min(5, objectScale));
+
+        draggableElements.forEach(el => {
+            const img = el.img;
+            const currentWidth = img.naturalWidth * objectScale;
+            const currentHeight = img.naturalHeight * objectScale;
+            const centerBefore = getCenter(img);
+
+            // Apply new scale
+            img.style.width = `${currentWidth}px`;
+            img.style.height = `${currentHeight}px`;
+
+            // Adjust position to keep centered
+            const centerAfter = getCenter(img);
+            const dx = centerAfter.x - centerBefore.x;
+            const dy = centerAfter.y - centerBefore.y;
+            img.style.left = `${parseFloat(img.style.left) - dx}px`;
+            img.style.top = `${parseFloat(img.style.top) - dy}px`;
+        });
     }
 });
 
@@ -325,14 +317,9 @@ let backgroundToggle = document.getElementById('backgroundToggle');
 backgroundToggle.addEventListener('change', function(e) {
     if (backgroundImage) {
         if (e.target.checked) {
-            backgroundImage.style.pointerEvents = 'auto';
-            backgroundImage.style.cursor = 'crosshair';
             backgroundImage.style.zIndex = '1';
         } else {
-            backgroundImage.style.pointerEvents = 'none';
-            backgroundImage.style.cursor = 'crosshair';
             backgroundImage.style.zIndex = '-1';
-            isDraggingBackground = false;
         }
     }
 });
@@ -369,23 +356,26 @@ function addBackgroundImage(file) {
     const reader = new FileReader();
     reader.onload = function(e) {
         if (backgroundImage) {
-            backgroundImage.removeEventListener('mousedown', startDraggingBackground);
-            document.removeEventListener('mousemove', dragBackground);
-            document.removeEventListener('mouseup', stopDraggingBackground);
             backgroundImage.remove();
         }
         backgroundImage = document.createElement('img');
         backgroundImage.src = e.target.result;
         backgroundImage.classList.add('background-image');
-        backgroundImage.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
+        backgroundImage.style.maxWidth = '100vw';
+        backgroundImage.style.maxHeight = '100vh';
+        backgroundImage.style.width = 'auto';
+        backgroundImage.style.height = 'auto';
+        backgroundImage.style.position = 'absolute';
+        backgroundImage.style.left = '50%';
+        backgroundImage.style.top = '50%';
+        backgroundImage.style.transform = 'translate(-50%, -50%)';
         backgroundImage.style.opacity = '0';
+        backgroundImage.style.pointerEvents = 'none'; // No interaction
         document.body.appendChild(backgroundImage);
-        backgroundImage.dataset.translateX = '0';
-        backgroundImage.dataset.translateY = '0';
         backgroundImage.onload = function() {
             backgroundImage.style.transition = 'opacity 0.3s ease';
             backgroundImage.style.opacity = '1';
-            makeBackgroundDraggable(backgroundImage);
+            backgroundImage.style.zIndex = document.getElementById('backgroundToggle').checked ? '1' : '-1';
         };
     };
     reader.readAsDataURL(file);
@@ -424,66 +414,6 @@ function handleAttachments(movingElement) {
             }
         }
     });
-}
-
-function makeBackgroundDraggable(img) {
-    if (!img.style.transform) {
-        img.style.transform = `translate(-50%, -50%) scale(${backgroundScale})`;
-    }
-    if (backgroundToggle.checked) {
-        img.style.pointerEvents = 'auto';
-        img.style.cursor = 'crosshair';
-        img.style.zIndex = '1';
-    } else {
-        img.style.pointerEvents = 'none';
-        img.style.cursor = 'crosshair';
-        img.style.zIndex = '-1';
-    }
-    const boundStartDrag = (e) => {
-        if (document.getElementById('backgroundToggle').checked) {
-            isDraggingBackground = true;
-            lastMouseX = e.clientX;
-            lastMouseY = e.clientY;
-            e.preventDefault();
-            document.addEventListener('mousemove', boundDrag);
-            document.addEventListener('mouseup', boundStopDrag);
-        }
-    };
-    const boundDrag = (e) => {
-        if (isDraggingBackground && document.getElementById('backgroundToggle').checked) {
-            const dx = e.clientX - lastMouseX;
-            const dy = e.clientY - lastMouseY;
-            const currentX = parseFloat(img.dataset.translateX || 0);
-            const currentY = parseFloat(img.dataset.translateY || 0);
-            const newX = currentX + dx;
-            const newY = currentY + dy;
-            img.dataset.translateX = newX;
-            img.dataset.translateY = newY;
-            img.style.transform = `translate(calc(-50% + ${newX}px), calc(-50% + ${newY}px)) scale(${backgroundScale})`;
-            lastMouseX = e.clientX;
-            lastMouseY = e.clientY;
-        }
-    };
-    const boundStopDrag = () => {
-        if (isDraggingBackground) {
-            isDraggingBackground = false;
-            document.removeEventListener('mousemove', boundDrag);
-            document.removeEventListener('mouseup', boundStopDrag);
-        }
-    };
-    function updateEventListeners() {
-        img.removeEventListener('mousedown', boundStartDrag);
-        if (document.getElementById('backgroundToggle').checked) {
-            img.addEventListener('mousedown', boundStartDrag);
-            img.style.pointerEvents = 'auto';
-            img.style.cursor = 'crosshair';
-        } else {
-            img.style.pointerEvents = 'none';
-            isDraggingBackground = false;
-        }
-    }
-    updateEventListeners();
-    document.getElementById('backgroundToggle').addEventListener('change', updateEventListeners);
 }
 
 document.getElementById('addStuffBtn').addEventListener('click', (e) =>
