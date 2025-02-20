@@ -20,7 +20,7 @@ const checkOverlap = function(elem1, elem2) {
 
 let draggableElements = new Set();
 let maxZIndex = 1;
-let objectScale = 1;
+let objectScale = 0.25;
 
 const Z_INDEX_LAYERS = {
     TRUCK: 10,
@@ -401,3 +401,25 @@ function handleAttachments(movingElement) {
 }
 
 document.getElementById('addStuffBtn').addEventListener('click', e => document.body.appendChild(addDraggableImage('stuff.png', e)));
+
+document.getElementById('helpBtn').addEventListener('click', () => {
+    const helpText = `
+        <h2>Robot Simulator Help</h2>
+        <p>Welcome to the Robot Simulator! Here's how to use it:</p>
+        <ul>
+            <li><strong>Add Elements:</strong> Use the buttons to add trucks, forklifts, bots, or stuff.</li>
+            <li><strong>Move:</strong> Click and drag any element to move it.</li>
+            <li><strong>Rotate:</strong> Use the mouse wheel to rotate elements.</li>
+            <li><strong>Scale:</strong> Enable the background toggle and scroll to scale all elements.</li>
+            <li><strong>Delete:</strong> Double-click an element to remove it.</li>
+            <li><strong>Special Actions:</strong>
+                <ul>
+                    <li><strong>Truck:</strong> Right-click to switch between side views.</li>
+                    <li><strong>Bot:</strong> Right-click to toggle between loaded and unloaded states.</li>
+                </ul>
+            </li>
+            <li><strong>Background:</strong> Upload a background image and toggle its layer with the checkbox.</li>
+        </ul>
+    `;
+    alert(helpText.replace(/<[^>]+>/g, ''));
+});
