@@ -62,13 +62,13 @@ function addDraggableImage(imageSrc, event) {
         img.classList.add('forklift-image');
     } else if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
         img.classList.add('truck-image');
-        img.dataset.scaleMultiplier = 8; 
+        img.dataset.scaleMultiplier = 4; 
     } else if (imageSrc === 'stuff.png') {
         img.classList.add('stuff-image');
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
         img.classList.add('bot-image');
         if (imageSrc === 'SlipBot_Loaded.png') {
-            img.dataset.scaleMultiplier = 0.08;
+            img.dataset.scaleMultiplier = 0.05832;
         }
     }
     const yOffset = 100;
@@ -402,8 +402,10 @@ function handleAttachments(movingElement) {
 
 document.getElementById('addStuffBtn').addEventListener('click', e => document.body.appendChild(addDraggableImage('stuff.png', e)));
 
-document.getElementById('helpBtn').addEventListener('click', () => {
-    const helpText = `
+document.getElementById('helpBtn').removeEventListener('click', showHelp);
+
+function showHelp(e) {
+    e.stopPropagation();    const helpText = `
         Here's how to use it:
         - Add Elements: Use the buttons to add trucks, forklifts, bots, or stuff.
         - Move: Click and drag any element to move it.
@@ -416,5 +418,5 @@ document.getElementById('helpBtn').addEventListener('click', () => {
         - Background: Upload a background image and toggle its layer with the checkbox.
     `;
     alert(helpText.trim().replace(/\s+/g, ' ').replace(/ - /g, '\n- '));
-});
-
+}
+document.getElementById('helpBtn').addEventListener('click', showHelp);
