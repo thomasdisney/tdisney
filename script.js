@@ -62,11 +62,14 @@ function addDraggableImage(imageSrc, event) {
         img.classList.add('forklift-image');
     } else if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
         img.classList.add('truck-image');
-        img.dataset.scaleMultiplier = 4;
+        img.dataset.scaleMultiplier = 4; // Scale up by 4x for trucks
     } else if (imageSrc === 'stuff.png') {
         img.classList.add('stuff-image');
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
         img.classList.add('bot-image');
+        if (imageSrc === 'SlipBot_Loaded.png') {
+            img.dataset.scaleMultiplier = 0.5; // Scale down SlipBot_Loaded to match Slipbot
+        }
     }
     const yOffset = 100;
     img.style.position = 'absolute';
@@ -111,15 +114,19 @@ function addDraggableImage(imageSrc, event) {
             if (!state.isImageLoaded) {
                 img.src = 'SlipBot_Loaded.png';
                 state.isImageLoaded = true;
+                img.onload = function() {
+                    const multiplier = img.dataset.scaleMultiplier ? parseFloat(img.dataset.scaleMultiplier) : 1;
+                    img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
+                    img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
+                };
             } else {
                 img.src = 'Slipbot.png';
                 state.isImageLoaded = false;
+                img.onload = function() {
+                    img.style.width = `${img.naturalWidth * objectScale}px`;
+                    img.style.height = `${img.naturalHeight * objectScale}px`;
+                };
             }
-            img.onload = function() {
-                const multiplier = img.dataset.scaleMultiplier ? parseFloat(img.dataset.scaleMultiplier) : 1;
-                img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
-                img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
-            };
         });
     }
     img.addEventListener('mousedown', function(e) {
