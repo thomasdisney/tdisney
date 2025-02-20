@@ -375,16 +375,15 @@ document.getElementById('addStuffBtn').addEventListener('click', e => document.b
 document.getElementById('helpBtn').addEventListener('click', () => {
     const helpText = `
         Here's how to use it:
-        - Add Elements: Use the buttons to add trucks, forklifts, bots, or stuff.
-        - Move: Click and drag any element to move it.
-        - Rotate: Use the mouse wheel to rotate elements.
-        - Scale: Enable the background toggle and scroll to scale all elements.
-        - Delete: Double-click an element to remove it.
-        - Special Actions:
-          - Truck: Right-click to switch between side views.
-          - Bot: Right-click to toggle between loaded and unloaded states.
-        - Background: Upload a background image and toggle its layer with the checkbox.
+        - Upload a background by pressing button and chooseing image
+        - Add a bot for use in scaling set-up
+        - Toggle Scale 'On' and use mouse wheel to scale bot to image
+        - Add more bots, etc. w/ buttons
+        - Click and drag to move things around
+        - Use the mouse wheel to rotate
+        - Double-click to remove items
+        - Right-click Truck to turn around
+        - Right-click Bot to load and unloaded
     `;
     alert(helpText.trim().replace(/\s+/g, ' ').replace(/ - /g, '\n- '));
 });
-
