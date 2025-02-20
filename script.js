@@ -417,3 +417,4 @@ document.getElementById('helpBtn').addEventListener('click', () => {
     `;
     alert(helpText.trim().replace(/\s+/g, ' ').replace(/ - /g, '\n- '));
 });
+
