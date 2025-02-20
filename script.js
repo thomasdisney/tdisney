@@ -1,27 +1,26 @@
-const getCenter = (el) => {
+const getCenter = function(el) {
     const rect = el.getBoundingClientRect();
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 };
 
-const rotatePoint = (x, y, cx, cy, angle) => {
-    const radians = (Math.PI / 180) * angle,
+const rotatePoint = function(x, y, cx, cy, angle) {
+    const radians = Math.PI / 180 * angle,
           cos = Math.cos(radians),
           sin = Math.sin(radians),
-          nx = (cos * (x - cx)) + (sin * (y - cy)) + cx,
-          ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
+          nx = cos * (x - cx) + sin * (y - cy) + cx,
+          ny = cos * (y - cy) - sin * (x - cx) + cy;
     return { x: nx, y: ny };
 };
 
-const checkOverlap = (elem1, elem2) => {
+const checkOverlap = function(elem1, elem2) {
     const rect1 = elem1.getBoundingClientRect(),
           rect2 = elem2.getBoundingClientRect();
-    return !(rect1.right < rect2.left || rect1.left > rect2.right ||
-             rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+    return !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 };
 
 let draggableElements = new Set();
 let maxZIndex = 1;
-let objectScale = 1; // Global scale factor for draggable objects
+let objectScale = 1;
 
 const Z_INDEX_LAYERS = {
     TRUCK: 10,
@@ -63,6 +62,7 @@ function addDraggableImage(imageSrc, event) {
         img.classList.add('forklift-image');
     } else if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
         img.classList.add('truck-image');
+        img.dataset.scaleMultiplier = 4;
     } else if (imageSrc === 'stuff.png') {
         img.classList.add('stuff-image');
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
@@ -73,10 +73,10 @@ function addDraggableImage(imageSrc, event) {
     img.style.left = `${event.clientX}px`;
     img.style.top = `${yOffset}px`;
     img.style.transformOrigin = 'center';
-    // Apply initial scale
     img.onload = function() {
-        img.style.width = `${img.naturalWidth * objectScale}px`;
-        img.style.height = `${img.naturalHeight * objectScale}px`;
+        const multiplier = img.dataset.scaleMultiplier ? parseFloat(img.dataset.scaleMultiplier) : 1;
+        img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
+        img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
         img.style.opacity = '1';
     };
     const state = {
@@ -101,7 +101,7 @@ function addDraggableImage(imageSrc, event) {
     img.addEventListener('wheel', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        const delta = e.deltaY > 0 ? -15 : 15;
+        const delta = e.deltaY > 0 ? -7.5 : 7.5;
         state.rotateDeg = (state.rotateDeg + delta + 360) % 360;
         rotateElement(img, state.rotateDeg);
     });
@@ -115,10 +115,10 @@ function addDraggableImage(imageSrc, event) {
                 img.src = 'Slipbot.png';
                 state.isImageLoaded = false;
             }
-            // Reapply scale after changing source
             img.onload = function() {
-                img.style.width = `${img.naturalWidth * objectScale}px`;
-                img.style.height = `${img.naturalHeight * objectScale}px`;
+                const multiplier = img.dataset.scaleMultiplier ? parseFloat(img.dataset.scaleMultiplier) : 1;
+                img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
+                img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
             };
         });
     }
@@ -134,7 +134,7 @@ function addDraggableImage(imageSrc, event) {
             if (img.src.includes('truck_side')) {
                 handleAttachments(img);
             }
-            const moveHandler = (moveEvent) => {
+            const moveHandler = function(moveEvent) {
                 if (el.isDragging) {
                     const newX = moveEvent.clientX - el.state.offsetX;
                     const newY = moveEvent.clientY - el.state.offsetY;
@@ -152,7 +152,7 @@ function addDraggableImage(imageSrc, event) {
                     }
                 }
             };
-            const upHandler = () => {
+            const upHandler = function() {
                 el.isDragging = false;
                 updateCursorStyle(el.img, false);
                 draggableElements.forEach(el => {
@@ -175,19 +175,13 @@ function addDraggableImage(imageSrc, event) {
     img.addEventListener('touchstart', function(e) {
         e.preventDefault();
         const touch = e.touches[0];
-        const mouseEvent = new MouseEvent('mousedown', {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-        });
+        const mouseEvent = new MouseEvent('mousedown', { clientX: touch.clientX, clientY: touch.clientY });
         img.dispatchEvent(mouseEvent);
     });
     img.addEventListener('touchmove', function(e) {
         e.preventDefault();
         const touch = e.touches[0];
-        const mouseEvent = new MouseEvent('mousemove', {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-        });
+        const mouseEvent = new MouseEvent('mousemove', { clientX: touch.clientX, clientY: touch.clientY });
         document.dispatchEvent(mouseEvent);
     });
     img.addEventListener('touchend', function(e) {
@@ -202,27 +196,23 @@ function addDraggableImage(imageSrc, event) {
             img.remove();
         }
     });
-    draggableElements.add({
-        img,
-        isDragging: false,
-        state
-    });
+    draggableElements.add({ img, isDragging: false, state });
     if (imageSrc === 'truck_side.png') {
         img.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             const currentLeft = parseInt(img.style.left);
             const currentSrc = img.src;
             if (currentSrc.endsWith('truck_side.png')) {
-                img.style.left = (currentLeft - 60) + 'px';
+                img.style.left = currentLeft - 60 + 'px';
                 img.src = 'truck_side2.png';
             } else {
-                img.style.left = (currentLeft + 60) + 'px';
+                img.style.left = currentLeft + 60 + 'px';
                 img.src = 'truck_side.png';
             }
-            // Reapply scale after changing source
             img.onload = function() {
-                img.style.width = `${img.naturalWidth * objectScale}px`;
-                img.style.height = `${img.naturalHeight * objectScale}px`;
+                const multiplier = img.dataset.scaleMultiplier ? parseFloat(img.dataset.scaleMultiplier) : 1;
+                img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
+                img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
             };
         });
     }
@@ -288,22 +278,18 @@ document.body.addEventListener('wheel', function(e) {
     e.preventDefault();
     const toggle = document.getElementById('backgroundToggle').checked;
     if (toggle) {
-        // Scale objects when toggle is on
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
         objectScale *= delta;
         objectScale = Math.max(0.1, Math.min(5, objectScale));
 
         draggableElements.forEach(el => {
             const img = el.img;
-            const currentWidth = img.naturalWidth * objectScale;
-            const currentHeight = img.naturalHeight * objectScale;
+            const multiplier = img.dataset.scaleMultiplier ? parseFloat(img.dataset.scaleMultiplier) : 1;
+            const currentWidth = img.naturalWidth * objectScale * multiplier;
+            const currentHeight = img.naturalHeight * objectScale * multiplier;
             const centerBefore = getCenter(img);
-
-            // Apply new scale
             img.style.width = `${currentWidth}px`;
             img.style.height = `${currentHeight}px`;
-
-            // Adjust position to keep centered
             const centerAfter = getCenter(img);
             const dx = centerAfter.x - centerBefore.x;
             const dy = centerAfter.y - centerBefore.y;
@@ -362,15 +348,15 @@ function addBackgroundImage(file) {
         backgroundImage.src = e.target.result;
         backgroundImage.classList.add('background-image');
         backgroundImage.style.maxWidth = '100vw';
-        backgroundImage.style.maxHeight = '100vh';
+        backgroundImage.style.maxHeight = 'calc(100vh - 60px)';
         backgroundImage.style.width = 'auto';
         backgroundImage.style.height = 'auto';
         backgroundImage.style.position = 'absolute';
         backgroundImage.style.left = '50%';
-        backgroundImage.style.top = '50%';
-        backgroundImage.style.transform = 'translate(-50%, -50%)';
+        backgroundImage.style.top = '60px';
+        backgroundImage.style.transform = 'translate(-50%, 0)';
         backgroundImage.style.opacity = '0';
-        backgroundImage.style.pointerEvents = 'none'; // No interaction
+        backgroundImage.style.pointerEvents = 'none';
         document.body.appendChild(backgroundImage);
         backgroundImage.onload = function() {
             backgroundImage.style.transition = 'opacity 0.3s ease';
@@ -381,17 +367,9 @@ function addBackgroundImage(file) {
     reader.readAsDataURL(file);
 }
 
-document.getElementById('addBotBtn').addEventListener('click', (e) =>
-    document.body.appendChild(addDraggableImage('Slipbot.png', e))
-);
-
-document.getElementById('addtrlrBtn').addEventListener('click', (e) =>
-    document.body.appendChild(addDraggableImage('truck_side.png', e))
-);
-
-document.getElementById('addForkliftBtn').addEventListener('click', (e) =>
-    document.body.appendChild(addDraggableImage('forklift.png', e))
-);
+document.getElementById('addBotBtn').addEventListener('click', e => document.body.appendChild(addDraggableImage('Slipbot.png', e)));
+document.getElementById('addtrlrBtn').addEventListener('click', e => document.body.appendChild(addDraggableImage('truck_side.png', e)));
+document.getElementById('addForkliftBtn').addEventListener('click', e => document.body.appendChild(addDraggableImage('forklift.png', e)));
 
 function handleAttachments(movingElement) {
     if (!movingElement.src.includes('truck_side')) {
@@ -403,8 +381,7 @@ function handleAttachments(movingElement) {
         delete el.img.dataset.attachedTo;
     });
     draggableElements.forEach(el => {
-        if (el.img !== movingElement &&
-            parseInt(el.img.style.zIndex) > parseInt(movingElement.style.zIndex)) {
+        if (el.img !== movingElement && parseInt(el.img.style.zIndex) > parseInt(movingElement.style.zIndex)) {
             if (checkOverlap(movingElement, el.img)) {
                 const relX = parseFloat(el.img.style.left) - parseFloat(movingElement.style.left);
                 const relY = parseFloat(el.img.style.top) - parseFloat(movingElement.style.top);
@@ -416,6 +393,4 @@ function handleAttachments(movingElement) {
     });
 }
 
-document.getElementById('addStuffBtn').addEventListener('click', (e) =>
-    document.body.appendChild(addDraggableImage('stuff.png', e))
-);
+document.getElementById('addStuffBtn').addEventListener('click', e => document.body.appendChild(addDraggableImage('stuff.png', e)));

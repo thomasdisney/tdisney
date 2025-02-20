@@ -1,27 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SlipBot Simulator</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlipBot Simulator</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="controls-panel">
-    <h1>SlipBot Simulator</h1>
-    <button id="addBotBtn" class="control-btn">Add SlipBot</button>
-    <button id="addtrlrBtn" class="control-btn">Add Trailer</button>
-    <button id="addForkliftBtn" class="control-btn">Add Forklift</button>
-    <button id="addStuffBtn" class="control-btn">Add Stuff</button>
-    <div class="toggle-container">
-      <label class="toggle-label" for="backgroundToggle">Scale Mode</label>
-      <label class="switch">
-        <input type="checkbox" id="backgroundToggle" />
-        <span class="slider"></span>
-      </label>
-    </div>
-    <input type="file" id="backgroundUpload" accept="image/*" />
-  </header>
-  <script src="script.js"></script>
+    <header class="controls-panel">
+        <h1>SlipBot Simulator</h1>
+        <button id="addBotBtn" class="control-btn">Add SlipBot</button>
+        <button id="addtrlrBtn" class="control-btn">Add Trailer</button>
+        <button id="addForkliftBtn" class="control-btn">Add Forklift</button>
+        <button id="addStuffBtn" class="control-btn">Add Stuff</button>
+        <div class="toggle-container">
+            <label class="toggle-label" for="backgroundToggle">Scale Mode</label>
+            <label class="switch">
+                <input type="checkbox" id="backgroundToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <button id="helpBtn" class="control-btn" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">?</button>
+        <input type="file" id="backgroundUpload" accept="image/*" style="display: none;">
+        <label for="backgroundUpload" class="custom-file-upload">Upload Background</label>
+    </header>
+    <script>
+        document.getElementById('helpBtn').addEventListener('click', function() {
+            const instructions = '<h2>Instructions</h2><ul><li><strong>Add Objects:</strong> Click buttons to add bots, trailers, forklifts, or stuff.</li><li><strong>Dragging:</strong> Click and drag objects to move them.</li><li><strong>Scaling:</strong> With \'Scale Mode\' on, use the mouse wheel to scale all objects.</li><li><strong>Rotation:</strong> Use the mouse wheel on an object to rotate it (half speed).</li><li><strong>Background:</strong> Upload an image for the background which will fill below the header.</li><li><strong>Delete:</strong> Double-click an object to remove it.</li><li><strong>Trailers:</strong> Trailers are 4x larger than other objects.</li></ul>';
+            alert(instructions);
+        });
+    </script>
+    <script src="script.js"></script>
 </body>
 </html>
