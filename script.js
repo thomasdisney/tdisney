@@ -366,10 +366,6 @@ function addBackgroundImage(file) {
         backgroundImage = document.createElement('img');
         backgroundImage.src = e.target.result;
         backgroundImage.classList.add('background-image');
-        backgroundImage.style.maxWidth = '100vw';
-        backgroundImage.style.maxHeight = 'calc(100vh - 60px)';
-        backgroundImage.style.width = 'auto';
-        backgroundImage.style.height = 'auto';
         backgroundImage.style.position = 'absolute';
         backgroundImage.style.left = '50%';
         backgroundImage.style.top = '60px';
@@ -378,6 +374,15 @@ function addBackgroundImage(file) {
         backgroundImage.style.pointerEvents = 'none';
         document.body.appendChild(backgroundImage);
         backgroundImage.onload = function() {
+            const headerHeight = 60;
+            const safetyMargin = 10;
+            const maxWidth = window.innerWidth - 2 * safetyMargin;
+            const maxHeight = window.innerHeight - headerHeight - 2 * safetyMargin;
+            const imgWidth = backgroundImage.naturalWidth;
+            const imgHeight = backgroundImage.naturalHeight;
+            const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+            backgroundImage.style.width = `${imgWidth * scale}px`;
+            backgroundImage.style.height = `${imgHeight * scale}px`;
             backgroundImage.style.transition = 'opacity 0.3s ease';
             backgroundImage.style.opacity = '1';
             backgroundImage.style.zIndex = document.getElementById('backgroundToggle').checked ? '1' : '-1';
