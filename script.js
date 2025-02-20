@@ -62,13 +62,13 @@ function addDraggableImage(imageSrc, event) {
         img.classList.add('forklift-image');
     } else if (imageSrc === 'truck_side.png' || imageSrc === 'truck_side2.png') {
         img.classList.add('truck-image');
-        img.dataset.scaleMultiplier = 13; 
+        img.dataset.scaleMultiplier = 10; 
     } else if (imageSrc === 'stuff.png') {
         img.classList.add('stuff-image');
     } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
         img.classList.add('bot-image');
         if (imageSrc === 'SlipBot_Loaded.png') {
-            img.dataset.scaleMultiplier = 0.18;
+            img.dataset.scaleMultiplier = 0.12;
         }
     }
     const yOffset = 100;
