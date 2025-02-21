@@ -21,13 +21,14 @@ const checkOverlap = function(elem1, elem2) {
 let draggableElements = new Set();
 let maxZIndex = 1;
 let objectScale = 0.25;
+let pixelToFeetRatio = null;
 
 const Z_INDEX_LAYERS = {
+    SQUARE: 5,
     TRUCK: 10,
     FORKLIFT: 20,
     BOT: 30,
-    STUFF: 40,
-    SQUARE: 50 // Added for squares to ensure they're above other elements
+    STUFF: 40
 };
 
 function updateCursorStyle(img, isDragging) {
@@ -67,6 +68,9 @@ function addDraggableImage(imageSrc, event) {
         img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
         img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
         img.style.opacity = '1';
+        if (imageSrc === 'Slipbot.png' && pixelToFeetRatio === null) {
+            pixelToFeetRatio = 17 / (img.naturalHeight * objectScale * multiplier);
+        }
     };
     const state = {
         offsetX: 0,
@@ -143,7 +147,7 @@ function addDraggableImage(imageSrc, event) {
     img.addEventListener('mousedown', function(e) {
         if (e.button !== 0) return;
         e.preventDefault();
-        e.stopPropagation(); // Prevent document-level handlers from interfering
+        e.stopPropagation();
         updateZIndex(img);
         const el = Array.from(draggableElements).find(el => el.img === img);
         if (el) {
@@ -219,12 +223,12 @@ function addDraggableImage(imageSrc, event) {
 }
 
 function updateZIndex(element) {
-    if (element.src) { // For images
+    if (element.src) {
         if (element.src.includes('truck_side')) element.style.zIndex = Z_INDEX_LAYERS.TRUCK;
         else if (element.src.includes('forklift')) element.style.zIndex = Z_INDEX_LAYERS.FORKLIFT;
         else if (element.src.includes('Slipbot')) element.style.zIndex = Z_INDEX_LAYERS.BOT;
         else if (element.src.includes('stuff')) element.style.zIndex = Z_INDEX_LAYERS.STUFF;
-    } else { // For squares
+    } else {
         element.style.zIndex = Z_INDEX_LAYERS.SQUARE;
     }
     maxZIndex = Math.max(maxZIndex, parseInt(element.style.zIndex));
@@ -276,7 +280,7 @@ document.body.addEventListener('wheel', function(e) {
         objectScale *= delta;
         objectScale = Math.max(0.1, Math.min(5, objectScale));
         draggableElements.forEach(el => {
-            if (el.img.src) { // Only scale images, not squares
+            if (el.img.src) {
                 const img = el.img;
                 const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
                 const currentWidth = img.naturalWidth * objectScale * multiplier;
@@ -289,8 +293,14 @@ document.body.addEventListener('wheel', function(e) {
                 const dy = centerAfter.y - centerBefore.y;
                 img.style.left = `${parseFloat(img.style.left) - dx}px`;
                 img.style.top = `${parseFloat(img.style.top) - dy}px`;
+                // Recalculate pixelToFeetRatio if Slipbot is scaled
+                if (img.src.includes('Slipbot.png') && pixelToFeetRatio !== null) {
+                    pixelToFeetRatio = 17 / (img.naturalHeight * objectScale * multiplier);
+                }
             }
         });
+        // Update all square dimensions after scaling
+        updateAllSquareDimensions();
     }
 });
 
@@ -306,7 +316,7 @@ document.addEventListener('click', function(e) {
                 document.removeEventListener('mousemove', el.moveHandler);
                 document.removeEventListener('mouseup', el.upHandler);
                 el.isDragging = false;
-                if (el.img.src) updateCursorStyle(el.img, false); // Only for images
+                if (el.img.src) updateCursorStyle(el.img, false);
             }
         });
     }
@@ -319,7 +329,7 @@ document.addEventListener('mouseleave', function() {
             document.removeEventListener('mousemove', el.moveHandler);
             document.removeEventListener('mouseup', el.upHandler);
             el.isDragging = false;
-            if (el.img.src) updateCursorStyle(el.img, false); // Only for images
+            if (el.img.src) updateCursorStyle(el.img, false);
         }
     });
 });
@@ -399,10 +409,9 @@ document.getElementById('helpBtn').addEventListener('click', () => {
     alert(helpText.trim().replace(/\s+/g, ' ').replace(/ - /g, '\n- '));
 });
 
-// Replace the previous square drawing code at the bottom of script.js with this:
-
+// Square drawing functionality with dimensions
 let isDrawingSquare = false;
-let activeSquare = null; // Track the currently interacted square
+let activeSquare = null;
 
 function startSquareDrawing(e) {
     e.stopPropagation();
@@ -416,6 +425,13 @@ function createSquare(e) {
     e.preventDefault();
     e.stopPropagation();
 
+    if (pixelToFeetRatio === null) {
+        alert('Please add a Slipbot first to calibrate measurements (Slipbot is 17ft tall).');
+        isDrawingSquare = false;
+        document.body.style.cursor = 'crosshair';
+        return;
+    }
+
     const square = document.createElement('div');
     square.classList.add('draggable');
     square.style.position = 'absolute';
@@ -426,6 +442,26 @@ function createSquare(e) {
     square.style.zIndex = Z_INDEX_LAYERS.SQUARE;
     square.style.cursor = 'move';
     square.style.userSelect = 'none';
+
+    const widthLabel = document.createElement('div');
+    widthLabel.style.position = 'absolute';
+    widthLabel.style.top = '-20px';
+    widthLabel.style.left = '50%';
+    widthLabel.style.transform = 'translateX(-50%)';
+    widthLabel.style.color = 'white';
+    widthLabel.style.fontSize = '12px';
+    widthLabel.style.pointerEvents = 'none';
+    square.appendChild(widthLabel);
+
+    const heightLabel = document.createElement('div');
+    heightLabel.style.position = 'absolute';
+    heightLabel.style.left = '-40px';
+    heightLabel.style.top = '50%';
+    heightLabel.style.transform = 'translateY(-50%)';
+    heightLabel.style.color = 'white';
+    heightLabel.style.fontSize = '12px';
+    heightLabel.style.pointerEvents = 'none';
+    square.appendChild(heightLabel);
 
     const state = {
         offsetX: 0,
@@ -439,7 +475,9 @@ function createSquare(e) {
         isDragging: false,
         resizeSide: null,
         lastWidth: 0,
-        lastHeight: 0
+        lastHeight: 0,
+        widthLabel: widthLabel,
+        heightLabel: heightLabel
     };
 
     const EDGE_SIZE = 10;
@@ -456,6 +494,7 @@ function createSquare(e) {
             square.style.height = `${height}px`;
             state.lastWidth = width;
             state.lastHeight = height;
+            updateDimensions(square, state);
         }
     }
 
@@ -475,12 +514,28 @@ function createSquare(e) {
     document.addEventListener('mouseup', drawUpHandler);
 }
 
+function updateDimensions(square, state) {
+    const widthPx = parseFloat(square.style.width);
+    const heightPx = parseFloat(square.style.height);
+    const widthFt = (widthPx * pixelToFeetRatio).toFixed(1); // One decimal place
+    const heightFt = (heightPx * pixelToFeetRatio).toFixed(1); // One decimal place
+    state.widthLabel.textContent = `${widthFt}ft`;
+    state.heightLabel.textContent = `${heightFt}ft`;
+}
+
+function updateAllSquareDimensions() {
+    draggableElements.forEach(el => {
+        if (!el.img.src && el.state.widthLabel && el.state.heightLabel) { // Check for squares
+            updateDimensions(el.img, el.state);
+        }
+    });
+}
+
 function setupSquareInteraction(square, state) {
     const EDGE_SIZE = 10;
     const DRAG_SMOOTHNESS = 0.5;
     const RESIZE_SENSITIVITY = 0.5;
 
-    // Global event handlers for better tracking
     document.addEventListener('mousemove', (e) => {
         if (!state.isDragging && !state.resizeSide) {
             const rect = square.getBoundingClientRect();
@@ -504,7 +559,7 @@ function setupSquareInteraction(square, state) {
         e.preventDefault();
         e.stopPropagation();
         updateZIndex(square);
-        activeSquare = square; // Set as active for global handling
+        activeSquare = square;
 
         const rect = square.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -563,6 +618,7 @@ function setupSquareInteraction(square, state) {
                     square.style.height = `${state.lastHeight}px`;
                     square.style.top = `${state.initialTop + (state.startHeight - state.lastHeight)}px`;
                 }
+                updateDimensions(square, state);
             }
         };
 
@@ -571,7 +627,7 @@ function setupSquareInteraction(square, state) {
             upEvent.stopPropagation();
             state.isDragging = false;
             state.resizeSide = null;
-            activeSquare = null; // Clear active square
+            activeSquare = null;
             square.style.cursor = 'move';
             document.removeEventListener('mousemove', moveHandler);
             document.removeEventListener('mouseup', upHandler);
