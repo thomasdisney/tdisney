@@ -84,7 +84,8 @@ function addDraggableImage(imageSrc, event) {
         lastX: 0,
         lastY: 0,
         rotateDeg: 0,
-        isLoaded: imageSrc === 'SlipBot_Loaded.png'
+        isLoaded: imageSrc === 'SlipBot_Loaded.png',
+        group: null
     };
 
     img.addEventListener('click', function(e) {
@@ -103,15 +104,11 @@ function addDraggableImage(imageSrc, event) {
         e.stopPropagation();
         const delta = e.deltaY > 0 ? -7.5 : 7.5;
         state.rotateDeg = (state.rotateDeg + delta + 360) % 360;
-        rotateElement(img, state.rotateDeg);
-        
-        // Rotate attached transportable squares
-        draggableElements.forEach(el => {
-            if (el.img.dataset.attachedTo === img.id && el.img.dataset.transportable) {
-                el.state.rotateDeg = state.rotateDeg;
-                rotateElement(el.img, state.rotateDeg);
-            }
-        });
+        if (state.group) {
+            state.group.style.transform = `rotate(${state.rotateDeg}deg)`;
+        } else {
+            rotateElement(img, state.rotateDeg);
+        }
     });
 
     if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
@@ -136,7 +133,7 @@ function addDraggableImage(imageSrc, event) {
                 const newCenter = getCenter(img);
                 img.style.left = `${currentLeft - (newCenter.x - oldCenter.x)}px`;
                 img.style.top = `${currentTop - (newCenter.y - oldCenter.y)}px`;
-                rotateElement(img, state.rotateDeg);
+                if (!state.group) rotateElement(img, state.rotateDeg);
             };
         });
     }
@@ -171,8 +168,9 @@ function addDraggableImage(imageSrc, event) {
         const el = Array.from(draggableElements).find(el => el.img === img);
         if (el) {
             el.isDragging = true;
-            el.state.offsetX = e.clientX - parseFloat(img.style.left);
-            el.state.offsetY = e.clientY - parseFloat(img.style.top);
+            const dragTarget = state.group || img;
+            el.state.offsetX = e.clientX - parseFloat(dragTarget.style.left);
+            el.state.offsetY = e.clientY - parseFloat(dragTarget.style.top);
             if (img.src.includes('truck_side') || img.src.includes('Slipbot')) handleAttachments(img);
             el.moveHandler = function(moveEvent) {
                 moveEvent.preventDefault();
@@ -180,15 +178,16 @@ function addDraggableImage(imageSrc, event) {
                 if (el.isDragging) {
                     const newX = moveEvent.clientX - el.state.offsetX;
                     const newY = moveEvent.clientY - el.state.offsetY;
-                    el.img.style.left = `${newX}px`;
-                    el.img.style.top = `${newY}px`;
-                    if (img.src.includes('truck_side') || img.src.includes('Slipbot')) {
+                    dragTarget.style.left = `${newX}px`;
+                    dragTarget.style.top = `${newY}px`;
+                    if (img.src.includes('truck_side')) {
                         draggableElements.forEach(attachedEl => {
                             if (attachedEl.img.dataset.attachedTo === img.id) {
                                 const relX = parseFloat(attachedEl.img.dataset.relativeX);
                                 const relY = parseFloat(attachedEl.img.dataset.relativeY);
-                                attachedEl.img.style.left = `${newX + relX}px`;
-                                attachedEl.img.style.top = `${newY + relY}px`;
+                                const target = attachedEl.state.group || attachedEl.img;
+                                target.style.left = `${newX + relX}px`;
+                                target.style.top = `${newY + relY}px`;
                             }
                         });
                     }
@@ -198,12 +197,14 @@ function addDraggableImage(imageSrc, event) {
                 upEvent.preventDefault();
                 upEvent.stopPropagation();
                 el.isDragging = false;
-                updateCursorStyle(el.img, false);
-                draggableElements.forEach(el => {
-                    delete el.img.dataset.relativeX;
-                    delete el.img.dataset.relativeY;
-                    delete el.img.dataset.attachedTo;
-                });
+                updateCursorStyle(img, false);
+                if (img.src.includes('truck_side')) {
+                    draggableElements.forEach(el => {
+                        delete el.img.dataset.relativeX;
+                        delete el.img.dataset.relativeY;
+                        delete el.img.dataset.attachedTo;
+                    });
+                }
                 document.removeEventListener('mousemove', el.moveHandler);
                 document.removeEventListener('mouseup', el.upHandler);
             };
@@ -236,6 +237,21 @@ function addDraggableImage(imageSrc, event) {
     img.addEventListener('dblclick', function(e) {
         e.preventDefault();
         if (confirm('Delete this element?')) {
+            draggableElements.forEach(el => {
+                if (el.img.dataset.attachedTo === img.id) {
+                    delete el.img.dataset.attachedTo;
+                    if (el.state.group) {
+                        document.body.appendChild(el.img);
+                        el.img.style.left = `${parseFloat(state.group.style.left) + parseFloat(el.img.style.left)}px`;
+                        el.img.style.top = `${parseFloat(state.group.style.top) + parseFloat(el.img.style.top)}px`;
+                        el.state.group = null;
+                    }
+                }
+            });
+            if (state.group) {
+                document.body.removeChild(state.group);
+                state.group = null;
+            }
             draggableElements.delete(Array.from(draggableElements).find(el => el.img === img));
             img.remove();
         }
@@ -406,26 +422,73 @@ function addBackgroundImage(file) {
 }
 
 function handleAttachments(movingElement) {
-    const isCarrier = movingElement.src && (movingElement.src.includes('truck_side') || movingElement.src.includes('Slipbot'));
-    if (!isCarrier) return;
+    const isSlipbot = movingElement.src && movingElement.src.includes('Slipbot');
+    const isTruck = movingElement.src && movingElement.src.includes('truck_side');
+    
+    if (isSlipbot) {
+        const slipbotEl = Array.from(draggableElements).find(el => el.img === movingElement);
+        if (!slipbotEl) return;
 
-    draggableElements.forEach(el => {
-        delete el.img.dataset.relativeX;
-        delete el.img.dataset.relativeY;
-        delete el.img.dataset.attachedTo;
-    });
+        draggableElements.forEach(el => {
+            if (el.img !== movingElement && el.img.dataset.transportable && !el.img.dataset.attachedTo) {
+                if (checkOverlap(movingElement, el.img)) {
+                    if (!slipbotEl.state.group) {
+                        const group = document.createElement('div');
+                        group.style.position = 'absolute';
+                        group.style.left = `${parseFloat(movingElement.style.left)}px`;
+                        group.style.top = `${parseFloat(movingElement.style.top)}px`;
+                        group.style.width = `${movingElement.offsetWidth}px`;
+                        group.style.height = `${movingElement.offsetHeight}px`;
+                        group.style.transformOrigin = `${movingElement.offsetWidth / 2}px ${movingElement.offsetHeight / 2}px`;
+                        group.style.zIndex = Z_INDEX_LAYERS.BOT;
 
-    draggableElements.forEach(el => {
-        if (el.img !== movingElement && parseInt(el.img.style.zIndex) > parseInt(movingElement.style.zIndex)) {
-            if (checkOverlap(movingElement, el.img)) {
-                const relX = parseFloat(el.img.style.left) - parseFloat(movingElement.style.left);
-                const relY = parseFloat(el.img.style.top) - parseFloat(movingElement.style.top);
-                el.img.dataset.relativeX = relX;
-                el.img.dataset.relativeY = relY;
-                el.img.dataset.attachedTo = movingElement.id;
+                        document.body.appendChild(group);
+                        document.body.removeChild(movingElement);
+                        movingElement.style.left = '0px';
+                        movingElement.style.top = '0px';
+                        movingElement.style.transform = '';
+                        group.appendChild(movingElement);
+
+                        slipbotEl.state.group = group;
+                    }
+
+                    const group = slipbotEl.state.group;
+                    const botWidth = movingElement.offsetWidth;
+                    const botHeight = movingElement.offsetHeight;
+                    const squareWidth = el.img.offsetWidth;
+                    const squareHeight = el.img.offsetHeight;
+
+                    document.body.removeChild(el.img);
+                    el.img.style.left = `${(botWidth - squareWidth) / 2}px`;
+                    el.img.style.top = `${(botHeight - squareHeight) / 2}px`;
+                    el.img.style.transform = '';
+                    group.appendChild(el.img);
+
+                    el.img.dataset.attachedTo = movingElement.id;
+                    el.state.group = group;
+                    group.style.transform = `rotate(${slipbotEl.state.rotateDeg}deg)`;
+                }
             }
-        }
-    });
+        });
+    } else if (isTruck) {
+        draggableElements.forEach(el => {
+            if (el.img !== movingElement && parseInt(el.img.style.zIndex) > parseInt(movingElement.style.zIndex)) {
+                const targetElement = el.state.group || el.img;
+                if (checkOverlap(movingElement, targetElement)) {
+                    const truckLeft = parseFloat(movingElement.style.left);
+                    const truckTop = parseFloat(movingElement.style.top);
+                    const targetLeft = parseFloat(targetElement.style.left);
+                    const targetTop = parseFloat(targetElement.style.top);
+                    const relX = targetLeft - truckLeft;
+                    const relY = targetTop - truckTop;
+
+                    el.img.dataset.relativeX = relX;
+                    el.img.dataset.relativeY = relY;
+                    el.img.dataset.attachedTo = movingElement.id;
+                }
+            }
+        });
+    }
 }
 
 let isDrawingSquare = false;
@@ -497,7 +560,8 @@ function createSquare(e) {
         widthLabel: widthLabel,
         heightLabel: heightLabel,
         isTransportable: false,
-        rotateDeg: 0
+        rotateDeg: 0,
+        group: null
     };
 
     const EDGE_SIZE = 10;
@@ -574,6 +638,15 @@ function setupSquareInteraction(square, state) {
         }
     });
 
+    square.addEventListener('wheel', function(e) {
+        if (state.isTransportable && square.dataset.attachedTo) {
+            const bot = Array.from(draggableElements).find(el => el.img.id === square.dataset.attachedTo);
+            if (bot) {
+                bot.img.dispatchEvent(new WheelEvent('wheel', { deltaY: e.deltaY }));
+            }
+        }
+    });
+
     square.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return;
         e.preventDefault();
@@ -585,7 +658,6 @@ function setupSquareInteraction(square, state) {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Check for Slipbot underneath
         let botUnderneath = null;
         draggableElements.forEach(el => {
             if (el.img.src && el.img.src.includes('Slipbot') && checkOverlap(square, el.img)) {
@@ -593,11 +665,11 @@ function setupSquareInteraction(square, state) {
             }
         });
 
-        if (botUnderneath && (!state.isTransportable || (x >= EDGE_SIZE && x <= rect.width - EDGE_SIZE && y >= EDGE_SIZE && y <= rect.height - EDGE_SIZE))) {
-            // Drag the Slipbot instead
+        if (botUnderneath) {
             botUnderneath.isDragging = true;
-            botUnderneath.state.offsetX = e.clientX - parseFloat(botUnderneath.img.style.left);
-            botUnderneath.state.offsetY = e.clientY - parseFloat(botUnderneath.img.style.top);
+            const dragTarget = botUnderneath.state.group || botUnderneath.img;
+            botUnderneath.state.offsetX = e.clientX - parseFloat(dragTarget.style.left);
+            botUnderneath.state.offsetY = e.clientY - parseFloat(dragTarget.style.top);
             handleAttachments(botUnderneath.img);
 
             const moveHandler = (moveEvent) => {
@@ -606,16 +678,8 @@ function setupSquareInteraction(square, state) {
                 if (botUnderneath.isDragging) {
                     const newX = moveEvent.clientX - botUnderneath.state.offsetX;
                     const newY = moveEvent.clientY - botUnderneath.state.offsetY;
-                    botUnderneath.img.style.left = `${newX}px`;
-                    botUnderneath.img.style.top = `${newY}px`;
-                    draggableElements.forEach(attachedEl => {
-                        if (attachedEl.img.dataset.attachedTo === botUnderneath.img.id) {
-                            const relX = parseFloat(attachedEl.img.dataset.relativeX);
-                            const relY = parseFloat(attachedEl.img.dataset.relativeY);
-                            attachedEl.img.style.left = `${newX + relX}px`;
-                            attachedEl.img.style.top = `${newY + relY}px`;
-                        }
-                    });
+                    dragTarget.style.left = `${newX}px`;
+                    dragTarget.style.top = `${newY}px`;
                 }
             };
 
@@ -624,11 +688,6 @@ function setupSquareInteraction(square, state) {
                 upEvent.stopPropagation();
                 botUnderneath.isDragging = false;
                 updateCursorStyle(botUnderneath.img, false);
-                draggableElements.forEach(el => {
-                    delete el.img.dataset.relativeX;
-                    delete el.img.dataset.relativeY;
-                    delete el.img.dataset.attachedTo;
-                });
                 document.removeEventListener('mousemove', moveHandler);
                 document.removeEventListener('mouseup', upHandler);
             };
@@ -741,29 +800,75 @@ function setupSquareInteraction(square, state) {
         deleteBtn.style.padding = '5px 15px';
         deleteBtn.addEventListener('click', () => {
             draggableElements.delete(Array.from(draggableElements).find(el => el.img === square));
+            if (state.group) {
+                state.group.removeChild(square);
+                if (state.group.children.length === 1) {
+                    const bot = state.group.children[0];
+                    const botEl = Array.from(draggableElements).find(el => el.img === bot);
+                    document.body.appendChild(bot);
+                    bot.style.left = state.group.style.left;
+                    bot.style.top = state.group.style.top;
+                    bot.style.transform = state.group.style.transform;
+                    document.body.removeChild(state.group);
+                    botEl.state.group = null;
+                }
+            }
             square.remove();
             document.body.removeChild(overlay);
         });
         
-        const transportBtn = document.createElement('button');
-        transportBtn.textContent = 'Make Transportable';
-        transportBtn.style.margin = '10px';
-        transportBtn.style.padding = '5px 15px';
-        transportBtn.addEventListener('click', () => {
-            square.dataset.transportable = 'true';
-            square.style.zIndex = Z_INDEX_LAYERS.TRANSPORTABLE_SQUARE;
-            maxZIndex = Math.max(maxZIndex, Z_INDEX_LAYERS.TRANSPORTABLE_SQUARE);
-            updateZIndex(square);
-            if (!square.id) {
-                square.id = 'square_' + Date.now();
-            }
-            const el = Array.from(draggableElements).find(el => el.img === square);
-            el.state.isTransportable = true;
-            document.body.removeChild(overlay);
-        });
+        if (!square.dataset.attachedTo) {
+            const transportBtn = document.createElement('button');
+            transportBtn.textContent = state.isTransportable ? 'Make Non-Transportable' : 'Make Transportable';
+            transportBtn.style.margin = '10px';
+            transportBtn.style.padding = '5px 15px';
+            transportBtn.addEventListener('click', () => {
+                if (!state.isTransportable) {
+                    square.dataset.transportable = 'true';
+                    square.style.zIndex = Z_INDEX_LAYERS.TRANSPORTABLE_SQUARE;
+                    state.isTransportable = true;
+                    if (!square.id) square.id = 'square_' + Date.now();
+                    handleAttachments(Array.from(draggableElements).find(el => el.img.src?.includes('Slipbot'))?.img);
+                } else {
+                    delete square.dataset.transportable;
+                    delete square.dataset.attachedTo;
+                    square.style.zIndex = Z_INDEX_LAYERS.SQUARE;
+                    state.isTransportable = false;
+                }
+                updateZIndex(square);
+                document.body.removeChild(overlay);
+            });
+            dialog.appendChild(transportBtn);
+        } else {
+            const detachBtn = document.createElement('button');
+            detachBtn.textContent = 'Detach from Slipbot';
+            detachBtn.style.margin = '10px';
+            detachBtn.style.padding = '5px 15px';
+            detachBtn.addEventListener('click', () => {
+                delete square.dataset.attachedTo;
+                if (state.group) {
+                    document.body.appendChild(square);
+                    square.style.left = `${parseFloat(state.group.style.left) + parseFloat(square.style.left)}px`;
+                    square.style.top = `${parseFloat(state.group.style.top) + parseFloat(square.style.top)}px`;
+                    square.style.transform = '';
+                    state.group = null;
+                    if (state.group.children.length === 1) {
+                        const bot = state.group.children[0];
+                        const botEl = Array.from(draggableElements).find(el => el.img === bot);
+                        document.body.appendChild(bot);
+                        bot.style.left = state.group.style.left;
+                        bot.style.top = state.group.style.top;
+                        bot.style.transform = state.group.style.transform;
+                        document.body.removeChild(state.group);
+                        botEl.state.group = null;
+                    }
+                }
+                document.body.removeChild(overlay);
+            });
+            dialog.appendChild(detachBtn);
+        }
         
         dialog.appendChild(deleteBtn);
-        dialog.appendChild(transportBtn);
         overlay.appendChild(dialog);
         document.body.appendChild(overlay);
         
