@@ -7,24 +7,31 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header class="controls-panel">
-        <h1>SlipBot Simulator</h1>
-        <button id="addBotBtn" class="control-btn">Add SlipBot</button>
-        <button id="addtrlrBtn" class="control-btn">Add Trailer</button>
-        <button id="addForkliftBtn" class="control-btn">Add Forklift</button>
-        <button id="addStuffBtn" class="control-btn">Add Skid</button>
-        <button id="addDrawBtn" class="control-btn">Draw</button>
-        <div class="toggle-container">
-            <label class="toggle-label" for="backgroundToggle">Scale:</label>
-            <label class="switch">
-                <input type="checkbox" id="backgroundToggle">
-                <span class="slider"></span>
+    <div id="mobile-message" class="mobile-message" style="display: none;">
+        <p>Desktop and mouse required for full functionality</p>
+    </div>
+    <div class="controls-container">
+        <div class="controls-panel">
+            <h1>SlipBot Simulator</h1>
+            <button id="addBotBtn" class="control-btn">Add SlipBot</button>
+            <button id="addtrlrBtn" class="control-btn">Add Trailer</button>
+            <button id="addForkliftBtn" class="control-btn">Add Forklift</button>
+            <button id="addStuffBtn" class="control-btn">Add Skid</button>
+            <button id="addDrawBtn" class="control-btn">Draw</button>
+            <div class="toggle-container">
+                <label class="toggle-label">Scale:</label>
+                <label class="switch">
+                    <input type="checkbox" id="backgroundToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button id="helpBtn" class="control-btn">?</button>
+            <label class="custom-file-upload">
+                <input type="file" id="backgroundUpload" accept="image/*">
+                Upload Background
             </label>
         </div>
-        <button id="helpBtn" class="control-btn" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">?</button>
-        <input type="file" id="backgroundUpload" accept="image/*" style="display: none;">
-        <label for="backgroundUpload" class="custom-file-upload">Upload Background</label>
-    </header>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
