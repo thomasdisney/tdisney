@@ -816,10 +816,10 @@ function setupSquareInteraction(square, state) {
                         state.lastWidth = Math.max(20, state.startWidth - dx);
                         square.style.width = `${state.lastWidth}px`;
                         square.style.left = `${state.initialLeft + (state.startWidth - state.lastWidth)}px`;
-                    } else if (state.resizeSide === 'bottom') {
+                    } else if (state.resizeSide == 'bottom') {
                         state.lastHeight = Math.max(20, state.startHeight + dy);
                         square.style.height = `${state.lastHeight}px`;
-                    } else if (state.resizeSide === 'top') {
+                    } else if (state.resizeSide == 'top') {
                         state.lastHeight = Math.max(20, state.startHeight - dy);
                         square.style.height = `${state.lastHeight}px`;
                         square.style.top = `${state.initialTop + (state.startHeight - state.lastHeight)}px`;
