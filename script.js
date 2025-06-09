@@ -108,7 +108,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.addEventListener('wheel', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const delta = e.deltaY > 0 ? -7.5 : 7.5;
+            const delta = Math.sign(e.deltaY) * 7.5; // Normalize rotation speed
             state.rotateDeg = (state.rotateDeg + delta + 360) % 360;
             if (state.group) {
                 state.group.style.transform = `rotate(${state.rotateDeg}deg)`;
@@ -269,9 +269,9 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
             const el = Array.from(draggableElements).find(el => el.img === img);
             if (el) {
                 el.isDragging = true;
-                const rect = img.getBoundingClientRect();
-                el.state.offsetX = touch.clientX - (rect.left + window.scrollX);
-                el.state.offsetY = touch.clientY - (rect.top + window.scrollY);
+                const center = getCenter(img);
+                el.state.offsetX = touch.clientX - center.x;
+                el.state.offsetY = touch.clientY - center.y;
             }
         });
 
@@ -394,7 +394,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 - Right-click Truck to turn around
                 - Right-click Bot to load and unloaded
             `;
-            alert(helpText.trim().replace(/\s+/g, ' ').replace(/ - /g, '\n- '));
+            const popup = document.createElement('div');
+            popup.classList.add('help-popup');
+            popup.innerHTML = `
+                <button class="close-btn">×</button>
+                <h3>SlipBot Simulator Guide</h3>
+                <ul>
+                    ${helpText.trim().split('-').map(item => item.trim()).filter(item => item).map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            `;
+            document.body.appendChild(popup);
+            popup.querySelector('.close-btn').addEventListener('click', () => {
+                document.body.removeChild(popup);
+            });
         });
     }
 });
@@ -404,8 +416,8 @@ if (!isMobile) {
         e.preventDefault();
         const toggle = document.getElementById('backgroundToggle').checked;
         if (toggle) {
-            const delta = e.deltaY > 0 ? 0.95 : 1.05;
-            objectScale *= delta;
+            const delta = Math.sign(e.deltaY) * 0.05; // Normalize scale speed
+            objectScale *= (1 + delta);
             objectScale = Math.max(0.1, Math.min(5, objectScale));
             draggableElements.forEach(el => {
                 if (el.img.src) {
@@ -816,10 +828,10 @@ function setupSquareInteraction(square, state) {
                         state.lastWidth = Math.max(20, state.startWidth - dx);
                         square.style.width = `${state.lastWidth}px`;
                         square.style.left = `${state.initialLeft + (state.startWidth - state.lastWidth)}px`;
-                    } else if (state.resizeSide == 'bottom') {
+                    } else if (state.resizeSide === 'bottom') {
                         state.lastHeight = Math.max(20, state.startHeight + dy);
                         square.style.height = `${state.lastHeight}px`;
-                    } else if (state.resizeSide == 'top') {
+                    } else if (state.resizeSide === 'top') {
                         state.lastHeight = Math.max(20, state.startHeight - dy);
                         square.style.height = `${state.lastHeight}px`;
                         square.style.top = `${state.initialTop + (state.startHeight - state.lastHeight)}px`;
