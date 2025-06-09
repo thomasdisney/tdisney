@@ -263,7 +263,6 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
             }
         });
     } else {
-        // Mobile-specific touch events for SlipBot
         img.addEventListener('touchstart', function(e) {
             e.preventDefault();
             const touch = e.touches[0];
