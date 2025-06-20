@@ -72,6 +72,14 @@ h1 {
   transform: translateY(-2px);
 }
 
+#addDrawBtn {
+  background: #FF0000;
+}
+
+#addDrawBtn:hover {
+  background: #FF3333;
+}
+
 .toggle-container {
   display: flex;
   align-items: center;
@@ -188,8 +196,8 @@ body:after {
   -webkit-user-drag: none;
   touch-action: none;
   transition: opacity 0.3s ease, transform 0.1s ease;
-  will-change: transform; /* Optimize rendering */
-  backface-visibility: hidden; /* Prevent artifacts */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .help-popup {
