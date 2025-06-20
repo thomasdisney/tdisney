@@ -72,14 +72,6 @@ h1 {
   transform: translateY(-2px);
 }
 
-#addDrawBtn {
-  background: #FF0000;
-}
-
-#addDrawBtn:hover {
-  background: #FF3333;
-}
-
 .toggle-container {
   display: flex;
   align-items: center;
