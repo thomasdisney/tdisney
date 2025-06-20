@@ -506,7 +506,7 @@ function addBackgroundImage(file) {
     reader.readAsDataURL(file);
 }
 
-function handleAttachments(movingElement) {
+function handleAttachments(moving bladElement) {
     if (isMobile) return;
     const isSlipbot = movingElement.src && movingElement.src.includes('Slipbot');
     const isTruck = movingElement.src && movingElement.src.includes('truck_side');
@@ -603,7 +603,7 @@ function createSquare(e) {
     const square = document.createElement('div');
     square.classList.add('draggable');
     square.style.position = 'absolute';
-    square.style.border = '2px solid rgba(0, 255, 0, 0.8)';
+    square.style.border = '2px solid #FF0000';
     square.style.backgroundColor = 'transparent';
     square.style.left = `${e.clientX}px`;
     square.style.top = `${e.clientY}px`;
@@ -618,7 +618,7 @@ function createSquare(e) {
     widthLabel.style.transform = 'translateX(-50%)';
     widthLabel.style.color = 'white';
     widthLabel.style.fontSize = '12px';
-    widthLabel.style.pointerEvents = 'none';
+    widthLabel.style.pointerEvents = 'auto';
     square.appendChild(widthLabel);
 
     const heightLabel = document.createElement('div');
@@ -628,7 +628,7 @@ function createSquare(e) {
     heightLabel.style.transform = 'translateY(-50%)';
     heightLabel.style.color = 'white';
     heightLabel.style.fontSize = '12px';
-    heightLabel.style.pointerEvents = 'none';
+    heightLabel.style.pointerEvents = 'auto';
     square.appendChild(heightLabel);
 
     const state = {
@@ -702,10 +702,66 @@ function updateAllSquareDimensions() {
     });
 }
 
+function setupLabelEditing(label, square, state, isWidth) {
+    label.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!state.labelsVisible) return;
+
+        const originalText = label.textContent.replace('ft', '');
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.value = originalText;
+        input.style.width = '50px';
+        input.style.fontSize = '12px';
+        input.style.position = 'absolute';
+        input.style.left = label.style.left;
+        input.style.top = label.style.top;
+        input.style.transform = label.style.transform;
+        input.style.color = 'black';
+
+        square.appendChild(input);
+        label.style.display = 'none';
+        input.focus();
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const newValue = parseFloat(input.value);
+                if (!isNaN(newValue) && newValue > 0) {
+                    const newPx = newValue / pixelToFeetRatio;
+                    if (isWidth) {
+                        square.style.width = `${newPx}px`;
+                        state.lastWidth = newPx;
+                    } else {
+                        square.style.height = `${newPx}px`;
+                        state.lastHeight = newPx;
+                    }
+                    updateDimensions(square, state);
+                }
+                square.removeChild(input);
+                label.style.display = 'block';
+            }
+        });
+
+        input.addEventListener('blur', () => {
+            square.removeChild(input);
+            label.style.display = 'block';
+        });
+    });
+}
+
+function getElementAtPoint(x, y, excludeElement) {
+    const elements = document.elementsFromPoint(x, y);
+    return elements.filter(el => el !== excludeElement && el.classList.contains('draggable') && el !== excludeElement.parentElement);
+}
+
 function setupSquareInteraction(square, state) {
     const EDGE_SIZE = 10;
     const DRAG_SMOOTHNESS = 0.5;
     const RESIZE_SENSITIVITY = 0.5;
+
+    setupLabelEditing(state.widthLabel, square, state, true);
+    setupLabelEditing(state.heightLabel, square, state, false);
 
     document.addEventListener('mousemove', (e) => {
         if (!state.isDragging && !state.resizeSide) {
@@ -738,21 +794,26 @@ function setupSquareInteraction(square, state) {
         if (e.button !== 0) return;
         e.preventDefault();
         e.stopPropagation();
-        updateZIndex(square);
         activeSquare = square;
 
         const rect = square.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        let botUnderneath = null;
-        draggableElements.forEach(el => {
-            if (el.img.src && el.img.src.includes('Slipbot') && checkOverlap(square, el.img)) {
-                botUnderneath = el;
-            }
-        });
+        const elementsAtPoint = getElementAtPoint(e.clientX, e.clientY, square);
+        const isSquareOnly = elementsAtPoint.length === 0;
 
-        if (botUnderneath) {
+        let botUnderneath = null;
+        if (!isSquareOnly) {
+            draggableElements.forEach(el => {
+                if (el.img.src && el.img.src.includes('Slipbot') && checkOverlap(square, el.img)) {
+                    botUnderneath = el;
+                }
+            });
+        }
+
+        if (botUnderneath && !isSquareOnly) {
+            updateZIndex(botUnderneath.img);
             botUnderneath.isDragging = true;
             const dragTarget = botUnderneath.state.group || botUnderneath.img;
             botUnderneath.state.offsetX = e.clientX - parseFloat(dragTarget.style.left);
@@ -782,7 +843,8 @@ function setupSquareInteraction(square, state) {
             document.addEventListener('mousemove', moveHandler);
             document.addEventListener('mouseup', upHandler);
             updateCursorStyle(botUnderneath.img, true);
-        } else if (!state.isTransportable || !square.dataset.attachedTo) {
+        } else if (isSquareOnly && (!state.isTransportable || !square.dataset.attachedTo)) {
+            updateZIndex(square);
             state.startWidth = parseFloat(square.style.width) || state.lastWidth || 20;
             state.startHeight = parseFloat(square.style.height) || state.lastHeight || 20;
             state.startX = e.clientX;
