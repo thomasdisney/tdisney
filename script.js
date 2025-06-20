@@ -108,7 +108,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.addEventListener('wheel', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const delta = Math.sign(e.deltaY) * 7.5; // Normalize rotation speed
+            const delta = Math.sign(e.deltaY) * 7.5;
             state.rotateDeg = (state.rotateDeg + delta + 360) % 360;
             if (state.group) {
                 state.group.style.transform = `rotate(${state.rotateDeg}deg)`;
@@ -416,7 +416,7 @@ if (!isMobile) {
         e.preventDefault();
         const toggle = document.getElementById('backgroundToggle').checked;
         if (toggle) {
-            const delta = Math.sign(e.deltaY) * 0.05; // Normalize scale speed
+            const delta = Math.sign(e.deltaY) * 0.05;
             objectScale *= (1 + delta);
             objectScale = Math.max(0.1, Math.min(5, objectScale));
             draggableElements.forEach(el => {
@@ -648,10 +648,9 @@ function createSquare(e) {
         heightLabel: heightLabel,
         isTransportable: false,
         rotateDeg: 0,
-        group: null
+        group: null,
+        labelsVisible: true
     };
-
-    const EDGE_SIZE = 10;
 
     document.body.appendChild(square);
 
@@ -686,6 +685,7 @@ function createSquare(e) {
 }
 
 function updateDimensions(square, state) {
+    if (!state.labelsVisible) return;
     const widthPx = parseFloat(square.style.width);
     const heightPx = parseFloat(square.style.height);
     const widthFt = (widthPx * pixelToFeetRatio).toFixed(1);
@@ -904,6 +904,23 @@ function setupSquareInteraction(square, state) {
             document.body.removeChild(overlay);
         });
         
+        const labelBtn = document.createElement('button');
+        labelBtn.textContent = state.labelsVisible ? 'Remove Labels' : 'Add Labels';
+        labelBtn.style.margin = '10px';
+        labelBtn.style.padding = '5px 15px';
+        labelBtn.addEventListener('click', () => {
+            state.labelsVisible = !state.labelsVisible;
+            if (state.labelsVisible) {
+                state.widthLabel.style.display = 'block';
+                state.heightLabel.style.display = 'block';
+                updateDimensions(square, state);
+            } else {
+                state.widthLabel.style.display = 'none';
+                state.heightLabel.style.display = 'none';
+            }
+            document.body.removeChild(overlay);
+        });
+        
         if (!square.dataset.attachedTo) {
             const transportBtn = document.createElement('button');
             transportBtn.textContent = state.isTransportable ? 'Make Non-Transportable' : 'Make Transportable';
@@ -955,6 +972,7 @@ function setupSquareInteraction(square, state) {
             dialog.appendChild(detachBtn);
         }
         
+        dialog.appendChild(labelBtn);
         dialog.appendChild(deleteBtn);
         overlay.appendChild(dialog);
         document.body.appendChild(overlay);
