@@ -65,13 +65,22 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.style.zIndex = Z_INDEX_LAYERS.BOT;
     }
 
-    const yOffset = isMobile ? 0 : 100;
     img.style.position = 'absolute';
     if (!isMobileInit) {
-        img.style.left = `${event.clientX}px`;
-        img.style.top = `${yOffset}px`;
+        const x = event.clientX || window.innerWidth / 2;
+        const y = event.clientY || window.innerHeight / 2;
+        img.style.left = `${x}px`;
+        img.style.top = `${y + 70}px`; // Offset to account for header
+    } else {
+        img.style.left = `${window.innerWidth / 2}px`;
+        img.style.top = `${window.innerHeight / 2}px`;
     }
     img.style.transformOrigin = 'center';
+    img.style.willChange = 'transform';
+
+    img.onerror = function() {
+        console.error(`Failed to load image: ${imageSrc}`);
+    };
 
     img.onload = function() {
         const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
@@ -109,12 +118,9 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
             e.preventDefault();
             e.stopPropagation();
             const delta = Math.sign(e.deltaY) * 7.5;
-            state.rotateDeg = (state.rotateDeg + delta + 360) % 360;
-            if (state.group) {
-                state.group.style.transform = `rotate(${state.rotateDeg}deg)`;
-            } else {
-                rotateElement(img, state.rotateDeg);
-            }
+            state.rotateDeg += delta;
+            const target = state.group || img;
+            rotateElement(target, state.rotateDeg);
         });
 
         if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
@@ -341,6 +347,7 @@ function updateZIndex(element) {
 
 function rotateElement(element, degrees) {
     const center = getCenter(element);
+    element.style.transition = 'transform 0.1s ease';
     element.style.transform = `rotate(${degrees}deg)`;
     const newCenter = getCenter(element);
     const dx = newCenter.x - center.x;
@@ -506,7 +513,7 @@ function addBackgroundImage(file) {
     reader.readAsDataURL(file);
 }
 
-function handleAttachments(moving bladElement) {
+function handleAttachments(movingElement) {
     if (isMobile) return;
     const isSlipbot = movingElement.src && movingElement.src.includes('Slipbot');
     const isTruck = movingElement.src && movingElement.src.includes('truck_side');
@@ -527,6 +534,7 @@ function handleAttachments(moving bladElement) {
                         group.style.height = `${movingElement.offsetHeight}px`;
                         group.style.transformOrigin = `${movingElement.offsetWidth / 2}px ${movingElement.offsetHeight / 2}px`;
                         group.style.zIndex = Z_INDEX_LAYERS.BOT;
+                        group.style.willChange = 'transform';
 
                         document.body.appendChild(group);
                         document.body.removeChild(movingElement);
@@ -552,7 +560,7 @@ function handleAttachments(moving bladElement) {
 
                     el.img.dataset.attachedTo = movingElement.id;
                     el.state.group = group;
-                    group.style.transform = `rotate(${slipbotEl.state.rotateDeg}deg)`;
+                    rotateElement(group, slipbotEl.state.rotateDeg);
                 }
             }
         });
@@ -610,6 +618,7 @@ function createSquare(e) {
     square.style.zIndex = Z_INDEX_LAYERS.SQUARE;
     square.style.cursor = 'move';
     square.style.userSelect = 'none';
+    square.style.willChange = 'transform';
 
     const widthLabel = document.createElement('div');
     widthLabel.style.position = 'absolute';
@@ -852,7 +861,7 @@ function setupSquareInteraction(square, state) {
             state.initialLeft = parseFloat(square.style.left);
             state.initialTop = parseFloat(square.style.top);
             state.lastWidth = state.startWidth;
-            state.lastHeight = state.startHeight;
+            state.lastHeight = state.lastHeight;
 
             if (x < EDGE_SIZE) {
                 state.resizeSide = 'left';
