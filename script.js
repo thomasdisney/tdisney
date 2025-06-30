@@ -697,8 +697,8 @@ function updateDimensions(square, state) {
     if (!state.labelsVisible) return;
     const widthPx = parseFloat(square.style.width);
     const heightPx = parseFloat(square.style.height);
-    const widthFt = (widthPx * pixelToFeetRatio).toFixed(1);
-    const heightFt = (heightPx * pixelToFeetRatio).toFixed(1);
+    const widthFt = (widthPx * pixelToFeetRatio).toFixed(2);
+    const heightFt = (heightPx * pixelToFeetRatio).toFixed(2);
     state.widthLabel.textContent = `${widthFt}ft`;
     state.heightLabel.textContent = `${heightFt}ft`;
 }
