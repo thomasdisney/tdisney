@@ -389,25 +389,25 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('addDrawBtn').addEventListener('click', startSquareDrawing);
 
         document.getElementById('helpBtn').addEventListener('click', () => {
-            const helpText = `
-                Here's how to use it:
-                - Upload a background by pressing button and choosing image
-                - Add a bot for use in scaling set-up
-                - Toggle Scale 'On' and use mouse wheel to scale bot to image
-                - Add more bots, etc. w/ buttons
-                - Click and drag to move things around
-                - Use the mouse wheel to rotate
-                - Double-click to remove items
-                - Right-click Truck to turn around
-                - Right-click Bot to load and unloaded
-            `;
+            const helpItems = [
+                "Upload a background by pressing the button and choosing an image.",
+                "Add a bot for use in scaling set-up.",
+                "Toggle Scale \"On\" and use the mouse wheel to scale the bot to the image.",
+                "Add more bots, trucks, forklifts, or other items with the buttons.",
+                "Click and drag to move things around.",
+                "Use the mouse wheel to rotate.",
+                "Double-click to remove items.",
+                "Right-click a truck to turn it around.",
+                "Right-click a bot to load and unload it."
+            ];
             const popup = document.createElement('div');
             popup.classList.add('help-popup');
             popup.innerHTML = `
                 <button class="close-btn">×</button>
                 <h3>SlipBot Simulator Guide</h3>
+                <p>Here's how to use it:</p>
                 <ul>
-                    ${helpText.trim().split('-').map(item => item.trim()).filter(item => item).map(item => `<li>${item}</li>`).join('')}
+                    ${helpItems.map(item => `<li>${item}</li>`).join('')}
                 </ul>
             `;
             document.body.appendChild(popup);
