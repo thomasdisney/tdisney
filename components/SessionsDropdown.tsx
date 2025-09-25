@@ -305,7 +305,7 @@ export function SessionsDropdown({ sessions, onRefresh, isLoading = false }: Ses
             )}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94a3b8' }}>
-            <span>{sortedSessions.length >= 3 ? 'Limit reached (3 sessions).' : ''}</span>
+            <span>{sortedSessions.length >= 3 ? 'Next save overwrites your oldest session.' : ''}</span>
             <button
               type="button"
               onClick={() => {

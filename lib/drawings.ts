@@ -30,13 +30,6 @@ const DRAWINGS_TABLE = 'drawings';
 const DRAWING_IMAGES_BUCKET = 'drawing-images';
 const MAX_SESSIONS = 3;
 
-export class MaxSessionsError extends Error {
-  constructor() {
-    super('Limit 3 sessions per user. Delete or overwrite.');
-    this.name = 'MaxSessionsError';
-  }
-}
-
 type SupabaseUser = {
   id: string;
 };
@@ -101,47 +94,103 @@ export async function listDrawings(): Promise<Drawing[]> {
   return (data ?? []) as Drawing[];
 }
 
+export type CreateDrawingResult = {
+  drawing: Drawing;
+  replacedDrawing: { id: string; title: string } | null;
+};
+
 export async function createDrawing(
   title: string,
   elements: SceneElement[],
   bgFile?: File
-): Promise<Drawing> {
+): Promise<CreateDrawingResult> {
   const client = getSupabaseClient();
   const user = await requireUser(client);
 
-  const { count, error: countError } = await client
+  const { data: existingData, error: existingError } = await client
     .from(DRAWINGS_TABLE)
-    .select('*', { count: 'exact', head: true });
-  if (countError) {
-    throw countError;
-  }
-  if ((count ?? 0) >= MAX_SESSIONS) {
-    throw new MaxSessionsError();
+    .select('*')
+    .order('updated_at', { ascending: true })
+    .limit(MAX_SESSIONS);
+  if (existingError) {
+    throw existingError;
   }
 
-  const drawingId = crypto.randomUUID();
-  let bgImagePath: string | null = null;
+  const existing = (existingData ?? []) as Drawing[];
+
+  if (existing.length < MAX_SESSIONS) {
+    const drawingId = crypto.randomUUID();
+    let bgImagePath: string | null = null;
+    if (bgFile) {
+      bgImagePath = await uploadBackgroundImage(client, user.id, drawingId, bgFile);
+    }
+
+    const insertPayload = {
+      id: drawingId,
+      owner: user.id,
+      title,
+      elements,
+      bg_image_path: bgImagePath,
+      updated_at: new Date().toISOString()
+    } satisfies Partial<Drawing> & { owner: string; title: string; elements: SceneElement[] };
+
+    const { data, error } = await client.from(DRAWINGS_TABLE).insert(insertPayload).select().single();
+    if (error) {
+      if (error.code === '23505') {
+        throw new Error('You already have a session with that name.');
+      }
+      throw error;
+    }
+    return { drawing: data as Drawing, replacedDrawing: null };
+  }
+
+  const oldest = existing[0];
+  let replacementBgPath: string | null = oldest.bg_image_path ?? null;
+
   if (bgFile) {
-    bgImagePath = await uploadBackgroundImage(client, user.id, drawingId, bgFile);
+    const newPath = await uploadBackgroundImage(client, user.id, oldest.id, bgFile);
+    if (oldest.bg_image_path && oldest.bg_image_path !== newPath) {
+      const { error: removeError } = await client.storage
+        .from(DRAWING_IMAGES_BUCKET)
+        .remove([oldest.bg_image_path]);
+      if (removeError) {
+        throw removeError;
+      }
+    }
+    replacementBgPath = newPath;
+  } else if (oldest.bg_image_path) {
+    const { error: removeError } = await client.storage
+      .from(DRAWING_IMAGES_BUCKET)
+      .remove([oldest.bg_image_path]);
+    if (removeError) {
+      throw removeError;
+    }
+    replacementBgPath = null;
   }
 
-  const insertPayload = {
-    id: drawingId,
-    owner: user.id,
-    title,
-    elements,
-    bg_image_path: bgImagePath,
-    updated_at: new Date().toISOString()
-  } satisfies Partial<Drawing> & { owner: string; title: string; elements: SceneElement[] };
+  const { data, error } = await client
+    .from(DRAWINGS_TABLE)
+    .update({
+      title,
+      elements,
+      bg_image_path: replacementBgPath,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', oldest.id)
+    .select()
+    .single();
 
-  const { data, error } = await client.from(DRAWINGS_TABLE).insert(insertPayload).select().single();
   if (error) {
     if (error.code === '23505') {
       throw new Error('You already have a session with that name.');
     }
     throw error;
   }
-  return data as Drawing;
+
+  return {
+    drawing: data as Drawing,
+    replacedDrawing: { id: oldest.id, title: oldest.title }
+  };
 }
 
 export async function updateDrawing(

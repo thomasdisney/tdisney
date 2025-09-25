@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { MaxSessionsError, createDrawing, updateDrawing } from '@/lib/drawings';
+import { createDrawing, updateDrawing } from '@/lib/drawings';
 import { useDrawing } from '@/components/DrawingContext';
 import { useToast } from '@/components/ToastProvider';
 
@@ -37,8 +37,7 @@ export function SaveSessionButton({ sessionCount, onSessionsChanged }: SaveSessi
   const [isSaving, setIsSaving] = useState(false);
 
   const hasCurrentDrawing = useMemo(() => Boolean(currentDrawingId), [currentDrawingId]);
-
-  const saveAsDisabled = useMemo(() => sessionCount >= 3, [sessionCount]);
+  const willOverwriteOldest = useMemo(() => sessionCount >= 3, [sessionCount]);
 
   const ensureBackgroundFileForCreate = useCallback(async () => {
     if (backgroundFile) {
@@ -56,23 +55,21 @@ export function SaveSessionButton({ sessionCount, onSessionsChanged }: SaveSessi
         showToast('Please enter a session name.', 'error');
         return;
       }
-      if (saveAsDisabled) {
-        showToast('Limit 3 sessions per user. Delete or overwrite.', 'error');
-        return;
-      }
       setIsSaving(true);
       try {
         const bgFileForCreate = await ensureBackgroundFileForCreate();
-        const drawing = await createDrawing(title.trim(), getScene(), bgFileForCreate);
+        const { drawing, replacedDrawing } = await createDrawing(title.trim(), getScene(), bgFileForCreate);
         setCurrentDrawingId(drawing.id);
         setCurrentDrawingTitle(drawing.title);
         commitBackground(drawing.bg_image_path ?? null);
-        showToast('Session saved.', 'success');
+        if (replacedDrawing) {
+          showToast(`Session saved. Overwrote “${replacedDrawing.title}”.`, 'success');
+        } else {
+          showToast('Session saved.', 'success');
+        }
         await onSessionsChanged();
       } catch (error) {
-        if (error instanceof MaxSessionsError) {
-          showToast(error.message, 'error');
-        } else if (error instanceof Error) {
+        if (error instanceof Error) {
           showToast(error.message, 'error');
         } else {
           showToast('Unable to save session.', 'error');
@@ -81,7 +78,15 @@ export function SaveSessionButton({ sessionCount, onSessionsChanged }: SaveSessi
         setIsSaving(false);
       }
     },
-    [commitBackground, ensureBackgroundFileForCreate, getScene, onSessionsChanged, saveAsDisabled, setCurrentDrawingId, setCurrentDrawingTitle, showToast]
+    [
+      commitBackground,
+      ensureBackgroundFileForCreate,
+      getScene,
+      onSessionsChanged,
+      setCurrentDrawingId,
+      setCurrentDrawingTitle,
+      showToast
+    ]
   );
 
   const handleOverwrite = useCallback(async () => {
@@ -145,6 +150,7 @@ export function SaveSessionButton({ sessionCount, onSessionsChanged }: SaveSessi
         type="button"
         onClick={handlePrimaryClick}
         disabled={isSaving}
+        title={willOverwriteOldest ? 'Saving will overwrite your oldest session.' : undefined}
         style={{
           backgroundColor: '#2563eb',
           color: '#fff',
@@ -194,16 +200,16 @@ export function SaveSessionButton({ sessionCount, onSessionsChanged }: SaveSessi
           <button
             type="button"
             onClick={handleSaveAs}
-            disabled={isSaving || saveAsDisabled}
+            disabled={isSaving}
             style={{
               background: 'transparent',
               border: 'none',
-              color: saveAsDisabled ? 'rgba(226,232,240,0.5)' : '#e2e8f0',
+              color: '#e2e8f0',
               textAlign: 'left',
               padding: '8px 10px',
               borderRadius: 6
             }}
-            title={saveAsDisabled ? 'Limit 3 sessions per user. Delete or overwrite.' : undefined}
+            title={willOverwriteOldest ? 'Will overwrite your oldest session.' : undefined}
           >
             Save As…
           </button>
