@@ -94,11 +94,11 @@ export function DrawingProvider({ children }: { children: React.ReactNode }) {
         }
       },
       commitBackground: (path, url) => {
+        revokeObjectUrl();
         if (typeof url !== 'undefined') {
-          revokeObjectUrl();
           setBackgroundUrl(url);
         }
-        setBackgroundPathState(path);
+        setBackgroundPathState(path ?? null);
         setBackgroundFileState(null);
       }
     };

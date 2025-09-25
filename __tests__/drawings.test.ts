@@ -37,43 +37,37 @@ function createClient(): MockSupabaseClient {
 }
 
 function mockListQuery(client: MockSupabaseClient, drawings: Drawing[], error: unknown = null) {
-  client.from.mockImplementationOnce(() => ({
-    select: vi.fn(() => ({
-      order: vi.fn(() => ({
-        limit: vi.fn(async () => ({ data: error ? null : drawings, error }))
-      }))
-    }))
-  }));
+  const limit = vi.fn(async () => ({ data: error ? null : drawings, error }));
+  const order = vi.fn(() => ({ limit }));
+  const eq = vi.fn(() => ({ order }));
+  const select = vi.fn(() => ({ eq }));
+  client.from.mockImplementationOnce(() => ({ select }));
+  return { eq };
 }
 
 function mockInsertQuery(client: MockSupabaseClient, drawing: Drawing, error: unknown = null) {
-  client.from.mockImplementationOnce(() => ({
-    insert: vi.fn(() => ({
-      select: vi.fn(() => ({
-        single: vi.fn(async () => ({ data: error ? null : drawing, error }))
-      }))
-    }))
-  }));
+  const single = vi.fn(async () => ({ data: error ? null : drawing, error }));
+  const select = vi.fn(() => ({ single }));
+  const insert = vi.fn(() => ({ select }));
+  client.from.mockImplementationOnce(() => ({ insert }));
 }
 
 function mockUpdateQuery(client: MockSupabaseClient, drawing: Drawing, error: unknown = null) {
-  client.from.mockImplementationOnce(() => ({
-    update: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        select: vi.fn(() => ({
-          single: vi.fn(async () => ({ data: error ? null : drawing, error }))
-        }))
-      }))
-    }))
-  }));
+  const single = vi.fn(async () => ({ data: error ? null : drawing, error }));
+  const select = vi.fn(() => ({ single }));
+  const eqOwner = vi.fn(() => ({ select }));
+  const eqId = vi.fn(() => ({ eq: eqOwner, select }));
+  const update = vi.fn(() => ({ eq: eqId }));
+  client.from.mockImplementationOnce(() => ({ update }));
+  return { eqId, eqOwner };
 }
 
 function mockRenameQuery(client: MockSupabaseClient, error: unknown = null) {
-  client.from.mockImplementationOnce(() => ({
-    update: vi.fn(() => ({
-      eq: vi.fn(async () => ({ error }))
-    }))
-  }));
+  const eqOwner = vi.fn(async () => ({ error }));
+  const eqId = vi.fn(() => ({ eq: eqOwner }));
+  const update = vi.fn(() => ({ eq: eqId }));
+  client.from.mockImplementationOnce(() => ({ update }));
+  return { eqId, eqOwner };
 }
 
 const getSupabaseClientMock = getSupabaseClient as unknown as ReturnType<typeof vi.fn>;
@@ -96,7 +90,7 @@ describe('drawings library', () => {
       bg_image_path: null,
       updated_at: new Date().toISOString()
     };
-    mockListQuery(client, []);
+    const listQuery = mockListQuery(client, []);
     mockInsertQuery(client, drawing);
 
     const result = await createDrawing('Warehouse A', []);
@@ -105,6 +99,7 @@ describe('drawings library', () => {
     expect(result.replacedDrawing).toBeNull();
     expect(client.from).toHaveBeenNthCalledWith(1, 'drawings');
     expect(client.from).toHaveBeenNthCalledWith(2, 'drawings');
+    expect(listQuery.eq).toHaveBeenCalledWith('owner', 'user-1');
   });
 
   it('overwrites the oldest drawing when the limit is reached', async () => {
@@ -144,8 +139,8 @@ describe('drawings library', () => {
       updated_at: new Date(now + 1000).toISOString()
     };
 
-    mockListQuery(client, existing);
-    mockUpdateQuery(client, updated);
+    const listQuery = mockListQuery(client, existing);
+    const updateQuery = mockUpdateQuery(client, updated);
 
     const result = await createDrawing('Replacement', [{ id: 'a', type: 'rect', x: 0, y: 0 }]);
 
@@ -153,13 +148,18 @@ describe('drawings library', () => {
     expect(result.replacedDrawing).toEqual({ id: 'drawing-oldest', title: 'Oldest' });
     expect(client.from).toHaveBeenNthCalledWith(1, 'drawings');
     expect(client.from).toHaveBeenNthCalledWith(2, 'drawings');
+    expect(listQuery.eq).toHaveBeenCalledWith('owner', 'user-1');
+    expect(updateQuery.eqId).toHaveBeenCalledWith('id', 'drawing-oldest');
+    expect(updateQuery.eqOwner).toHaveBeenCalledWith('owner', 'user-1');
   });
 
   it('surface duplicate title errors from renameDrawing', async () => {
-    mockRenameQuery(client, { code: '23505', message: 'duplicate key value violates unique constraint' });
+    const renameQuery = mockRenameQuery(client, { code: '23505', message: 'duplicate key value violates unique constraint' });
 
     await expect(renameDrawing('drawing-1', 'Conflict')).rejects.toThrow(
       'You already have a session with that name.'
     );
+    expect(renameQuery.eqId).toHaveBeenCalledWith('id', 'drawing-1');
+    expect(renameQuery.eqOwner).toHaveBeenCalledWith('owner', 'user-1');
   });
 });

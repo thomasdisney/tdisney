@@ -82,10 +82,11 @@ export async function getSignedUrl(path: string, expiresInSeconds = 3600): Promi
 
 export async function listDrawings(): Promise<Drawing[]> {
   const client = getSupabaseClient();
-  await requireUser(client);
+  const user = await requireUser(client);
   const { data, error } = await client
     .from(DRAWINGS_TABLE)
     .select('*')
+    .eq('owner', user.id)
     .order('updated_at', { ascending: false })
     .limit(MAX_SESSIONS);
   if (error) {
@@ -110,6 +111,7 @@ export async function createDrawing(
   const { data: existingData, error: existingError } = await client
     .from(DRAWINGS_TABLE)
     .select('*')
+    .eq('owner', user.id)
     .order('updated_at', { ascending: true })
     .limit(MAX_SESSIONS);
   if (existingError) {
@@ -177,6 +179,7 @@ export async function createDrawing(
       updated_at: new Date().toISOString()
     })
     .eq('id', oldest.id)
+    .eq('owner', user.id)
     .select()
     .single();
 
@@ -197,7 +200,7 @@ export async function updateDrawing(
   id: string,
   elements: SceneElement[],
   bgFile?: File
-): Promise<void> {
+): Promise<{ bgPath: string | null }> {
   const client = getSupabaseClient();
   const user = await requireUser(client);
   const updateData: Partial<Drawing> = {
@@ -210,19 +213,29 @@ export async function updateDrawing(
     updateData.bg_image_path = path;
   }
 
-  const { error } = await client.from(DRAWINGS_TABLE).update(updateData).eq('id', id);
+  const { data, error } = await client
+    .from(DRAWINGS_TABLE)
+    .update(updateData)
+    .eq('id', id)
+    .eq('owner', user.id)
+    .select('bg_image_path')
+    .single();
   if (error) {
     throw error;
   }
+
+  const payload = data as { bg_image_path: string | null } | null;
+  return { bgPath: payload?.bg_image_path ?? updateData.bg_image_path ?? null };
 }
 
 export async function renameDrawing(id: string, newTitle: string): Promise<void> {
   const client = getSupabaseClient();
-  await requireUser(client);
+  const user = await requireUser(client);
   const { error } = await client
     .from(DRAWINGS_TABLE)
     .update({ title: newTitle, updated_at: new Date().toISOString() })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('owner', user.id);
   if (error) {
     if (error.code === '23505') {
       throw new Error('You already have a session with that name.');
@@ -233,17 +246,22 @@ export async function renameDrawing(id: string, newTitle: string): Promise<void>
 
 export async function deleteDrawing(id: string): Promise<void> {
   const client = getSupabaseClient();
-  await requireUser(client);
+  const user = await requireUser(client);
   const { data: existing, error: selectError } = await client
     .from(DRAWINGS_TABLE)
     .select('bg_image_path')
     .eq('id', id)
+    .eq('owner', user.id)
     .single();
   if (selectError) {
     throw selectError;
   }
 
-  const { error: deleteError } = await client.from(DRAWINGS_TABLE).delete().eq('id', id);
+  const { error: deleteError } = await client
+    .from(DRAWINGS_TABLE)
+    .delete()
+    .eq('id', id)
+    .eq('owner', user.id);
   if (deleteError) {
     throw deleteError;
   }
@@ -262,11 +280,12 @@ export async function loadDrawing(
   id: string
 ): Promise<{ elements: SceneElement[]; bgUrl: string | null; bgPath: string | null }> {
   const client = getSupabaseClient();
-  await requireUser(client);
+  const user = await requireUser(client);
   const { data, error } = await client
     .from(DRAWINGS_TABLE)
     .select('elements, bg_image_path')
     .eq('id', id)
+    .eq('owner', user.id)
     .single();
   if (error) {
     throw error;

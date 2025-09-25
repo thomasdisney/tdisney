@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { createDrawing, updateDrawing } from '@/lib/drawings';
+import { createDrawing, getSignedUrl, updateDrawing } from '@/lib/drawings';
 import { useDrawing } from '@/components/DrawingContext';
 import { useToast } from '@/components/ToastProvider';
 
@@ -59,9 +59,17 @@ export function SaveSessionButton({ sessionCount, onSessionsChanged }: SaveSessi
       try {
         const bgFileForCreate = await ensureBackgroundFileForCreate();
         const { drawing, replacedDrawing } = await createDrawing(title.trim(), getScene(), bgFileForCreate);
+        let resolvedBackgroundUrl: string | null = null;
+        if (drawing.bg_image_path) {
+          try {
+            resolvedBackgroundUrl = await getSignedUrl(drawing.bg_image_path);
+          } catch (error) {
+            console.error('Failed to resolve background URL after create', error);
+          }
+        }
         setCurrentDrawingId(drawing.id);
         setCurrentDrawingTitle(drawing.title);
-        commitBackground(drawing.bg_image_path ?? null);
+        commitBackground(drawing.bg_image_path ?? null, resolvedBackgroundUrl ?? undefined);
         if (replacedDrawing) {
           showToast(`Session saved. Overwrote “${replacedDrawing.title}”.`, 'success');
         } else {
@@ -95,8 +103,16 @@ export function SaveSessionButton({ sessionCount, onSessionsChanged }: SaveSessi
     }
     setIsSaving(true);
     try {
-      await updateDrawing(currentDrawingId, getScene(), backgroundFile ?? undefined);
-      commitBackground(backgroundPath ?? null);
+      const { bgPath } = await updateDrawing(currentDrawingId, getScene(), backgroundFile ?? undefined);
+      let resolvedBackgroundUrl: string | null = null;
+      if (backgroundFile && bgPath) {
+        try {
+          resolvedBackgroundUrl = await getSignedUrl(bgPath);
+        } catch (error) {
+          console.error('Failed to resolve background URL after update', error);
+        }
+      }
+      commitBackground(bgPath ?? backgroundPath ?? null, resolvedBackgroundUrl ?? undefined);
       showToast('Session updated.', 'success');
       await onSessionsChanged();
     } catch (error) {
