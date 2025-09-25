@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback } from 'react';
+import Image from 'next/image';
 import { useDrawing } from '@/components/DrawingContext';
 
 export function CanvasStage() {
@@ -110,20 +111,28 @@ export function CanvasStage() {
             );
           }
           if (element.type === 'image' && element.src) {
+            const width = element.w ?? 80;
+            const height = element.h ?? 80;
             return (
-              <img
+              <div
                 key={element.id}
-                src={element.src}
-                alt="Scene asset"
                 style={{
                   position: 'absolute',
                   left: element.x,
                   top: element.y,
-                  width: element.w ?? 80,
-                  height: element.h ?? 80,
-                  objectFit: 'contain'
+                  width,
+                  height
                 }}
-              />
+              >
+                <Image
+                  src={element.src}
+                  alt="Scene asset"
+                  fill
+                  unoptimized
+                  style={{ objectFit: 'contain' }}
+                  sizes={`${width}px`}
+                />
+              </div>
             );
           }
           return null;
