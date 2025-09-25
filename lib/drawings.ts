@@ -30,13 +30,6 @@ const DRAWINGS_TABLE = 'drawings';
 const DRAWING_IMAGES_BUCKET = 'drawing-images';
 const MAX_SESSIONS = 3;
 
-export class MaxSessionsError extends Error {
-  constructor() {
-    super('Limit 3 sessions per user. Delete or overwrite.');
-    this.name = 'MaxSessionsError';
-  }
-}
-
 type SupabaseUser = {
   id: string;
 };
@@ -89,10 +82,11 @@ export async function getSignedUrl(path: string, expiresInSeconds = 3600): Promi
 
 export async function listDrawings(): Promise<Drawing[]> {
   const client = getSupabaseClient();
-  await requireUser(client);
+  const user = await requireUser(client);
   const { data, error } = await client
     .from(DRAWINGS_TABLE)
     .select('*')
+    .eq('owner', user.id)
     .order('updated_at', { ascending: false })
     .limit(MAX_SESSIONS);
   if (error) {
@@ -101,54 +95,112 @@ export async function listDrawings(): Promise<Drawing[]> {
   return (data ?? []) as Drawing[];
 }
 
+export type CreateDrawingResult = {
+  drawing: Drawing;
+  replacedDrawing: { id: string; title: string } | null;
+};
+
 export async function createDrawing(
   title: string,
   elements: SceneElement[],
   bgFile?: File
-): Promise<Drawing> {
+): Promise<CreateDrawingResult> {
   const client = getSupabaseClient();
   const user = await requireUser(client);
 
-  const { count, error: countError } = await client
+  const { data: existingData, error: existingError } = await client
     .from(DRAWINGS_TABLE)
-    .select('*', { count: 'exact', head: true });
-  if (countError) {
-    throw countError;
-  }
-  if ((count ?? 0) >= MAX_SESSIONS) {
-    throw new MaxSessionsError();
+    .select('*')
+    .eq('owner', user.id)
+    .order('updated_at', { ascending: true })
+    .limit(MAX_SESSIONS);
+  if (existingError) {
+    throw existingError;
   }
 
-  const drawingId = crypto.randomUUID();
-  let bgImagePath: string | null = null;
+  const existing = (existingData ?? []) as Drawing[];
+
+  if (existing.length < MAX_SESSIONS) {
+    const drawingId = crypto.randomUUID();
+    let bgImagePath: string | null = null;
+    if (bgFile) {
+      bgImagePath = await uploadBackgroundImage(client, user.id, drawingId, bgFile);
+    }
+
+    const insertPayload = {
+      id: drawingId,
+      owner: user.id,
+      title,
+      elements,
+      bg_image_path: bgImagePath,
+      updated_at: new Date().toISOString()
+    } satisfies Partial<Drawing> & { owner: string; title: string; elements: SceneElement[] };
+
+    const { data, error } = await client.from(DRAWINGS_TABLE).insert(insertPayload).select().single();
+    if (error) {
+      if (error.code === '23505') {
+        throw new Error('You already have a session with that name.');
+      }
+      throw error;
+    }
+    return { drawing: data as Drawing, replacedDrawing: null };
+  }
+
+  const oldest = existing[0];
+  let replacementBgPath: string | null = oldest.bg_image_path ?? null;
+
   if (bgFile) {
-    bgImagePath = await uploadBackgroundImage(client, user.id, drawingId, bgFile);
+    const newPath = await uploadBackgroundImage(client, user.id, oldest.id, bgFile);
+    if (oldest.bg_image_path && oldest.bg_image_path !== newPath) {
+      const { error: removeError } = await client.storage
+        .from(DRAWING_IMAGES_BUCKET)
+        .remove([oldest.bg_image_path]);
+      if (removeError) {
+        throw removeError;
+      }
+    }
+    replacementBgPath = newPath;
+  } else if (oldest.bg_image_path) {
+    const { error: removeError } = await client.storage
+      .from(DRAWING_IMAGES_BUCKET)
+      .remove([oldest.bg_image_path]);
+    if (removeError) {
+      throw removeError;
+    }
+    replacementBgPath = null;
   }
 
-  const insertPayload = {
-    id: drawingId,
-    owner: user.id,
-    title,
-    elements,
-    bg_image_path: bgImagePath,
-    updated_at: new Date().toISOString()
-  } satisfies Partial<Drawing> & { owner: string; title: string; elements: SceneElement[] };
+  const { data, error } = await client
+    .from(DRAWINGS_TABLE)
+    .update({
+      title,
+      elements,
+      bg_image_path: replacementBgPath,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', oldest.id)
+    .eq('owner', user.id)
+    .select()
+    .single();
 
-  const { data, error } = await client.from(DRAWINGS_TABLE).insert(insertPayload).select().single();
   if (error) {
     if (error.code === '23505') {
       throw new Error('You already have a session with that name.');
     }
     throw error;
   }
-  return data as Drawing;
+
+  return {
+    drawing: data as Drawing,
+    replacedDrawing: { id: oldest.id, title: oldest.title }
+  };
 }
 
 export async function updateDrawing(
   id: string,
   elements: SceneElement[],
   bgFile?: File
-): Promise<void> {
+): Promise<{ bgPath: string | null }> {
   const client = getSupabaseClient();
   const user = await requireUser(client);
   const updateData: Partial<Drawing> = {
@@ -161,19 +213,29 @@ export async function updateDrawing(
     updateData.bg_image_path = path;
   }
 
-  const { error } = await client.from(DRAWINGS_TABLE).update(updateData).eq('id', id);
+  const { data, error } = await client
+    .from(DRAWINGS_TABLE)
+    .update(updateData)
+    .eq('id', id)
+    .eq('owner', user.id)
+    .select('bg_image_path')
+    .single();
   if (error) {
     throw error;
   }
+
+  const payload = data as { bg_image_path: string | null } | null;
+  return { bgPath: payload?.bg_image_path ?? updateData.bg_image_path ?? null };
 }
 
 export async function renameDrawing(id: string, newTitle: string): Promise<void> {
   const client = getSupabaseClient();
-  await requireUser(client);
+  const user = await requireUser(client);
   const { error } = await client
     .from(DRAWINGS_TABLE)
     .update({ title: newTitle, updated_at: new Date().toISOString() })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('owner', user.id);
   if (error) {
     if (error.code === '23505') {
       throw new Error('You already have a session with that name.');
@@ -184,17 +246,22 @@ export async function renameDrawing(id: string, newTitle: string): Promise<void>
 
 export async function deleteDrawing(id: string): Promise<void> {
   const client = getSupabaseClient();
-  await requireUser(client);
+  const user = await requireUser(client);
   const { data: existing, error: selectError } = await client
     .from(DRAWINGS_TABLE)
     .select('bg_image_path')
     .eq('id', id)
+    .eq('owner', user.id)
     .single();
   if (selectError) {
     throw selectError;
   }
 
-  const { error: deleteError } = await client.from(DRAWINGS_TABLE).delete().eq('id', id);
+  const { error: deleteError } = await client
+    .from(DRAWINGS_TABLE)
+    .delete()
+    .eq('id', id)
+    .eq('owner', user.id);
   if (deleteError) {
     throw deleteError;
   }
@@ -213,11 +280,12 @@ export async function loadDrawing(
   id: string
 ): Promise<{ elements: SceneElement[]; bgUrl: string | null; bgPath: string | null }> {
   const client = getSupabaseClient();
-  await requireUser(client);
+  const user = await requireUser(client);
   const { data, error } = await client
     .from(DRAWINGS_TABLE)
     .select('elements, bg_image_path')
     .eq('id', id)
+    .eq('owner', user.id)
     .single();
   if (error) {
     throw error;
