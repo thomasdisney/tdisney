@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createDrawing, MaxSessionsError, renameDrawing } from '@/lib/drawings';
+import { createDrawing, renameDrawing } from '@/lib/drawings';
 import type { Drawing } from '@/lib/drawings';
 
 vi.mock('@/lib/supabaseClient', () => {
@@ -36,28 +36,38 @@ function createClient(): MockSupabaseClient {
   };
 }
 
-function mockCountQuery(client: MockSupabaseClient, count: number, error: unknown = null) {
-  client.from.mockImplementationOnce(() => ({
-    select: vi.fn(async () => ({ count, error }))
-  }));
+function mockListQuery(client: MockSupabaseClient, drawings: Drawing[], error: unknown = null) {
+  const limit = vi.fn(async () => ({ data: error ? null : drawings, error }));
+  const order = vi.fn(() => ({ limit }));
+  const eq = vi.fn(() => ({ order }));
+  const select = vi.fn(() => ({ eq }));
+  client.from.mockImplementationOnce(() => ({ select }));
+  return { eq };
 }
 
 function mockInsertQuery(client: MockSupabaseClient, drawing: Drawing, error: unknown = null) {
-  client.from.mockImplementationOnce(() => ({
-    insert: vi.fn(() => ({
-      select: vi.fn(() => ({
-        single: vi.fn(async () => ({ data: error ? null : drawing, error }))
-      }))
-    }))
-  }));
+  const single = vi.fn(async () => ({ data: error ? null : drawing, error }));
+  const select = vi.fn(() => ({ single }));
+  const insert = vi.fn(() => ({ select }));
+  client.from.mockImplementationOnce(() => ({ insert }));
+}
+
+function mockUpdateQuery(client: MockSupabaseClient, drawing: Drawing, error: unknown = null) {
+  const single = vi.fn(async () => ({ data: error ? null : drawing, error }));
+  const select = vi.fn(() => ({ single }));
+  const eqOwner = vi.fn(() => ({ select }));
+  const eqId = vi.fn(() => ({ eq: eqOwner, select }));
+  const update = vi.fn(() => ({ eq: eqId }));
+  client.from.mockImplementationOnce(() => ({ update }));
+  return { eqId, eqOwner };
 }
 
 function mockRenameQuery(client: MockSupabaseClient, error: unknown = null) {
-  client.from.mockImplementationOnce(() => ({
-    update: vi.fn(() => ({
-      eq: vi.fn(async () => ({ error }))
-    }))
-  }));
+  const eqOwner = vi.fn(async () => ({ error }));
+  const eqId = vi.fn(() => ({ eq: eqOwner }));
+  const update = vi.fn(() => ({ eq: eqId }));
+  client.from.mockImplementationOnce(() => ({ update }));
+  return { eqId, eqOwner };
 }
 
 const getSupabaseClientMock = getSupabaseClient as unknown as ReturnType<typeof vi.fn>;
@@ -80,27 +90,76 @@ describe('drawings library', () => {
       bg_image_path: null,
       updated_at: new Date().toISOString()
     };
-    mockCountQuery(client, 1);
+    const listQuery = mockListQuery(client, []);
     mockInsertQuery(client, drawing);
 
     const result = await createDrawing('Warehouse A', []);
 
-    expect(result).toEqual(drawing);
+    expect(result.drawing).toEqual(drawing);
+    expect(result.replacedDrawing).toBeNull();
     expect(client.from).toHaveBeenNthCalledWith(1, 'drawings');
     expect(client.from).toHaveBeenNthCalledWith(2, 'drawings');
+    expect(listQuery.eq).toHaveBeenCalledWith('owner', 'user-1');
   });
 
-  it('throws MaxSessionsError when the limit is reached', async () => {
-    mockCountQuery(client, 3);
+  it('overwrites the oldest drawing when the limit is reached', async () => {
+    const now = Date.now();
+    const existing: Drawing[] = [
+      {
+        id: 'drawing-oldest',
+        owner: 'user-1',
+        title: 'Oldest',
+        elements: [],
+        bg_image_path: 'oldest/path.png',
+        updated_at: new Date(now - 10000).toISOString()
+      },
+      {
+        id: 'drawing-middle',
+        owner: 'user-1',
+        title: 'Middle',
+        elements: [],
+        bg_image_path: null,
+        updated_at: new Date(now - 5000).toISOString()
+      },
+      {
+        id: 'drawing-newest',
+        owner: 'user-1',
+        title: 'Newest',
+        elements: [],
+        bg_image_path: null,
+        updated_at: new Date(now).toISOString()
+      }
+    ];
+    const updated: Drawing = {
+      id: 'drawing-oldest',
+      owner: 'user-1',
+      title: 'Replacement',
+      elements: [{ id: 'a', type: 'rect', x: 0, y: 0 }],
+      bg_image_path: null,
+      updated_at: new Date(now + 1000).toISOString()
+    };
 
-    await expect(createDrawing('Overflow', [])).rejects.toBeInstanceOf(MaxSessionsError);
+    const listQuery = mockListQuery(client, existing);
+    const updateQuery = mockUpdateQuery(client, updated);
+
+    const result = await createDrawing('Replacement', [{ id: 'a', type: 'rect', x: 0, y: 0 }]);
+
+    expect(result.drawing).toEqual(updated);
+    expect(result.replacedDrawing).toEqual({ id: 'drawing-oldest', title: 'Oldest' });
+    expect(client.from).toHaveBeenNthCalledWith(1, 'drawings');
+    expect(client.from).toHaveBeenNthCalledWith(2, 'drawings');
+    expect(listQuery.eq).toHaveBeenCalledWith('owner', 'user-1');
+    expect(updateQuery.eqId).toHaveBeenCalledWith('id', 'drawing-oldest');
+    expect(updateQuery.eqOwner).toHaveBeenCalledWith('owner', 'user-1');
   });
 
   it('surface duplicate title errors from renameDrawing', async () => {
-    mockRenameQuery(client, { code: '23505', message: 'duplicate key value violates unique constraint' });
+    const renameQuery = mockRenameQuery(client, { code: '23505', message: 'duplicate key value violates unique constraint' });
 
     await expect(renameDrawing('drawing-1', 'Conflict')).rejects.toThrow(
       'You already have a session with that name.'
     );
+    expect(renameQuery.eqId).toHaveBeenCalledWith('id', 'drawing-1');
+    expect(renameQuery.eqOwner).toHaveBeenCalledWith('owner', 'user-1');
   });
 });
