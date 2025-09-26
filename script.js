@@ -27,6 +27,53 @@ const Z_INDEX_LAYERS = {
     STUFF: 40
 };
 
+const SLIP_VARIANTS = {
+    bot: { unloaded: 'Slipbot.png', loaded: 'SlipBot_Loaded.png' },
+    bin: { unloaded: 'SlipBin.png', loaded: 'SlipBin_Loaded.png' }
+};
+
+function getSlipTypeFromName(name) {
+    if (!name) return null;
+    return Object.entries(SLIP_VARIANTS).find(([, variant]) => variant.unloaded === name || variant.loaded === name)?.[0] || null;
+}
+
+function getSlipTypeFromSrc(src) {
+    if (!src) return null;
+    return Object.entries(SLIP_VARIANTS).find(([, variant]) => src.endsWith(variant.unloaded) || src.endsWith(variant.loaded))?.[0] || null;
+}
+
+function isSlipImageElement(img) {
+    return !!getSlipTypeFromSrc(img?.src || '');
+}
+
+function updateSlipImageState(img, state, slipType, isLoaded) {
+    const targetVariant = SLIP_VARIANTS[slipType];
+    if (!targetVariant) return;
+
+    const currentLeft = parseFloat(img.style.left);
+    const currentTop = parseFloat(img.style.top);
+
+    img.dataset.slipType = slipType;
+    img.dataset.scaleMultiplier = isLoaded ? 0.9 : 1;
+    state.isLoaded = isLoaded;
+
+    img.onload = function() {
+        const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
+        const oldCenter = getCenter(img);
+        img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
+        img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
+        const newCenter = getCenter(img);
+        img.style.left = `${currentLeft - (newCenter.x - oldCenter.x)}px`;
+        img.style.top = `${currentTop - (newCenter.y - oldCenter.y)}px`;
+        if (!state.group) rotateElement(img, state.rotateDeg);
+        if (pixelToFeetRatio === null) {
+            pixelToFeetRatio = 17 / (img.naturalHeight * objectScale * multiplier);
+        }
+    };
+
+    img.src = isLoaded ? targetVariant.loaded : targetVariant.unloaded;
+}
+
 let draggableElements = new Set();
 let maxZIndex = 1;
 let objectScale = 0.25;
@@ -47,6 +94,8 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
     img.classList.add('draggable');
     img.id = `${imageSrc.split('.')[0]}_${Date.now()}`;
     
+    const slipType = getSlipTypeFromName(imageSrc);
+
     if (imageSrc === 'forklift.png') {
         img.classList.add('forklift-image');
         img.dataset.scaleMultiplier = 1;
@@ -59,9 +108,10 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.classList.add('stuff-image');
         img.dataset.scaleMultiplier = 1;
         img.style.zIndex = Z_INDEX_LAYERS.STUFF;
-    } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
+    } else if (slipType) {
         img.classList.add('bot-image');
-        img.dataset.scaleMultiplier = imageSrc === 'SlipBot_Loaded.png' ? 0.9 : 1;
+        img.dataset.slipType = slipType;
+        img.dataset.scaleMultiplier = imageSrc === SLIP_VARIANTS[slipType].loaded ? 0.9 : 1;
         img.style.zIndex = Z_INDEX_LAYERS.BOT;
     }
 
@@ -87,7 +137,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
         img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
         img.style.opacity = '1';
-        if (imageSrc === 'Slipbot.png' && pixelToFeetRatio === null) {
+        if (slipType && pixelToFeetRatio === null) {
             pixelToFeetRatio = 17 / (img.naturalHeight * objectScale * multiplier);
         }
     };
@@ -98,7 +148,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         lastX: 0,
         lastY: 0,
         rotateDeg: 0,
-        isLoaded: imageSrc === 'SlipBot_Loaded.png',
+        isLoaded: slipType ? imageSrc === SLIP_VARIANTS[slipType].loaded : false,
         group: null
     };
 
@@ -123,30 +173,11 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
             rotateElement(target, state.rotateDeg);
         });
 
-        if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
+        if (slipType) {
             img.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
-                const currentLeft = parseFloat(img.style.left);
-                const currentTop = parseFloat(img.style.top);
-                if (!state.isLoaded) {
-                    img.src = 'SlipBot_Loaded.png';
-                    img.dataset.scaleMultiplier = 0.9;
-                    state.isLoaded = true;
-                } else {
-                    img.src = 'Slipbot.png';
-                    img.dataset.scaleMultiplier = 1;
-                    state.isLoaded = false;
-                }
-                img.onload = function() {
-                    const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
-                    const oldCenter = getCenter(img);
-                    img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
-                    img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
-                    const newCenter = getCenter(img);
-                    img.style.left = `${currentLeft - (newCenter.x - oldCenter.x)}px`;
-                    img.style.top = `${currentTop - (newCenter.y - oldCenter.y)}px`;
-                    if (!state.group) rotateElement(img, state.rotateDeg);
-                };
+                const currentSlipType = img.dataset.slipType || slipType;
+                updateSlipImageState(img, state, currentSlipType, !state.isLoaded);
             });
         }
 
@@ -183,7 +214,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
                 const dragTarget = state.group || img;
                 el.state.offsetX = e.clientX - parseFloat(dragTarget.style.left);
                 el.state.offsetY = e.clientY - parseFloat(dragTarget.style.top);
-                if (img.src.includes('truck_side') || img.src.includes('Slipbot')) handleAttachments(img);
+                if (img.src.includes('truck_side') || isSlipImageElement(img)) handleAttachments(img);
                 el.moveHandler = function(moveEvent) {
                     moveEvent.preventDefault();
                     moveEvent.stopPropagation();
@@ -248,25 +279,29 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
 
         img.addEventListener('dblclick', function(e) {
             e.preventDefault();
-            if (confirm('Delete this element?')) {
-                draggableElements.forEach(el => {
-                    if (el.img.dataset.attachedTo === img.id) {
-                        delete el.img.dataset.attachedTo;
-                        if (el.state.group) {
-                            document.body.appendChild(el.img);
-                            el.img.style.left = `${parseFloat(state.group.style.left) + parseFloat(el.img.style.left)}px`;
-                            el.img.style.top = `${parseFloat(state.group.style.top) + parseFloat(el.img.style.top)}px`;
-                            el.state.group = null;
-                        }
-                    }
+            const currentSlipType = getSlipTypeFromSrc(img.src);
+            const actions = [];
+
+            if (currentSlipType === 'bot') {
+                actions.push({
+                    label: 'Add Bin',
+                    handler: () => updateSlipImageState(img, state, 'bin', state.isLoaded)
                 });
-                if (state.group) {
-                    document.body.removeChild(state.group);
-                    state.group = null;
-                }
-                draggableElements.delete(Array.from(draggableElements).find(el => el.img === img));
-                img.remove();
             }
+
+            actions.push({
+                label: 'Delete',
+                variant: 'danger',
+                handler: () => {
+                    removeDraggableElement(img, state);
+                }
+            });
+
+            actions.push({
+                label: 'Cancel'
+            });
+
+            showActionDialog('Select an action for this element.', actions);
         });
     } else {
         img.addEventListener('touchstart', function(e) {
@@ -293,36 +328,48 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
             }
         });
 
+        let lastTapTime = 0;
+        let tapTimeout = null;
+
         img.addEventListener('touchend', function(e) {
             e.preventDefault();
             const el = Array.from(draggableElements).find(el => el.img === img);
             if (el) {
                 el.isDragging = false;
             }
-        });
 
-        img.addEventListener('click', function(e) {
-            e.preventDefault();
-            const currentLeft = parseFloat(img.style.left);
-            const currentTop = parseFloat(img.style.top);
-            if (!state.isLoaded) {
-                img.src = 'SlipBot_Loaded.png';
-                img.dataset.scaleMultiplier = 0.9;
-                state.isLoaded = true;
+            const slipImageType = img.dataset.slipType;
+            if (!slipImageType) return;
+
+            const now = Date.now();
+            if (now - lastTapTime < 300) {
+                if (tapTimeout) {
+                    clearTimeout(tapTimeout);
+                    tapTimeout = null;
+                }
+                const actions = [];
+                if (slipImageType === 'bot') {
+                    actions.push({
+                        label: 'Add Bin',
+                        handler: () => updateSlipImageState(img, state, 'bin', state.isLoaded)
+                    });
+                }
+                actions.push({
+                    label: 'Delete',
+                    variant: 'danger',
+                    handler: () => removeDraggableElement(img, state)
+                });
+                actions.push({ label: 'Cancel' });
+                showActionDialog('Select an action for this element.', actions);
+                lastTapTime = 0;
             } else {
-                img.src = 'Slipbot.png';
-                img.dataset.scaleMultiplier = 1;
-                state.isLoaded = false;
+                lastTapTime = now;
+                tapTimeout = setTimeout(() => {
+                    const currentType = img.dataset.slipType;
+                    updateSlipImageState(img, state, currentType, !state.isLoaded);
+                    tapTimeout = null;
+                }, 300);
             }
-            img.onload = function() {
-                const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
-                const oldCenter = getCenter(img);
-                img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
-                img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
-                const newCenter = getCenter(img);
-                img.style.left = `${currentLeft - (newCenter.x - oldCenter.x)}px`;
-                img.style.top = `${currentTop - (newCenter.y - oldCenter.y)}px`;
-            };
         });
     }
 
@@ -331,12 +378,98 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
     return img;
 }
 
+function removeDraggableElement(img, state) {
+    draggableElements.forEach(el => {
+        if (el.img.dataset.attachedTo === img.id) {
+            delete el.img.dataset.attachedTo;
+            if (el.state.group) {
+                document.body.appendChild(el.img);
+                if (state.group) {
+                    el.img.style.left = `${parseFloat(state.group.style.left) + parseFloat(el.img.style.left)}px`;
+                    el.img.style.top = `${parseFloat(state.group.style.top) + parseFloat(el.img.style.top)}px`;
+                }
+                el.state.group = null;
+            }
+        }
+    });
+    if (state.group) {
+        if (state.group.parentNode) {
+            document.body.removeChild(state.group);
+        }
+        state.group = null;
+    }
+    const entry = Array.from(draggableElements).find(el => el.img === img);
+    if (entry) {
+        draggableElements.delete(entry);
+    }
+    if (img.parentNode) {
+        img.parentNode.removeChild(img);
+    }
+}
+
+function showActionDialog(message, actions = []) {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-dialog-overlay';
+
+    const dialog = document.createElement('div');
+    dialog.className = 'confirm-dialog';
+
+    const text = document.createElement('p');
+    text.textContent = message;
+    dialog.appendChild(text);
+
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'confirm-dialog-buttons';
+
+    const cleanup = () => {
+        document.removeEventListener('keydown', escHandler);
+        if (overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+        }
+    };
+
+    const escHandler = (event) => {
+        if (event.key === 'Escape') {
+            cleanup();
+        }
+    };
+
+    document.addEventListener('keydown', escHandler);
+
+    actions.forEach(action => {
+        const button = document.createElement('button');
+        button.textContent = action.label;
+        button.className = 'confirm-dialog-btn';
+        if (action.variant) {
+            button.classList.add(`confirm-dialog-btn--${action.variant}`);
+        }
+        button.addEventListener('click', () => {
+            cleanup();
+            if (typeof action.handler === 'function') {
+                action.handler();
+            }
+        });
+        buttonsContainer.appendChild(button);
+    });
+
+    dialog.appendChild(buttonsContainer);
+    overlay.appendChild(dialog);
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            cleanup();
+        }
+    });
+
+    document.body.appendChild(overlay);
+}
+
 function updateZIndex(element) {
     if (!isMobile) {
         if (element.src) {
             if (element.src.includes('truck_side')) element.style.zIndex = Z_INDEX_LAYERS.TRUCK;
             else if (element.src.includes('forklift')) element.style.zIndex = Z_INDEX_LAYERS.FORKLIFT;
-            else if (element.src.includes('Slipbot')) element.style.zIndex = Z_INDEX_LAYERS.BOT;
+            else if (isSlipImageElement(element)) element.style.zIndex = Z_INDEX_LAYERS.BOT;
             else if (element.src.includes('stuff')) element.style.zIndex = Z_INDEX_LAYERS.STUFF;
         } else {
             element.style.zIndex = element.dataset.transportable ? Z_INDEX_LAYERS.TRANSPORTABLE_SQUARE : Z_INDEX_LAYERS.SQUARE;
@@ -440,7 +573,7 @@ if (!isMobile) {
                     const dy = centerAfter.y - centerBefore.y;
                     img.style.left = `${parseFloat(img.style.left) - dx}px`;
                     img.style.top = `${parseFloat(img.style.top) - dy}px`;
-                    if (img.src.includes('Slipbot.png') && pixelToFeetRatio !== null) {
+                    if (isSlipImageElement(img) && pixelToFeetRatio !== null) {
                         pixelToFeetRatio = 17 / (img.naturalHeight * objectScale * multiplier);
                     }
                 }
@@ -515,9 +648,9 @@ function addBackgroundImage(file) {
 
 function handleAttachments(movingElement) {
     if (isMobile) return;
-    const isSlipbot = movingElement.src && movingElement.src.includes('Slipbot');
+    const isSlipbot = isSlipImageElement(movingElement);
     const isTruck = movingElement.src && movingElement.src.includes('truck_side');
-    
+
     if (isSlipbot) {
         const slipbotEl = Array.from(draggableElements).find(el => el.img === movingElement);
         if (!slipbotEl) return;
@@ -602,7 +735,7 @@ function createSquare(e) {
     e.stopPropagation();
 
     if (pixelToFeetRatio === null) {
-        alert('Please add a Slipbot first to calibrate measurements (Slipbot is 17ft tall).');
+        alert('Please add a Slipbot or SlipBin first to calibrate measurements (Slipbot is 17ft tall).');
         isDrawingSquare = false;
         document.body.style.cursor = 'crosshair';
         return;
@@ -815,7 +948,7 @@ function setupSquareInteraction(square, state) {
         let botUnderneath = null;
         if (!isSquareOnly) {
             draggableElements.forEach(el => {
-                if (el.img.src && el.img.src.includes('Slipbot') && checkOverlap(square, el.img)) {
+                if (el.img.src && isSlipImageElement(el.img) && checkOverlap(square, el.img)) {
                     botUnderneath = el;
                 }
             });
@@ -1003,7 +1136,10 @@ function setupSquareInteraction(square, state) {
                     square.style.zIndex = Z_INDEX_LAYERS.TRANSPORTABLE_SQUARE;
                     state.isTransportable = true;
                     if (!square.id) square.id = 'square_' + Date.now();
-                    handleAttachments(Array.from(draggableElements).find(el => el.img.src?.includes('Slipbot'))?.img);
+                    const slipElement = Array.from(draggableElements).find(el => isSlipImageElement(el.img));
+                    if (slipElement) {
+                        handleAttachments(slipElement.img);
+                    }
                 } else {
                     delete square.dataset.transportable;
                     delete square.dataset.attachedTo;
@@ -1016,7 +1152,7 @@ function setupSquareInteraction(square, state) {
             dialog.appendChild(transportBtn);
         } else {
             const detachBtn = document.createElement('button');
-            detachBtn.textContent = 'Detach from Slipbot';
+            detachBtn.textContent = 'Detach from Slipbot/Bin';
             detachBtn.style.margin = '10px';
             detachBtn.style.padding = '5px 15px';
             detachBtn.addEventListener('click', () => {
