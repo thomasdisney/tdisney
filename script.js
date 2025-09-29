@@ -46,7 +46,6 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
     img.src = imageSrc;
     img.classList.add('draggable');
     img.id = `${imageSrc.split('.')[0]}_${Date.now()}`;
-    
     if (imageSrc === 'forklift.png') {
         img.classList.add('forklift-image');
         img.dataset.scaleMultiplier = 1;
@@ -59,9 +58,14 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.classList.add('stuff-image');
         img.dataset.scaleMultiplier = 1;
         img.style.zIndex = Z_INDEX_LAYERS.STUFF;
-    } else if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
+    } else if (
+        imageSrc === 'Slipbot.png' ||
+        imageSrc === 'SlipBot_Loaded.png' ||
+        imageSrc === 'SlipBin.png' ||
+        imageSrc === 'SlipBin_Loaded.png'
+    ) {
         img.classList.add('bot-image');
-        img.dataset.scaleMultiplier = imageSrc === 'SlipBot_Loaded.png' ? 0.9 : 1;
+        img.dataset.scaleMultiplier = (imageSrc === 'SlipBot_Loaded.png' || imageSrc === 'SlipBin_Loaded.png') ? 0.9 : 1;
         img.style.zIndex = Z_INDEX_LAYERS.BOT;
     }
 
@@ -87,7 +91,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
         img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
         img.style.opacity = '1';
-        if (imageSrc === 'Slipbot.png' && pixelToFeetRatio === null) {
+        if ((imageSrc === 'Slipbot.png' || imageSrc === 'SlipBin.png') && pixelToFeetRatio === null) {
             pixelToFeetRatio = 17 / (img.naturalHeight * objectScale * multiplier);
         }
     };
@@ -98,7 +102,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         lastX: 0,
         lastY: 0,
         rotateDeg: 0,
-        isLoaded: imageSrc === 'SlipBot_Loaded.png',
+        isLoaded: imageSrc === 'SlipBot_Loaded.png' || imageSrc === 'SlipBin_Loaded.png',
         group: null
     };
 
@@ -123,23 +127,31 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
             rotateElement(target, state.rotateDeg);
         });
 
-        if (imageSrc === 'Slipbot.png' || imageSrc === 'SlipBot_Loaded.png') {
+        if (
+            imageSrc === 'Slipbot.png' ||
+            imageSrc === 'SlipBot_Loaded.png' ||
+            imageSrc === 'SlipBin.png' ||
+            imageSrc === 'SlipBin_Loaded.png'
+        ) {
             img.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 const currentLeft = parseFloat(img.style.left);
                 const currentTop = parseFloat(img.style.top);
+                const slipFamilyBase = img.src.includes('SlipBin') ? 'SlipBin' : 'Slipbot';
+                const loadedImageName = slipFamilyBase === 'SlipBin' ? 'SlipBin_Loaded.png' : 'SlipBot_Loaded.png';
+                const unloadedImageName = slipFamilyBase === 'SlipBin' ? 'SlipBin.png' : 'Slipbot.png';
+                const oldCenter = getCenter(img);
                 if (!state.isLoaded) {
-                    img.src = 'SlipBot_Loaded.png';
+                    img.src = loadedImageName;
                     img.dataset.scaleMultiplier = 0.9;
                     state.isLoaded = true;
                 } else {
-                    img.src = 'Slipbot.png';
+                    img.src = unloadedImageName;
                     img.dataset.scaleMultiplier = 1;
                     state.isLoaded = false;
                 }
                 img.onload = function() {
                     const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
-                    const oldCenter = getCenter(img);
                     img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
                     img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
                     const newCenter = getCenter(img);
@@ -183,7 +195,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
                 const dragTarget = state.group || img;
                 el.state.offsetX = e.clientX - parseFloat(dragTarget.style.left);
                 el.state.offsetY = e.clientY - parseFloat(dragTarget.style.top);
-                if (img.src.includes('truck_side') || img.src.includes('Slipbot')) handleAttachments(img);
+                if (img.src.includes('truck_side') || img.src.includes('Slipbot') || img.src.includes('SlipBin')) handleAttachments(img);
                 el.moveHandler = function(moveEvent) {
                     moveEvent.preventDefault();
                     moveEvent.stopPropagation();
@@ -248,7 +260,9 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
 
         img.addEventListener('dblclick', function(e) {
             e.preventDefault();
-            if (confirm('Delete this element?')) {
+            e.stopPropagation();
+
+            const deleteElement = () => {
                 draggableElements.forEach(el => {
                     if (el.img.dataset.attachedTo === img.id) {
                         delete el.img.dataset.attachedTo;
@@ -266,6 +280,86 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
                 }
                 draggableElements.delete(Array.from(draggableElements).find(el => el.img === img));
                 img.remove();
+            };
+
+            const replaceWithSlipBin = () => {
+                const wasLoaded = state.isLoaded;
+                const targetSrc = wasLoaded ? 'SlipBin_Loaded.png' : 'SlipBin.png';
+                const currentLeft = parseFloat(img.style.left);
+                const currentTop = parseFloat(img.style.top);
+                const oldCenter = getCenter(img);
+                img.src = targetSrc;
+                img.dataset.scaleMultiplier = wasLoaded ? 0.9 : 1;
+                state.isLoaded = wasLoaded;
+                img.onload = function() {
+                    const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
+                    img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
+                    img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
+                    const newCenter = getCenter(img);
+                    img.style.left = `${currentLeft - (newCenter.x - oldCenter.x)}px`;
+                    img.style.top = `${currentTop - (newCenter.y - oldCenter.y)}px`;
+                    if (!state.group) rotateElement(img, state.rotateDeg);
+                };
+            };
+
+            const imgSrcLower = img.src.toLowerCase();
+            const isSlipbotImage = imgSrcLower.includes('slipbot');
+            const isSlipbinImage = imgSrcLower.includes('slipbin');
+
+            if (isSlipbotImage || isSlipbinImage) {
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                overlay.style.width = '100%';
+                overlay.style.height = '100%';
+                overlay.style.background = 'rgba(0, 0, 0, 0.5)';
+                overlay.style.zIndex = '1000';
+
+                const dialog = document.createElement('div');
+                dialog.style.position = 'absolute';
+                dialog.style.top = '50%';
+                dialog.style.left = '50%';
+                dialog.style.transform = 'translate(-50%, -50%)';
+                dialog.style.background = 'white';
+                dialog.style.padding = '20px';
+                dialog.style.borderRadius = '5px';
+                dialog.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
+
+                dialog.innerHTML = '<h3>Choose an action:</h3>';
+
+                if (isSlipbotImage) {
+                    const addBinBtn = document.createElement('button');
+                    addBinBtn.textContent = 'Add Bin';
+                    addBinBtn.style.margin = '10px';
+                    addBinBtn.style.padding = '5px 15px';
+                    addBinBtn.addEventListener('click', () => {
+                        replaceWithSlipBin();
+                        document.body.removeChild(overlay);
+                    });
+                    dialog.appendChild(addBinBtn);
+                }
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.style.margin = '10px';
+                deleteBtn.style.padding = '5px 15px';
+                deleteBtn.addEventListener('click', () => {
+                    deleteElement();
+                    document.body.removeChild(overlay);
+                });
+
+                dialog.appendChild(deleteBtn);
+                overlay.appendChild(dialog);
+                document.body.appendChild(overlay);
+
+                overlay.addEventListener('click', (event) => {
+                    if (event.target === overlay) {
+                        document.body.removeChild(overlay);
+                    }
+                });
+            } else if (confirm('Delete this element?')) {
+                deleteElement();
             }
         });
     } else {
@@ -301,29 +395,39 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
             }
         });
 
-        img.addEventListener('click', function(e) {
-            e.preventDefault();
-            const currentLeft = parseFloat(img.style.left);
-            const currentTop = parseFloat(img.style.top);
-            if (!state.isLoaded) {
-                img.src = 'SlipBot_Loaded.png';
-                img.dataset.scaleMultiplier = 0.9;
-                state.isLoaded = true;
-            } else {
-                img.src = 'Slipbot.png';
-                img.dataset.scaleMultiplier = 1;
-                state.isLoaded = false;
-            }
-            img.onload = function() {
-                const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
+        if (
+            imageSrc === 'Slipbot.png' ||
+            imageSrc === 'SlipBot_Loaded.png' ||
+            imageSrc === 'SlipBin.png' ||
+            imageSrc === 'SlipBin_Loaded.png'
+        ) {
+            img.addEventListener('click', function(e) {
+                e.preventDefault();
+                const currentLeft = parseFloat(img.style.left);
+                const currentTop = parseFloat(img.style.top);
+                const slipFamilyBase = img.src.includes('SlipBin') ? 'SlipBin' : 'Slipbot';
+                const loadedImageName = slipFamilyBase === 'SlipBin' ? 'SlipBin_Loaded.png' : 'SlipBot_Loaded.png';
+                const unloadedImageName = slipFamilyBase === 'SlipBin' ? 'SlipBin.png' : 'Slipbot.png';
                 const oldCenter = getCenter(img);
-                img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
-                img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
-                const newCenter = getCenter(img);
-                img.style.left = `${currentLeft - (newCenter.x - oldCenter.x)}px`;
-                img.style.top = `${currentTop - (newCenter.y - oldCenter.y)}px`;
-            };
-        });
+                if (!state.isLoaded) {
+                    img.src = loadedImageName;
+                    img.dataset.scaleMultiplier = 0.9;
+                    state.isLoaded = true;
+                } else {
+                    img.src = unloadedImageName;
+                    img.dataset.scaleMultiplier = 1;
+                    state.isLoaded = false;
+                }
+                img.onload = function() {
+                    const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
+                    img.style.width = `${img.naturalWidth * objectScale * multiplier}px`;
+                    img.style.height = `${img.naturalHeight * objectScale * multiplier}px`;
+                    const newCenter = getCenter(img);
+                    img.style.left = `${currentLeft - (newCenter.x - oldCenter.x)}px`;
+                    img.style.top = `${currentTop - (newCenter.y - oldCenter.y)}px`;
+                };
+            });
+        }
     }
 
     draggableElements.add({ img, isDragging: false, state, moveHandler: null, upHandler: null });
@@ -336,7 +440,7 @@ function updateZIndex(element) {
         if (element.src) {
             if (element.src.includes('truck_side')) element.style.zIndex = Z_INDEX_LAYERS.TRUCK;
             else if (element.src.includes('forklift')) element.style.zIndex = Z_INDEX_LAYERS.FORKLIFT;
-            else if (element.src.includes('Slipbot')) element.style.zIndex = Z_INDEX_LAYERS.BOT;
+            else if (element.src.includes('Slipbot') || element.src.includes('SlipBin')) element.style.zIndex = Z_INDEX_LAYERS.BOT;
             else if (element.src.includes('stuff')) element.style.zIndex = Z_INDEX_LAYERS.STUFF;
         } else {
             element.style.zIndex = element.dataset.transportable ? Z_INDEX_LAYERS.TRANSPORTABLE_SQUARE : Z_INDEX_LAYERS.SQUARE;
@@ -440,7 +544,7 @@ if (!isMobile) {
                     const dy = centerAfter.y - centerBefore.y;
                     img.style.left = `${parseFloat(img.style.left) - dx}px`;
                     img.style.top = `${parseFloat(img.style.top) - dy}px`;
-                    if (img.src.includes('Slipbot.png') && pixelToFeetRatio !== null) {
+                    if ((img.src.includes('Slipbot.png') || img.src.includes('SlipBin.png')) && pixelToFeetRatio !== null) {
                         pixelToFeetRatio = 17 / (img.naturalHeight * objectScale * multiplier);
                     }
                 }
@@ -515,7 +619,7 @@ function addBackgroundImage(file) {
 
 function handleAttachments(movingElement) {
     if (isMobile) return;
-    const isSlipbot = movingElement.src && movingElement.src.includes('Slipbot');
+    const isSlipbot = movingElement.src && (movingElement.src.includes('Slipbot') || movingElement.src.includes('SlipBin'));
     const isTruck = movingElement.src && movingElement.src.includes('truck_side');
     
     if (isSlipbot) {
@@ -815,7 +919,7 @@ function setupSquareInteraction(square, state) {
         let botUnderneath = null;
         if (!isSquareOnly) {
             draggableElements.forEach(el => {
-                if (el.img.src && el.img.src.includes('Slipbot') && checkOverlap(square, el.img)) {
+                if (el.img.src && (el.img.src.includes('Slipbot') || el.img.src.includes('SlipBin')) && checkOverlap(square, el.img)) {
                     botUnderneath = el;
                 }
             });
@@ -1003,7 +1107,7 @@ function setupSquareInteraction(square, state) {
                     square.style.zIndex = Z_INDEX_LAYERS.TRANSPORTABLE_SQUARE;
                     state.isTransportable = true;
                     if (!square.id) square.id = 'square_' + Date.now();
-                    handleAttachments(Array.from(draggableElements).find(el => el.img.src?.includes('Slipbot'))?.img);
+                    handleAttachments(Array.from(draggableElements).find(el => el.img.src && (el.img.src.includes('Slipbot') || el.img.src.includes('SlipBin')))?.img);
                 } else {
                     delete square.dataset.transportable;
                     delete square.dataset.attachedTo;
