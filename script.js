@@ -79,8 +79,8 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.classList.add('truck-image');
         img.dataset.scaleMultiplier = 6.75;
         img.style.zIndex = Z_INDEX_LAYERS.TRUCK;
-    } else if (imageSrc === 'Cart.png') {
-        img.classList.add('stuff-image');
+    } else if (imageSrc === 'Cart.png' || imageSrc === 'Stuff.png') {
+        img.classList.add('cart-image');
         img.dataset.scaleMultiplier = 1;
         img.style.zIndex = Z_INDEX_LAYERS.STUFF;
     } else if (
@@ -463,10 +463,11 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
 function updateZIndex(element) {
     if (!isMobile) {
         if (element.src) {
-            if (element.src.includes('truck_side')) element.style.zIndex = Z_INDEX_LAYERS.TRUCK;
-            else if (element.src.includes('forklift')) element.style.zIndex = Z_INDEX_LAYERS.FORKLIFT;
-            else if (element.src.includes('Slipbot') || element.src.includes('SlipBin')) element.style.zIndex = Z_INDEX_LAYERS.BOT;
-            else if (element.src.includes('stuff')) element.style.zIndex = Z_INDEX_LAYERS.STUFF;
+            const normalizedSrc = element.src.toLowerCase();
+            if (normalizedSrc.includes('truck_side')) element.style.zIndex = Z_INDEX_LAYERS.TRUCK;
+            else if (normalizedSrc.includes('forklift')) element.style.zIndex = Z_INDEX_LAYERS.FORKLIFT;
+            else if (normalizedSrc.includes('slipbot') || normalizedSrc.includes('slipbin')) element.style.zIndex = Z_INDEX_LAYERS.BOT;
+            else if (normalizedSrc.includes('cart') || normalizedSrc.includes('stuff')) element.style.zIndex = Z_INDEX_LAYERS.STUFF;
         } else {
             element.style.zIndex = element.dataset.transportable ? Z_INDEX_LAYERS.TRANSPORTABLE_SQUARE : Z_INDEX_LAYERS.SQUARE;
         }
@@ -511,7 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
             addDraggableImage('forklift.png', e);
         });
 
-        document.getElementById('addStuffBtn').addEventListener('click', function(e) {
+        document.getElementById('addCartBtn').addEventListener('click', function(e) {
             addDraggableImage('Cart.png', e);
         });
 
