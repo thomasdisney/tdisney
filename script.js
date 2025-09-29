@@ -33,6 +33,31 @@ let objectScale = 0.25;
 let pixelToFeetRatio = null;
 let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
+const BOT_IMAGE_DIMENSIONS = {
+    slipbot: {
+        unloaded: { width: 276, height: 590 },
+        loaded: { width: 294, height: 651 }
+    },
+    slipbin: {
+        unloaded: { width: 330, height: 733 },
+        loaded: { width: 330, height: 733 }
+    }
+};
+
+function getBotScaleMultiplier(imageName) {
+    const name = (imageName || '').toLowerCase();
+    const isLoaded = name.includes('loaded');
+    const baseMultiplier = isLoaded ? 0.9 : 1;
+
+    if (!name.includes('slipbin')) return baseMultiplier;
+
+    const key = isLoaded ? 'loaded' : 'unloaded';
+    const slipbotHeight = BOT_IMAGE_DIMENSIONS.slipbot[key].height;
+    const slipbinHeight = BOT_IMAGE_DIMENSIONS.slipbin[key].height || slipbotHeight;
+
+    return baseMultiplier * (slipbotHeight / slipbinHeight);
+}
+
 function updateCursorStyle(img, isDragging) {
     if (!isMobile) {
         img.style.cursor = isDragging ? 'none' : 'crosshair';
@@ -65,7 +90,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         imageSrc === 'SlipBin_Loaded.png'
     ) {
         img.classList.add('bot-image');
-        img.dataset.scaleMultiplier = (imageSrc === 'SlipBot_Loaded.png' || imageSrc === 'SlipBin_Loaded.png') ? 0.9 : 1;
+        img.dataset.scaleMultiplier = getBotScaleMultiplier(imageSrc);
         img.style.zIndex = Z_INDEX_LAYERS.BOT;
     }
 
@@ -143,11 +168,11 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
                 const oldCenter = getCenter(img);
                 if (!state.isLoaded) {
                     img.src = loadedImageName;
-                    img.dataset.scaleMultiplier = 0.9;
+                    img.dataset.scaleMultiplier = getBotScaleMultiplier(loadedImageName);
                     state.isLoaded = true;
                 } else {
                     img.src = unloadedImageName;
-                    img.dataset.scaleMultiplier = 1;
+                    img.dataset.scaleMultiplier = getBotScaleMultiplier(unloadedImageName);
                     state.isLoaded = false;
                 }
                 img.onload = function() {
@@ -289,7 +314,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
                 const currentTop = parseFloat(img.style.top);
                 const oldCenter = getCenter(img);
                 img.src = targetSrc;
-                img.dataset.scaleMultiplier = wasLoaded ? 0.9 : 1;
+                img.dataset.scaleMultiplier = getBotScaleMultiplier(targetSrc);
                 state.isLoaded = wasLoaded;
                 img.onload = function() {
                     const multiplier = parseFloat(img.dataset.scaleMultiplier) || 1;
@@ -411,11 +436,11 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
                 const oldCenter = getCenter(img);
                 if (!state.isLoaded) {
                     img.src = loadedImageName;
-                    img.dataset.scaleMultiplier = 0.9;
+                    img.dataset.scaleMultiplier = getBotScaleMultiplier(loadedImageName);
                     state.isLoaded = true;
                 } else {
                     img.src = unloadedImageName;
-                    img.dataset.scaleMultiplier = 1;
+                    img.dataset.scaleMultiplier = getBotScaleMultiplier(unloadedImageName);
                     state.isLoaded = false;
                 }
                 img.onload = function() {
