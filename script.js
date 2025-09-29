@@ -50,7 +50,7 @@ const STUFF_IMAGE_DIMENSIONS = {
 
 const REAL_WORLD_HEIGHTS = {
     slipbot: 204,
-    cart: 18
+    cart: 26.5
 };
 
 const CART_SCALE_MULTIPLIER =
