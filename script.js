@@ -79,7 +79,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.classList.add('truck-image');
         img.dataset.scaleMultiplier = 6.75;
         img.style.zIndex = Z_INDEX_LAYERS.TRUCK;
-    } else if (imageSrc === 'stuff.png') {
+    } else if (imageSrc === 'Cart.png') {
         img.classList.add('stuff-image');
         img.dataset.scaleMultiplier = 1;
         img.style.zIndex = Z_INDEX_LAYERS.STUFF;
@@ -512,7 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         document.getElementById('addStuffBtn').addEventListener('click', function(e) {
-            addDraggableImage('stuff.png', e);
+            addDraggableImage('Cart.png', e);
         });
 
         document.getElementById('addDrawBtn').addEventListener('click', startSquareDrawing);
