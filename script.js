@@ -44,6 +44,19 @@ const BOT_IMAGE_DIMENSIONS = {
     }
 };
 
+const STUFF_IMAGE_DIMENSIONS = {
+    cart: { width: 570, height: 280 }
+};
+
+const REAL_WORLD_HEIGHTS = {
+    slipbot: 204,
+    cart: 18
+};
+
+const CART_SCALE_MULTIPLIER =
+    (BOT_IMAGE_DIMENSIONS.slipbot.unloaded.height / STUFF_IMAGE_DIMENSIONS.cart.height) *
+    (REAL_WORLD_HEIGHTS.cart / REAL_WORLD_HEIGHTS.slipbot);
+
 function getBotScaleMultiplier(imageName) {
     const name = (imageName || '').toLowerCase();
     const isLoaded = name.includes('loaded');
@@ -81,7 +94,7 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
         img.style.zIndex = Z_INDEX_LAYERS.TRUCK;
     } else if (imageSrc === 'Cart.png') {
         img.classList.add('stuff-image');
-        img.dataset.scaleMultiplier = 1;
+        img.dataset.scaleMultiplier = CART_SCALE_MULTIPLIER;
         img.style.zIndex = Z_INDEX_LAYERS.STUFF;
     } else if (
         imageSrc === 'Slipbot.png' ||
