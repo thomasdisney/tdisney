@@ -303,7 +303,10 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
             };
 
             const imgSrcLower = img.src.toLowerCase();
-            if (imgSrcLower.includes('slipbot')) {
+            const isSlipbotImage = imgSrcLower.includes('slipbot');
+            const isSlipbinImage = imgSrcLower.includes('slipbin');
+
+            if (isSlipbotImage || isSlipbinImage) {
                 const overlay = document.createElement('div');
                 overlay.style.position = 'fixed';
                 overlay.style.top = '0';
@@ -325,14 +328,17 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
 
                 dialog.innerHTML = '<h3>Choose an action:</h3>';
 
-                const addBinBtn = document.createElement('button');
-                addBinBtn.textContent = 'Add Bin';
-                addBinBtn.style.margin = '10px';
-                addBinBtn.style.padding = '5px 15px';
-                addBinBtn.addEventListener('click', () => {
-                    replaceWithSlipBin();
-                    document.body.removeChild(overlay);
-                });
+                if (isSlipbotImage) {
+                    const addBinBtn = document.createElement('button');
+                    addBinBtn.textContent = 'Add Bin';
+                    addBinBtn.style.margin = '10px';
+                    addBinBtn.style.padding = '5px 15px';
+                    addBinBtn.addEventListener('click', () => {
+                        replaceWithSlipBin();
+                        document.body.removeChild(overlay);
+                    });
+                    dialog.appendChild(addBinBtn);
+                }
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'Delete';
@@ -343,7 +349,6 @@ function addDraggableImage(imageSrc, event, isMobileInit = false) {
                     document.body.removeChild(overlay);
                 });
 
-                dialog.appendChild(addBinBtn);
                 dialog.appendChild(deleteBtn);
                 overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
